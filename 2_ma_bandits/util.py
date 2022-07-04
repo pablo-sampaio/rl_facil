@@ -14,7 +14,7 @@ def plot_results(results, max_value):
     bestline_style = "--" 
     bestline_color = "gray"
     
-    # plot moving average ctr, with x in log-scale    
+    # plot moving average ctr, with x in log-scale
     for (alg_name, rewards, _) in results:
         cumulative_average = np.cumsum(rewards) / (np.arange(1, total_steps+1))
         plt.plot(cumulative_average, label=alg_name)

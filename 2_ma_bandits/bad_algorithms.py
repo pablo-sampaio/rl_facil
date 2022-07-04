@@ -31,7 +31,7 @@ def run_greedy(env):
     num_actions = env.get_num_actions()
 
     # estimativa da recompensa por ação
-    Q = [0.0] * num_actions
+    Q = [0.0 for i in range(num_actions)]
 
     env.reset()
     
@@ -48,7 +48,7 @@ def run_greedy(env):
     # PARTE 2: realiza os passos restantes
     # realizando apenas a ação que tem maior Q
     while not done:
-        a = np.argmax(Q)
+        a = np.argmax(Q)  # indice onde está o maior valor
         r, done = env.step(a)
         reward_per_step.append(r)
 
@@ -57,10 +57,10 @@ def run_greedy(env):
 
 if __name__ == '__main__':
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
-    mab_problem = SimpleMultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)
+    env = SimpleMultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)
 
-    rewards, _ = run_greedy(mab_problem)
+    rewards, _ = run_greedy(env)
     print("Greedy - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_random(mab_problem)
+    rewards, _ = run_random(env)
     print("Random - soma de recompensas:", sum(rewards))

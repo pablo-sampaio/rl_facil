@@ -5,14 +5,14 @@ from bandit_envs import SimpleMultiArmedBandit
 from epsilon_greedy import run_epsilon_greedy
 
 
-def run_ucb(problem):
-    num_actions = problem.get_num_actions()
+def run_ucb(env):
+    num_actions = env.get_num_actions()
 
     # estatisticas por ação
-    Q = [0.0] * num_actions          # recompensa média (esperada) por ação
-    action_cnt  = [0] * num_actions  # quantas vezes cada ação foi realizada
+    Q = [0.0 for i in range(num_actions)]            # recompensa média (esperada) por ação
+    action_cnt  = [0.0 for i in range(num_actions)]  # quantas vezes cada ação foi realizada
 
-    problem.reset()
+    env.reset()
 
     reward_per_step = []    # recompensa recebida a cada passo
     total_steps = 0
@@ -20,8 +20,9 @@ def run_ucb(problem):
 
     # PARTE 1: realiza um passo para cada ação
     # para cada ação "a" guarda a recompensa obtida em "Q[a]"
+    # para não ter nenhuma ação com "action_cnt" zero
     for a in range(num_actions):
-        r, done = problem.step(a)
+        r, done = env.step(a)
         total_steps += 1
         reward_per_step.append(r)
 
@@ -29,13 +30,13 @@ def run_ucb(problem):
         Q[a] = r
         #alt.: Q[a] = Q[a] + (1/action_cnt[a]) * (r - Q[a])
   
-    # PARTE 2: realiza os passos restantes de maneira similar ao epsilon-greedy
-    # mas escolhe a ação de forma diferente
+    # PARTE 2: realiza os passos restantes atualizando Q de maneira similar 
+    # ao epsilon-greedy mas escolhe a ação de modo diferente
     while not done:
-        # argumento do argmax: operações aritméticas em arrays, que resultam em um array de tamanho "num_actions"
+        # no parametro do argmax: operações aritméticas em arrays, que resultam em um array de tamanho "num_actions"
         a = np.argmax( Q + np.sqrt(2.0 * np.log(total_steps) / action_cnt) )
         
-        r, done = problem.step(a)
+        r, done = env.step(a)
         total_steps += 1
         reward_per_step.append(r)
 

@@ -13,7 +13,7 @@ def run_epsilon_greedy(env, epsilon):
 
     env.reset()
 
-    reward_per_step = []    # recompensa recebida a cada passo
+    reward_per_step = []    # recompensas recebidas a cada passo
     done = False
 
     while not done:
@@ -21,6 +21,7 @@ def run_epsilon_greedy(env, epsilon):
         # se ele ficar abaixo de "epsilon", faz ação aleatória
         if (np.random.random() <= epsilon):
             a = np.random.randint(num_actions)
+            #a = np.random.choice(num_actions)
         else:
             a = np.argmax(Q)
         
@@ -32,8 +33,9 @@ def run_epsilon_greedy(env, epsilon):
         action_cnt[a] += 1
 
         # atualiza a recompensa média da ação
-        Q[a] = ((action_cnt[a]-1)*Q[a] + r) / action_cnt[a]
-        #Q[a] = Q[a] + (1/action_cnt[a]) * (r - Q[a])
+        delta = r - Q[a]
+        Q[a] += (1/action_cnt[a]) * delta
+        # alternativa equivalente: Q[a] = ((action_cnt[a]-1)*Q[a] + r) / action_cnt[a]
 
     return reward_per_step, Q
 
@@ -46,8 +48,8 @@ if __name__ == '__main__':
     rewards, _ = run_epsilon_greedy(mab_problem, 0.1)
     print(f"Eps-greedy (0.1) - soma de recompensas:", sum(rewards))
 
-    #rewards, _ = run_epsilon_greedy(mab_problem, 0.2)
-    #print(f"Eps-greedy (0.2) - soma de recompensas:", sum(rewards))
+    rewards, _ = run_epsilon_greedy(mab_problem, 0.4)
+    print(f"Eps-greedy (0.4) - soma de recompensas:", sum(rewards))
 
-    #rewards, _ = run_epsilon_greedy(mab_problem, 0.01)
-    #print(f"Eps-greedy (0.01) - soma de recompensas:", sum(rewards))
+    rewards, _ = run_epsilon_greedy(mab_problem, 0.01)
+    print(f"Eps-greedy (0.01) - soma de recompensas:", sum(rewards))
