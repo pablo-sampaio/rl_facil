@@ -45,7 +45,7 @@ def plot_results(results, max_value):
 
 
 def repeated_exec(executions, alg_name, algorithm, *args):
-    result_file_name = f"2_ma_bandits/results/{alg_name}-execs{executions}.npy"
+    result_file_name = f"cap02_bandits/results/{alg_name}-execs{executions}.npy"
     if os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
