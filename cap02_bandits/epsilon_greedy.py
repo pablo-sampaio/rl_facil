@@ -8,8 +8,8 @@ def run_epsilon_greedy(env, epsilon):
     num_actions = env.get_num_actions()
 
     # estatisticas por ação
-    Q = [0.0] * num_actions          # recompensa média (esperada) por ação
-    action_cnt  = [0] * num_actions  # quantas vezes cada ação foi realizada
+    Q = [0.0 for i in range(num_actions)]          # recompensa média (esperada) por ação
+    action_cnt  = [0 for i in range(num_actions)]  # quantas vezes cada ação foi realizada
 
     env.reset()
 

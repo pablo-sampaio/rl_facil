@@ -2,14 +2,16 @@
 
 Repositório criado com propósitos didáticos, contendo códigos de exemplo de Reinforcement Learning (RL) em Python com explicações em português.
 
-# Pasta "1_ambientes"
+Abaixo, damos uma explicação do conteúdo das pastas, que estão organizadas como se fossem capítulos.
+
+# Cap. 1 - Ambientes
 Nesta pasta, vocês encontram códigos que mostram como executar e como tentar resolver manualmente alguns ambientes do "gym".
 
 Vejam o vídeo da aula 2.
 
-# Pasta "2_ma_bandits"
+# Cap. 2 - Problema dos Multi-Armed Bandits (Caça-Níqueis)
 Aqui, vocês encontram códigos que implementam versões do "Multi-armed Bandit Problem" de maneira parecida com os ambientes "gym"
-e também implementa alguns algoritmos.
+e também implementações de alguns algoritmos.
 
 Ambientes:
 - SimpleMultiarmedBandit - recompensas têm valor 0 ou 1, com certa probabilidade distinta por ação
@@ -22,4 +24,16 @@ Soluções:
   - a melhor média de recompensa da ação (Q), 
   - com um termo que valoriza ações pouco executadas (para explorar)
 
+# Cap. 3 - Processos de Decisão de Markov (MDPs)
+Alguns códigos Python e notebooks Jupyter explicando MDPs e ilustrando conceitos sobre eles usando o gym.
+Basicamente, cada ambiente do "gym" pode ser visto como um MDP (ou quase isso).
 
+Em especial, ilustramos esses conceitos:
+- Trajetória - são os detalhes de um episódio
+- Retorno (descontado) - é a soma das recompensas, que pode ter os valores futuros atenuados progressivamente
+- Política - recebe um estado e decide a próxima ação a ser executada
+
+Com base nisso, introduzimos os conceitos de funções de valor (V e Q) associadas a uma política, em um MDP/ambiente.
+
+# Cap. 4 - Métodos Baseados em Q
+Implementações de algoritmos de aprendizagem por reforço usando Q.

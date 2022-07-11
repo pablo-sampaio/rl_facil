@@ -11,7 +11,7 @@ import numpy as np
 #import sys
 #sys.path.insert(0, '..')
 
-from wrappers import save_rewards_plot, test_Q_policy
+from wrappers import save_rewards_plot, test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
@@ -93,7 +93,7 @@ if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
-    EPISODES = 4000
+    EPISODES = 3000
     GAMMA = 0.95
     EPSILON = 0.1
 
@@ -103,9 +103,9 @@ if __name__ == "__main__":
     Qtable, rewards = run_montecarlo(env, EPISODES, GAMMA, EPSILON, render=False)
 
     # Save a file containing a graph episodes x rewards
-    filename = f"results/mc-every-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
+    filename = f"results/montecarlo-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
     save_rewards_plot(rewards, r_max_plot, filename)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    test_Q_policy(env, Qtable, 10, True)
+    test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

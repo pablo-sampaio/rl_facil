@@ -5,7 +5,7 @@ import numpy as np
 class SimpleMultiArmedBandit :
     '''
     Implementação do chamado "Binary multi-armed bandit" or "Bernoulli multi-armed bandit".
-    Cada ação tem uma probabilidade distinta de dar uma recompensa.
+    Cada ação tem uma probabilidade distinta de dar uma recompensa 1.0.
     A recompensa é sempre unitária.
     '''
 
@@ -40,9 +40,9 @@ class SimpleMultiArmedBandit :
 class GaussianMultiArmedBandit :
     '''
     Implementação do problema que considera uma distribuição normal (gaussiana) das recompensas.
-    Cada ação dá recompensans não-nulas com frequência (com casas decimais).
-    A recompensa segue um distribuição de probabilidade normal/gaussina, com uma média específica
-    (da ação) e com variância 1,0.
+    Cada ação dá (quase) sempre alguma recompensa não-nula.
+    As recompensas seguem um distribuição de probabilidade normal/gaussina, 
+    com uma média específica para cada ação e com variância 1,0.
     '''
     def __init__(self, actions_mean_reward=[0.1, 0.5], max_steps=4000):
         self.num_arms = len(actions_mean_reward)
@@ -73,10 +73,12 @@ class GaussianMultiArmedBandit :
 
 
 if __name__ == '__main__':
+    max_steps = 50
+
     print("Versão simples")
-    env1 = SimpleMultiArmedBandit(max_steps=10)
+    env1 = SimpleMultiArmedBandit(max_steps=max_steps)
     done = False
-    actions = [1, 0] * 5
+    actions = [1, 0] * (max_steps // 2)
     while not done:
         a = actions.pop()
         r, done = env1.step(a)
@@ -86,7 +88,7 @@ if __name__ == '__main__':
     print("Versão gaussiana")
     env2 = GaussianMultiArmedBandit(max_steps=10)
     done = False
-    actions = [1, 0] * 5
+    actions = [1, 0] * (max_steps // 2)
     while not done:
         a = actions.pop()
         r, done = env2.step(a)

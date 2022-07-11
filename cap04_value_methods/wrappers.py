@@ -5,16 +5,20 @@ import gym
 import matplotlib.pyplot as plt
 
 
-def test_Q_policy(env, Q, num_episodes=100, render=False):
+def test_greedy_Q_policy(env, Q, num_episodes=100, render=False):
     """
-    Evaluate a policy (typically, a RL trained agent)
-    :param env: o ambiente
-    :param Q: a Q-table (tabela Q) que será usada como uma política gulosa (com a = argmax(Q[obs]))
-    :param num_episodes: (int) quantidade de episódios
-    :param render: defina como True se deseja chamar env.render() a cada passo
-    :return: (tuple) recompensa média por episódio e a lista de recompensas acumuladas de todos os episódios
+    Avalia a política gulosa (greedy) definida implicitamente por uma Q-table.
+    Ou seja, executa, em todo estado s, a ação "a = argmax Q(s,a)".
+    - env: o ambiente
+    - Q: a Q-table (tabela Q) que será usada
+    - num_episodes: quantidade de episódios a serem executados
+    - render: defina como True se deseja chamar env.render() a cada passo
+    
+    Retorna:
+    - um par contendo o valor escalar do retorno médio por episódio e 
+       a lista de retornos de todos os episódios
     """
-    episode_rewards = []
+    episode_returns = []
     total_steps = 0
     for i in range(num_episodes):
         obs = env.reset()
@@ -22,7 +26,7 @@ def test_Q_policy(env, Q, num_episodes=100, render=False):
             env.render()
             time.sleep(0.02)
         done = False
-        episode_rewards.append(0.0)
+        episode_returns.append(0.0)
         while not done:
             action = np.argmax(Q[obs])
             obs, reward, done, _ = env.step(action)
@@ -30,13 +34,13 @@ def test_Q_policy(env, Q, num_episodes=100, render=False):
                 env.render(mode="ansi")
                 time.sleep(0.02)
             total_steps += 1
-            episode_rewards[-1] += reward
+            episode_returns[-1] += reward
 
-    mean_reward = round(np.mean(episode_rewards), 1)
-    print("Mean reward:", mean_reward, end="")
-    print(", Num episodes:", len(episode_rewards), end="")
-    print(", Num steps:", total_steps)
-    return mean_reward, episode_rewards
+    mean_return = round(np.mean(episode_returns), 1)
+    print("Retorno médio (por episódio):", mean_return, end="")
+    print(", episódios:", len(episode_returns), end="")
+    print(", total de passos:", total_steps)
+    return mean_return, episode_returns
 
 
 def save_rewards_plot(rewards, ymax_suggested, filename):
