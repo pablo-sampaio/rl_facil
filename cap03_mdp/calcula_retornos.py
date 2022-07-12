@@ -19,7 +19,7 @@ done = False
 
 # atenção: o correto seria ir até o fim...
 for i in range(0,TOTAL_STEPS):
-    #env.render()
+    env.render()
     action = env.action_space.sample()
 
     next_obs, reward, done, info = env.step(action)
@@ -29,7 +29,8 @@ for i in range(0,TOTAL_STEPS):
     obs = next_obs
     time.sleep(0.1)
 
-trajectory.append( (obs, None, None) )
+# poderia adicionar este para guardar o estado final, mas não será útil
+#trajectory.append( (obs, None, None) )
 env.close()
 
 print("(STATE, ACTION, REWARD)")
@@ -44,11 +45,11 @@ for (s, a, r) in reversed(trajectory):
 print(G)
 
 
-# calcula os retornos a cada passo (G_i, para cada i=0...n) do episódio completo
-G = 0.0
-all_Gs = [ G ]
-for (s, a, r) in reversed(trajectory):   
-    G = r + GAMMA*G
-    all_Gs.insert(0, G)
+# calcula os retornos a cada passo (G_t, para cada t=0...n) do episódio
+Gt = 0.0
+all_Gts = [ Gt ]
+for (s, a, r) in reversed(trajectory): 
+    Gt = r + GAMMA*Gt
+    all_Gts.insert(0, Gt)
 
-print(all_Gs)
+print(all_Gts)
