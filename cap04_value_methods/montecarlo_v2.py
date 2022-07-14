@@ -8,10 +8,8 @@
 import gym
 import numpy as np
 
-#import sys
-#sys.path.insert(0, '..')
-
-from wrappers import save_rewards_plot, test_greedy_Q_policy
+from util_plot import save_rewards_plot
+from util_experiments import test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores

@@ -1,9 +1,6 @@
-
-# The Monte-Carlo dual to Q-learning/SARSA
-# References: 
-# - Book by Sutton & Barto, chapter 5
-# - Lazy programmer's implementation
-# - https://www.analyticsvidhya.com/blog/2018/11/reinforcement-learning-introduction-monte-carlo-learning-openai-gym/
+# A Q-Learning implementation
+# Referencia: 
+# - https://towardsdatascience.com/getting-started-with-reinforcement-learning-and-open-ai-gym-c289aca874f
 
 import gym
 import numpy as np
@@ -18,38 +15,37 @@ def choose_action(Q, state, num_actions, epsilon):
     if np.random.random() < epsilon:
         return np.random.randint(0, num_actions)
     else:
-        return np.argmax(Q[state])
+        return np.argmax(Q[state])   # alt. para aleatorizar empates: np.random.choice(np.where(b == bmax)[0])
 
 
-# Algoritmo Monte-Carlo de Controle, variante "toda-visita".
+# Algoritmo Q-learning, online learning (TD-learning)
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
-    # assert?
+def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+    assert isinstance(env.observation_space, gym.spaces.Discrete)
+    assert isinstance(env.action_space, gym.spaces.Discrete)
+
     num_actions = env.action_space.n
     
-    # dicionário com todos os retornos descontados, para cada par (estado,ação)
-    returns_history = dict()
-
-    # inicializa a tabela Q toda com zero,
+    # inicializa a tabela Q com valores aleatórios de -1.0 a 0.0
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    Q = np.random.uniform(low = -1.0, high = 0.0, 
+                          size = (env.observation_space.n, num_actions))
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
     sum_rewards_per_ep = []
-
+    
     # loop principal
     for i in range(episodes):
         done = False
         sum_rewards, reward = 0, 0
-        ep_trajectory = []
         
         state = env.reset()
     
-        # PARTE 1: executa um episódio completo
+        # executa 1 episódio completo, fazendo atualizações na Q-table
         while done != True:   
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            #if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
-            #    env.render()
+            if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
+                env.render()
                 
             # escolhe a próxima ação -- usa epsilon-greedy
             action = choose_action(Q, state, num_actions, epsilon)
@@ -57,33 +53,27 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, done, _ = env.step(action)
             
-            # adiciona a tripla que representa este passo
-            ep_trajectory.append( (state, action, reward) )
+            if done: 
+                V_next_state = 0   # para estados terminais
+            else:
+                V_next_state = np.max(Q[next_state])  # para estado não-terminal -- valor da melhor ação naquele estado
+
+            # atualiza a Q-table
+            # delta = estimativa usando a nova recompensa - valor antigo
+            delta = (reward + gamma * V_next_state) - Q[state,action]
+            Q[state,action] = Q[state,action] + lr * delta
             
             sum_rewards += reward
             state = next_state
-        
-        sum_rewards_per_ep.append(sum_rewards)
 
+        #epsilon = np.exp(-0.005*i)
+
+        sum_rewards_per_ep.append(sum_rewards)
+        
         # a cada 100 episódios, imprime informação sobre o progresso 
         if (i+1) % 100 == 0:
             avg_reward = np.mean(sum_rewards_per_ep[-100:])
             print(f"Episode {i+1} Average Reward (last 100): {avg_reward:.3f}")
-
-        # PARTE 2: atualiza Q (e a política, implicitamente)
-        Gt = 0
-        for (s, a, r) in reversed(ep_trajectory):
-            Gt = r + gamma*Gt
-            
-            if returns_history.get((s,a)) is not None:
-                returns_history[s,a].append(Gt)
-            else:
-                returns_history[s,a] = [ Gt ]
-            
-            # média entre todas as ocorrências de (s,a) encontradas nos episódios
-            #Q[s,a] = np.mean(returns_history[s,a]) # LENTO! -> vamos melhorar
-            delta = Gt - Q[s,a]
-            Q[s,a] = Q[s,a] + (1/len(returns_history[s,a])) * delta
 
     return sum_rewards_per_ep, Q
 
@@ -93,18 +83,19 @@ if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
-    EPISODES = 3000
+    EPISODES = 30000
+    LR = 0.01
     GAMMA = 0.95
     EPSILON = 0.1
 
     env = gym.make(ENV_NAME)
     
-    # Roda o algoritmo Monte-Carlo para o problema de controle (ou seja, para achar a política ótima)
-    rewards, Qtable = run_montecarlo1(env, EPISODES, GAMMA, EPSILON, render=False)
+    # Roda o algoritmo Q-Learning
+    rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Salva um arquivo com o gráfico de passos x retornos (não descontados)
-    filename = f"results/montecarlo1-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
+    filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
     save_rewards_plot(rewards, r_max_plot, filename)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
