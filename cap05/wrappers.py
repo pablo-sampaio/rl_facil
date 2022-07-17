@@ -28,11 +28,41 @@ class GeneralDiscretizer:
 
 
 class DiscreteObservationWrapper(gym.ObservationWrapper):
+    '''Classe para converter espaços contínuos em espaços discretos.
+
+    Esta classe converte ambientes de observações (estados) contínuos em ambientes de estados
+    discretos. Especificamente, ele converte representações dadas na forma de array de valores float
+    em um único inteiro $\leq$ não-negativo (>=0).
+    
+    Precisa passar para o construtor uma lista que informa em quantos "bins" vai ser discretizada 
+    cada dimensão (ou seja, cada valor float) do espaço de estados original.
+    '''
+    
     def __init__(self, env, BINS_PER_DIMENSION):
         super().__init__(env)
-        # Create a state discretizer, to turn float/real values into natural values
+        # cria um GeneralDiscretizer para converter um array de valores float em um único inteiro >= 0
+        # precisa dizer em quantos "bins" vai ser discretizada cada dimensão
         self.discretizer = GeneralDiscretizer(env, BINS_PER_DIMENSION)
         self._observation_space = gym.spaces.Discrete(self.discretizer.get_total_bins())
 
     def observation(self, obs):
         return self.discretizer.to_single_bin(obs)
+
+
+
+class PunishEarlyStop(gym.Wrapper):
+    '''Esta classe altera as recompensas para acrescentar uma "punição" para episódios curtos.
+
+    Ela é útil para episódios em que o objetivo é realizar uma tarefa pelo máximo de tempo,
+    como é o caso do CartPole.
+    '''
+
+    def __init__(self, env):
+        super().__init__(env)
+    
+    def step(self, action):
+        obs, reward, done, info = self.env.step(action)
+        # if ended because the pole fell down
+        if done and self.env._elapsed_steps < self.env._max_episode_steps:
+            reward = -100
+        return obs, reward, done, info

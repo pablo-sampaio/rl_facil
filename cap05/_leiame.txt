@@ -1,0 +1,27 @@
+
+A maneira mais fácil de rodar os arquivos desta pasta é copiando-os e colando-os na pasta "cap04".
+
+---
+
+Ou então, fazendo uma complexa "gambiarra", assim:
+
+1) Colocando este códio no início dos arquivos desta pasta (cap05):
+
+import sys
+from os import path
+curr_directory = path.dirname( path.abspath(__file__) )
+sys.path.append( path.dirname(  curr_directory ) )
+
+2) Importando as funções do cap04 assim:
+
+from cap04.util_plot import save_rewards_plot
+from cap04.expected_sarsa import run_expected_sarsa
+
+3) Modificando os arquivos do cap04 para fazer imports relativos. Por exemplo:
+
+  - onde houver
+  from util_plot import save_rewards_plot
+  
+  - usar 
+  from .util_plot import save_rewards_plot
+

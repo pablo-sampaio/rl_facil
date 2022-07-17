@@ -4,46 +4,52 @@ import numpy as np
 from util_plot import save_rewards_plot
 from util_experiments import test_greedy_Q_policy
 
-
+# esta função pode ser usada para converter um array "x" de valores
+# numéricos quaisquer em probabilidades
 def softmax(x):
     x = x - np.max(x)
     x = np.exp(x)
     x = x / np.sum(x)
     return x
 
-# choose action from a Q-table, with a softmax strategy
-# attention: state must be converted (discretized) to "single bin"
-def softmax_policy(Q, state_num):
-    probs = softmax(Q[state_num])
+# escolhe uma ação da Q-table usando uma estratégia softmax
+def softmax_policy(Q, state):
+    probs = softmax(Q[state])
     return np.random.choice(len(probs), p=probs)
 
-# choose action from a Q-table, with a variant of epsilon-greedy strategy
-# attention: state must be converted (discretized) to "single bin"
-def epsilon_greedy_probs(Q, state_num, num_actions, epsilon):
-    q_max = np.max(Q[state_num, :])
+# define as probabilidades de escolher uma ação usando uma estratégia epsilon-greedy
+# um pouco mais detalhada (que considera os empates no valor máximo de Q)
+def epsilon_greedy_probs(Q, state, num_actions, epsilon):
+    # probabilidade que todas as ações têm de ser escolhidas nas decisões exploratórias (não-gulosas)
+    non_greedy_action_probability = epsilon / num_actions
+
+    # conta quantas ações estão empatadas com o valor máximo de Q neste estado
+    q_max = np.max(Q[state, :])
     greedy_actions = 0
     for i in range(num_actions):
-        if Q[state_num][i] == q_max:
+        if Q[state][i] == q_max:
             greedy_actions += 1
     
-    non_greedy_action_probability = epsilon / num_actions
+    # probabilidade de cada ação empatada com Q máximo: 
+    # probabilidade de ser escolhida de forma gulosa (greedy) + probabilidade de ser escolhida de forma exploratória
     greedy_action_probability = ((1 - epsilon) / greedy_actions) + non_greedy_action_probability
 
+    # prepara a lista de probabilidades: cada índice tem a probabilidade da ação daquele índice
     probs = []
     for i in range(num_actions):
-        if Q[state_num][i] == q_max:
+        if Q[state][i] == q_max:
             probs.append(greedy_action_probability)
         else:
             probs.append(non_greedy_action_probability)
     return probs
 
-def epsilon_greedy_policy(Q, state_num, epsilon=0.1):
-    num_actions = len(Q[state_num])
-    probs = epsilon_greedy_probs(Q, state_num, num_actions, epsilon)
+def epsilon_greedy_policy(Q, state, epsilon=0.1):
+    num_actions = len(Q[state])
+    probs = epsilon_greedy_probs(Q, state, num_actions, epsilon)
     return np.random.choice(num_actions, p=probs)
 
 
-# Expected-SARSA algorithm
+# Algoritmo Expected-SARSA
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
 def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
@@ -64,19 +70,19 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
         done = False
         sum_rewards, reward = 0, 0
         
-        state = env.reset()  # resets and gets the initial state
+        state = env.reset()
     
-        # This loop runs an entire episode
-        while done != True:
-            # Render environment for the final 5 episodes, and on each 1000 episodes
+        # executa 1 episódio completo, fazendo atualizações na Q-table
+        while not done:
+            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()
             
-            # Determine next action
+            # escolhe a próxima ação -- usa epsilon-greedy
             action = epsilon_greedy_policy(Q, state, epsilon)
             #action = softmax_policy(Q, state)  # bad results!
 
-            # Do a step, then get next state and reward
+            # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, done, _ = env.step(action)
 
             if done: 
@@ -89,7 +95,7 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
                 V_next_state = np.sum( p_next_actions * Q[next_state] ) 
 
             # atualiza a Q-table
-            # delta = estimativa usando a nova recompensa - valor antigo
+            # delta = (estimativa usando a nova recompensa) - estimativa antiga
             delta = (reward + gamma * V_next_state) - Q[state,action]
             Q[state,action] = Q[state,action] + lr * delta
             

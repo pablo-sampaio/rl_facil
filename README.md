@@ -33,7 +33,22 @@ Em especial, ilustramos esses conceitos:
 - Retorno (descontado) - é a soma das recompensas, que pode ter os valores futuros atenuados progressivamente
 - Política - recebe um estado e decide a próxima ação a ser executada
 
-Com base nisso, introduzimos os conceitos de funções de valor (V e Q) associadas a uma política, em um MDP/ambiente.
+Com base nisso, introduzimos os conceitos de funções de valor ($V$ e $Q$) associadas a uma política, em um MDP/ambiente.
 
-# Cap. 4 - Métodos Baseados em Q
-Implementações de algoritmos de aprendizagem por reforço usando Q.
+# Cap. 4 - Métodos Baseados em Q-Table
+
+Implementações de algoritmos de aprendizagem por reforço que são baseados em estimativas da função $Q$ (valor estado-ação)
+representadas na forma de tabela (array bidimensional ou similar), que costuma ser chamada *Q-Table8.
+
+Foram implementados os algoritmos:
+- *Monte-Carlo Control* - gera episódios inteiros, para atualizar Q (método on-policy, com leve toque offline)
+- *Q-Learning* - atualiza a cada passo, roda uma polítiva epsilon-greedy, mas atualiza como greedy (off-policy, online)
+- *Expected-SARSA*  - atualiza a cada passo roda uma polítiva epsilon-greedy e atualiza coerentemente (on-policy, online)
+
+
+# Cap. 5 - Técnicas Auxiliares
+
+Veremos como implementar técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
+- Como lidar com ambientes contínuos
+- Como otimizar os (muitos) parâmetros
+

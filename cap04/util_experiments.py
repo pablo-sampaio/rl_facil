@@ -54,7 +54,6 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False):
             obs, reward, done, _ = env.step(action)
             if render:
                 env.render(mode="ansi")
-                time.sleep(0.02)
             total_steps += 1
             episode_returns[-1] += reward
 

@@ -5,8 +5,8 @@
 import gym
 import numpy as np
 
-from util_plot import save_rewards_plot
-from util_experiments import test_greedy_Q_policy
+from .util_plot import save_rewards_plot
+from .util_experiments import test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
@@ -42,7 +42,7 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         state = env.reset()
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
-        while done != True:   
+        while not done: 
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()
@@ -54,12 +54,14 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
             next_state, reward, done, _ = env.step(action)
             
             if done: 
-                V_next_state = 0   # para estados terminais
+                # para estados terminais
+                V_next_state = 0
             else:
-                V_next_state = np.max(Q[next_state])  # para estado não-terminal -- valor da melhor ação naquele estado
+                # para estados não-terminais -- valor máximo (melhor ação)
+                V_next_state = np.max(Q[next_state])
 
             # atualiza a Q-table
-            # delta = estimativa usando a nova recompensa - valor antigo
+            # delta = (estimativa usando a nova recompensa) - estimativa antiga
             delta = (reward + gamma * V_next_state) - Q[state,action]
             Q[state,action] = Q[state,action] + lr * delta
             
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Salva um arquivo com o gráfico de passos x retornos (não descontados)
+    # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
     filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
     save_rewards_plot(rewards, r_max_plot, filename)
 
