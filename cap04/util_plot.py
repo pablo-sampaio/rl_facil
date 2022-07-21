@@ -1,29 +1,38 @@
 import time
 
 import numpy as np
-import gym
 import matplotlib.pyplot as plt
 
 
-def save_rewards_plot(rewards, ymax_suggested, filename):
+def plot_returns(returns, ymax_suggested, filename=None):
+    '''Exibe um gráfico "retornos x recompensas", fazendo a média a cada 100 retornos,
+    para suavizar. 
+    
+    Se o parâmetro filename for fornecido, salva o gráfico em arquivo ao invés de exibir.
+    '''
     # alternative: a moving average
-    avg_every100 = [np.mean(rewards[i:i+100])
-                    for i in range(0, len(rewards), 100)]
-    plt.plot(range(1, len(rewards)+1, 100), avg_every100)
-    plt.xlabel('Episodes')
-    plt.ylabel('Average Reward')
+    avg_every100 = [np.mean(returns[i:i+100])
+                    for i in range(0, len(returns), 100)]
+    xvalues = np.arange(1, len(avg_every100)+1) * 100
+    plt.plot(xvalues, avg_every100)
+    plt.xlabel('Episódios')
+    plt.ylabel('Retorno médio')
     ymax = np.max([ymax_suggested, np.max(avg_every100)])
     plt.ylim(top=ymax)
-    plt.title('Average Reward vs Episodes')
-    plt.savefig(filename)
-    print("Arquivo salvo:", filename)
+    plt.title('Retorno médio a cada 100 episódios')
+    if filename is None:
+        plt.show()
+        print("Nenhum arquivo salvo.")
+    else:
+        plt.savefig(filename)
+        print("Arquivo salvo:", filename)
     plt.close()
 
 
 def moving_average(x, w):
     return np.convolve(x, np.ones(w), 'valid') / w
 
-def plot_results(results, cumulative=False, x_log_scale=False):
+def plot_multiple_results(results, cumulative=False, x_log_scale=False):
     total_steps = len(results[0][1])  # no primeiro resultado (#0), pega o tamanho do array de recompensas, que fica na segunda posição (#1)
 
     if not cumulative:

@@ -37,27 +37,26 @@ def plot_results(results, max_value):
         print("Summary for " + alg_name)
         print(" - total reward:", rewards.sum())
         print(" - avg reward (win rate):", rewards.sum() / total_steps)
-        print(" - extra info (algorithm-dependent):")
-        print(exec_info)
+        #print(" - extra info (algorithm-dependent):")
+        #print(exec_info)
         print()
 
     return
 
 
-def repeated_exec(executions, alg_name, algorithm, *args):
-    result_file_name = f"cap02_bandits/results/{alg_name}-execs{executions}.npy"
+def repeated_exec(executions, alg_name, algorithm, env, *args):
+    result_file_name = f"results/{env}-{alg_name}-execs{executions}.npy"
     if os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
-    env = args[0]
     num_steps = env.get_max_steps()
     rewards = np.zeros(shape=(executions, num_steps))
     alg_infos = np.empty(shape=(executions,), dtype=object)
     t = time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        rewards[i], alg_infos[i] = algorithm(*args)
+        rewards[i], alg_infos[i] = algorithm(env, *args)
     t = time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
     RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)

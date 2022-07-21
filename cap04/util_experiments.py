@@ -13,7 +13,6 @@ def repeated_exec(executions, alg_name, algorithm, env, num_steps, *args):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
-    #num_steps = args[1]
     rewards = np.zeros(shape=(executions, num_steps))
     alg_infos = np.empty(shape=(executions,), dtype=object)
     t = time.time()

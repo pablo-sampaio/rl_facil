@@ -5,8 +5,8 @@
 import gym
 import numpy as np
 
-from .util_plot import save_rewards_plot
-from .util_experiments import test_greedy_Q_policy
+from util_plot import plot_returns
+from util_experiments import test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
@@ -85,7 +85,7 @@ if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
-    EPISODES = 30000
+    EPISODES = 20000
     LR = 0.01
     GAMMA = 0.95
     EPSILON = 0.1
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
     filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    save_rewards_plot(rewards, r_max_plot, filename)
+    plot_returns(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

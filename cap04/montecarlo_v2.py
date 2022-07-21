@@ -8,7 +8,7 @@
 import gym
 import numpy as np
 
-from util_plot import save_rewards_plot
+from util_plot import plot_returns
 from util_experiments import test_greedy_Q_policy
 
 
@@ -84,7 +84,7 @@ if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
-    EPISODES = 30000
+    EPISODES = 20000
     LR = 0.01
     GAMMA = 0.95
     EPSILON = 0.1
@@ -95,9 +95,10 @@ if __name__ == "__main__":
     rewards, Qtable = run_montecarlo2(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Salva um arquivo com o gráfico de passos x retornos (não descontados)
-    filename = f"results/montecarlo2-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    save_rewards_plot(rewards, r_max_plot, filename)
+    # Mostra um gráfico de episódios x retornos (não descontados)
+    # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
+    filename = f"results/montecarlo2-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
+    plot_returns(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

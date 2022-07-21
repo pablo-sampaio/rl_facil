@@ -8,7 +8,7 @@ from ucb import run_ucb
 
 
 
-EXECUTIONS = 50
+EXECUTIONS = 10
 
 BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
 enviroment = SimpleMultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)

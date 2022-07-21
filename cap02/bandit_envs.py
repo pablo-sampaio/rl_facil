@@ -35,6 +35,9 @@ class SimpleMultiArmedBandit :
     
     def get_max_steps(self):
         return self.max_steps
+    
+    def __repr__(self):
+        return f"SimpleBandit{self.arms_prob}"
 
 
 class GaussianMultiArmedBandit :
@@ -69,6 +72,9 @@ class GaussianMultiArmedBandit :
     
     def get_max_steps(self):
         return self.max_steps
+    
+    def __repr__(self):
+        return f"GaussianBandit{self.arms_means}"
 
 
 

@@ -8,8 +8,8 @@
 import gym
 import numpy as np
 
-from .util_plot import save_rewards_plot
-from .util_experiments import test_greedy_Q_policy
+from util_plot import plot_returns
+from util_experiments import test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
@@ -103,9 +103,10 @@ if __name__ == "__main__":
     rewards, Qtable = run_montecarlo1(env, EPISODES, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Salva um arquivo com o gráfico de passos x retornos (não descontados)
+    # Mostra um gráfico de episódios x retornos (não descontados)
+    # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
     filename = f"results/montecarlo1-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
-    save_rewards_plot(rewards, r_max_plot, filename)
+    plot_returns(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

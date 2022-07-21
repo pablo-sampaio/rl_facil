@@ -50,5 +50,5 @@ Foram implementados os algoritmos:
 
 Veremos como implementar técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
 - Como lidar com ambientes contínuos
-- Como otimizar os (muitos) parâmetros
+- Como otimizar os (muitos) parâmetros dos algoritmos e da discretização
 

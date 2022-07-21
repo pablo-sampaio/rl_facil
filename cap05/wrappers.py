@@ -43,7 +43,7 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
         # cria um GeneralDiscretizer para converter um array de valores float em um único inteiro >= 0
         # precisa dizer em quantos "bins" vai ser discretizada cada dimensão
         self.discretizer = GeneralDiscretizer(env, BINS_PER_DIMENSION)
-        self._observation_space = gym.spaces.Discrete(self.discretizer.get_total_bins())
+        self.observation_space = gym.spaces.Discrete(self.discretizer.get_total_bins())
 
     def observation(self, obs):
         return self.discretizer.to_single_bin(obs)
