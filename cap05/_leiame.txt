@@ -3,9 +3,16 @@ A maneira mais fácil de rodar os arquivos desta pasta é copiando-os e colando-
 
 ---
 
-Ou então, fazendo uma complexa "gambiarra", assim:
+Alternativamente, você pode abrir o notebook principal no Colab, que ele configura tudo para rodar por lá!
+Você pode abrir diretamente por este link:
 
-1) Colocando este códio no início dos arquivos desta pasta (cap05):
+https://colab.research.google.com/github/pablo-sampaio/rl_facil/blob/main/cap05/Cap05_Main.ipynb
+
+---
+
+Ou então, fazendo uma complexa "gambiarra", assim (que não recomendo):
+
+1) Colocando este código no início dos arquivos desta pasta (cap05):
 
 import sys
 from os import path
