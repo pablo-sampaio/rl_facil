@@ -12,8 +12,8 @@ from nstep_sarsa import run_nstep_sarsa
 
 NUM_EPISODES = 12000
 
-#enviroment = gym.make("Taxi-v3")
-enviroment = gym.make("FrozenLake-v1")
+enviroment = gym.make("Taxi-v3")
+#enviroment = gym.make("FrozenLake-v1")
 
 results = []
 
@@ -28,8 +28,10 @@ results = []
 #for learning_rate in [0.1, 0.5, 1.0]:
 #    results.append( repeated_exec(1, f"Exp-SARSA (LR={learning_rate})", run_expected_sarsa, enviroment, NUM_EPISODES, learning_rate) )
 
-for lr in [0.5]:
-    for nstep in [1, 2, 3, 4]:
+for lr in [0.1, 0.5]:
+    results = []
+    for nstep in [1, 2, 3, 4, 8]:
         results.append( repeated_exec(10, f"{nstep}-step SARSA (LR={lr})", run_nstep_sarsa, enviroment, NUM_EPISODES, nstep, lr) )
-    
-plot_multiple_results(results, cumulative=False, x_log_scale=False)
+    plot_multiple_results(results, cumulative=False, x_log_scale=True)
+
+#plot_multiple_results(results, cumulative=False, x_log_scale=True)

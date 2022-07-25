@@ -33,6 +33,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                           size = (env.observation_space.n, num_actions))
 
     gamma_array = np.array([ gamma**i for i in range(0,nstep)])
+    gamma_power_nstep = gamma**nstep
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
     sum_rewards_per_ep = []
@@ -75,12 +76,12 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                     V_next_state = Q[next_state,action]
 
                 # delta = (estimativa usando a nova recompensa) - estimativa antiga
-                delta = ( sum(gamma_array*hr) + gamma**nstep * V_next_state ) - Q[hs[0],ha[0]]
+                delta = ( sum(gamma_array*hr) + gamma_power_nstep * V_next_state ) - Q[hs[0],ha[0]]
                 
                 # atualiza a Q-table para o par (estado,ação) de n passos atrás
                 Q[hs[0],ha[0]] += lr * delta
             
-            # sempre executa...
+            # sempre executa, a cada passo
             sum_rewards += reward
             state = next_state
 
@@ -108,19 +109,20 @@ if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
-    EPISODES = 20000
+    EPISODES = 10000
     LR = 0.01
     GAMMA = 0.95
     EPSILON = 0.1
+    NSTEPS = 3
 
     env = gym.make(ENV_NAME)
     
-    # Roda o algoritmo Q-Learning
-    rewards, Qtable = run_nstep_sarsa(env, EPISODES, 4, LR, GAMMA, EPSILON, render=False)
+    # Roda o algoritmo "n-step SARSA"
+    rewards, Qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
-    filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
+    filename = f"results/nstep_sarsa-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}-{NSTEPS}_steps.png"
     plot_result(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)

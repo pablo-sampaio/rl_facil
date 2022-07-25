@@ -32,7 +32,7 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
 
     Esta classe converte ambientes de observações (estados) contínuos em ambientes de estados
     discretos. Especificamente, ele converte representações dadas na forma de array de valores float
-    em um único inteiro $\leq$ não-negativo (>=0).
+    em um único inteiro $\geq$ não-negativo (>=0).
     
     Precisa passar para o construtor uma lista que informa em quantos "bins" vai ser discretizada 
     cada dimensão (ou seja, cada valor float) do espaço de estados original.
@@ -51,9 +51,10 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
 
 
 class PunishEarlyStop(gym.Wrapper):
-    '''Esta classe altera as recompensas para acrescentar uma "punição" para episódios curtos.
+    '''Esta classe altera as recompensas para acrescentar uma "punição" para episódios que
+    encerram antes do tempo máximo.
 
-    Ela é útil para episódios em que o objetivo é realizar uma tarefa pelo máximo de tempo,
+    Ela é útil para ambientes em que o objetivo é realizar uma tarefa pelo máximo de tempo,
     como é o caso do CartPole.
     '''
 
