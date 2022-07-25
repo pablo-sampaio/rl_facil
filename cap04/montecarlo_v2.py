@@ -8,7 +8,7 @@
 import gym
 import numpy as np
 
-from util_plot import plot_returns
+from util_plot import plot_result
 from util_experiments import test_greedy_Q_policy
 
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
     # Mostra um gráfico de episódios x retornos (não descontados)
     # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
     filename = f"results/montecarlo2-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
-    plot_returns(rewards, r_max_plot, None)
+    plot_result(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

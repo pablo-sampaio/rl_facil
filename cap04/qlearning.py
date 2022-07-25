@@ -5,7 +5,7 @@
 import gym
 import numpy as np
 
-from util_plot import plot_returns
+from util_plot import plot_result
 from util_experiments import test_greedy_Q_policy
 
 
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
     filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    plot_returns(rewards, r_max_plot, None)
+    plot_result(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()

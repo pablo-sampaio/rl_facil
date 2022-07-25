@@ -10,7 +10,7 @@ https://colab.research.google.com/github/pablo-sampaio/rl_facil/blob/main/cap05/
 
 ---
 
-Ou então, fazendo uma complexa "gambiarra", assim (que não recomendo):
+Ou então, fazendo uma complexa "gambiarra", assim (não recomendo):
 
 1) Colocando este código no início dos arquivos desta pasta (cap05):
 

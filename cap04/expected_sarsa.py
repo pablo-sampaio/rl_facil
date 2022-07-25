@@ -1,7 +1,7 @@
 import gym
 import numpy as np
 
-from util_plot import plot_returns
+from util_plot import plot_result
 from util_experiments import test_greedy_Q_policy
 
 # esta função pode ser usada para converter um array "x" de valores
@@ -131,7 +131,7 @@ if __name__ == "__main__":
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
     filename = f"results/expected_sarsa-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    plot_returns(returns, r_max_plot)
+    plot_result(returns, r_max_plot)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()
