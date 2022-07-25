@@ -7,6 +7,7 @@ import numpy as np
 
 from util_plot import plot_result
 from util_experiments import test_greedy_Q_policy
+from collections import deque
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
@@ -31,6 +32,8 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
     Q = np.random.uniform(low = -1.0, high = 0.0, 
                           size = (env.observation_space.n, num_actions))
 
+    gamma_array = np.array([ gamma**i for i in range(0,nstep)])
+
     # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
     sum_rewards_per_ep = []
     
@@ -42,6 +45,10 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
         state = env.reset()
         # escolhe a próxima ação -- usa epsilon-greedy
         action = choose_action(Q, state, num_actions, epsilon)
+
+        hs = deque(maxlen=nstep)
+        ha = deque(maxlen=nstep)
+        hr = deque(maxlen=nstep)
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done: 
@@ -51,22 +58,29 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                         
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, done, _ = env.step(action)
-            
-            if done: 
-                # para estados terminais
-                V_next_state = 0
-            else:
-                # escolhe a próxima ação -- usa epsilon-greedy
-                action = choose_action(Q, next_state, num_actions, epsilon)
 
-                # para estados não-terminais -- valor máximo (melhor ação)
-                V_next_state = Q[next_state,action]
-
-            # atualiza a Q-table
-            # delta = (estimativa usando a nova recompensa) - estimativa antiga
-            delta = (reward + gamma * V_next_state) - Q[state,action]
-            Q[state,action] = Q[state,action] + lr * delta
+            hs.append(state)
+            ha.append(action)
+            hr.append(reward)
             
+            if len(hs) == nstep:
+                if done: 
+                    # para estados terminais
+                    V_next_state = 0
+                else:
+                    # escolhe a próxima ação -- usa epsilon-greedy
+                    action = choose_action(Q, next_state, num_actions, epsilon)
+
+                    # para estados não-terminais -- valor máximo (melhor ação)
+                    V_next_state = Q[next_state,action]
+
+                # atualiza a Q-table
+                # delta = (estimativa usando a nova recompensa) - estimativa antiga
+                #print(hr, gamma_array, len(hr), nstep)
+                delta = (sum(gamma_array * hr) + gamma**(nstep-1) * V_next_state) - Q[hs[0],ha[0]]
+                Q[hs[0],ha[0]] += + lr * delta
+            
+            # sempre executa...
             sum_rewards += reward
             state = next_state
 
@@ -95,7 +109,7 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo Q-Learning
-    rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
+    rewards, Qtable = run_nstep_sarsa(env, EPISODES, 16, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
