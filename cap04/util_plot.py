@@ -49,23 +49,24 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
 
     if not cumulative:
         # plot all the raw returns, with x linear
-        """for (alg_name, returns, _) in results:
+        """
+        plt.figure(figsize=(14,8))
+        for (alg_name, returns, _) in results:
             plt.plot(returns, label=alg_name)
         if x_log_scale:
             plt.xscale('log')
         plt.title(f"Retorno por episódio")
         plt.legend()
-        plt.figure(figsize=(14,8))
         plt.show()"""
 
         # plot the returns smoothed by a moving average with window 100, with x linear
+        plt.figure(figsize=(14,8))
         for (alg_name, returns, _) in results:
             plt.plot(moving_average(returns,50), label=alg_name)
         if x_log_scale:
             plt.xscale('log')
         plt.title("Smoothed 100-reward")
         plt.legend()
-        plt.figure(figsize=(14,8))
         plt.show()
 
     else:

@@ -46,6 +46,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
         # escolhe a próxima ação -- usa epsilon-greedy
         action = choose_action(Q, state, num_actions, epsilon)
 
+        # históricos de: estados, ações e recompensas
         hs = deque(maxlen=nstep)
         ha = deque(maxlen=nstep)
         hr = deque(maxlen=nstep)
@@ -68,23 +69,29 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                     # para estados terminais
                     V_next_state = 0
                 else:
-                    # escolhe a próxima ação -- usa epsilon-greedy
+                    # escolhe (antecipadamente) a ação do próximo estado -- usa epsilon-greedy
                     action = choose_action(Q, next_state, num_actions, epsilon)
-
                     # para estados não-terminais -- valor máximo (melhor ação)
                     V_next_state = Q[next_state,action]
 
-                # atualiza a Q-table
                 # delta = (estimativa usando a nova recompensa) - estimativa antiga
-                #print(hr, gamma_array, len(hr), nstep)
-                delta = (sum(gamma_array * hr) + gamma**(nstep-1) * V_next_state) - Q[hs[0],ha[0]]
-                Q[hs[0],ha[0]] += + lr * delta
+                delta = ( sum(gamma_array*hr) + gamma**nstep * V_next_state ) - Q[hs[0],ha[0]]
+                
+                # atualiza a Q-table para o par (estado,ação) de n passos atrás
+                Q[hs[0],ha[0]] += lr * delta
             
             # sempre executa...
             sum_rewards += reward
             state = next_state
 
-        #epsilon = np.exp(-0.005*i)
+        # ao fim do episódio, atualiza Q dos estados que restaram no histórico
+        laststeps = len(hs) # pode ser inferior ao "nstep", em episódios muito curtos
+        for j in range(1,laststeps):
+            hs.popleft()
+            ha.popleft()
+            hr.popleft()
+            delta = ( sum(gamma_array[0:laststeps-j]*hr) + 0 ) - Q[hs[0],ha[0]]
+            Q[hs[0],ha[0]] += lr * delta
 
         sum_rewards_per_ep.append(sum_rewards)
         
@@ -109,7 +116,7 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo Q-Learning
-    rewards, Qtable = run_nstep_sarsa(env, EPISODES, 16, LR, GAMMA, EPSILON, render=False)
+    rewards, Qtable = run_nstep_sarsa(env, EPISODES, 4, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
