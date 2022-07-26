@@ -1,6 +1,4 @@
-# A Q-Learning implementation
-# Referencia: 
-# - https://towardsdatascience.com/getting-started-with-reinforcement-learning-and-open-ai-gym-c289aca874f
+# A "n-step SARSA" implementation
 
 import gym
 import numpy as np

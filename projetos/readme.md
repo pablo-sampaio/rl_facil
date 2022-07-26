@@ -56,7 +56,7 @@ Caso dos bandits em que existe um estado, que afeta nas probabilidades dos açõ
 Tenho sugestão de livro para esse problema.
 
 
-## Apresentar uma Plataforma Cloud para RL
+## Apresentar uma Plataforma Cloud para RL - Mateus Lins
 
 Apresentar as funcionalidades de Cloud para RL de alguma plataforma (GCP, AWS, Azure ou IBM) para uso comercial, etc.
 
