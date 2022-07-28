@@ -127,35 +127,3 @@ class ValueModel:
         state_tensor = torch.FloatTensor([state])
         value_tensor = self.value_net(state_tensor)
         return value_tensor.data.numpy()[0][0]  # original value: [[V]]
-
-
-class PolicyModelPGWithExploration(PolicyModelPG):
-    '''
-    Similar to PolicyModelPG, but its loss function has an extra term (entropy of the output)
-    to induce more exploration. The exploration factor should be in interval [0.0; 1.0]:
-    When it is value is 0.0, the loss function is like PolicyModelPG. A low value is recommended.
-    '''
-    def __init__(self, state_size, hidden_sizes, n_actions, lr=0.01, exploration_factor=0.1):
-        super(PolicyModelPGWithExploration, self).__init__(state_size, hidden_sizes, n_actions, lr)
-        self.expl_factor = exploration_factor
-
-    def partial_train(self, states, actions, states_vals):
-        self.optimizer.zero_grad()
-        states_v = torch.FloatTensor(states)
-        actions_v = torch.LongTensor(actions)
-        state_vals_v = torch.FloatTensor(states_vals)
-
-        logits_v = self.policy_net(states_v)
-        log_prob_v = nn.functional.log_softmax(logits_v, dim=1)
-        log_prob_actions_v = state_vals_v * log_prob_v[range(len(states)), actions_v]
-        basic_loss_v = -log_prob_actions_v.mean()
-
-        prob_v = nn.functional.softmax(logits_v, dim=1)
-        entropy_loss_v = (prob_v * log_prob_v).sum(dim=1).mean()
-        loss_v = (1.0 - self.expl_factor) * basic_loss_v + self.expl_factor * entropy_loss_v 
-        print(" - basic loss: ", basic_loss_v.item(), ", entropy loss:", entropy_loss_v.item())
-
-        loss_v.backward()
-        self.optimizer.step()
-        return loss_v.item()
-
