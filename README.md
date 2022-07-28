@@ -48,7 +48,10 @@ Foram implementados os algoritmos:
 
 # Cap. 5 - Técnicas Auxiliares
 
-Veremos como implementar técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
+Vemos como implementar técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
 - Como lidar com ambientes contínuos
 - Como otimizar os (muitos) parâmetros dos algoritmos e da discretização
 
+Também estão aqui:
+- Um notebook explicando as equações de Bellman
+- Uma extensão dos algoritmos vistos antes, para fazer atualizações usando dados de "n passos" 
