@@ -49,21 +49,3 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
         return self.discretizer.to_single_bin(obs)
 
 
-
-class PunishEarlyStop(gym.Wrapper):
-    '''Esta classe altera as recompensas para acrescentar uma "punição" para episódios que
-    encerram antes do tempo máximo.
-
-    Ela é útil para ambientes em que o objetivo é realizar uma tarefa pelo máximo de tempo,
-    como é o caso do CartPole.
-    '''
-
-    def __init__(self, env):
-        super().__init__(env)
-    
-    def step(self, action):
-        obs, reward, done, info = self.env.step(action)
-        # if ended because the pole fell down
-        if done and self.env._elapsed_steps < self.env._max_episode_steps:
-            reward = -100
-        return obs, reward, done, info

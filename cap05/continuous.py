@@ -8,7 +8,7 @@ from util_plot import plot_results
 from expected_sarsa import run_expected_sarsa
 from qlearning import run_qlearning
 
-from wrappers import DiscreteObservationWrapper, PunishEarlyStop
+from wrappers import DiscreteObservationWrapper
 
 
 if __name__ == "__main__":
