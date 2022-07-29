@@ -71,6 +71,7 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
 
     else:
         # plot cumulative average returns
+        plt.figure(figsize=(14,8))
         for (alg_name, returns, _) in results:
             cumulative_average = np.cumsum(returns) / (np.arange(1, total_steps+1))
             plt.plot(cumulative_average, label=alg_name)
@@ -78,7 +79,6 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
             plt.xscale('log')
         plt.title("Cumulative Average")
         plt.legend()
-        plt.figure(figsize=(14,8))
         plt.show()
 
     for (alg_name, returns, exec_info) in results:

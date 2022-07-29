@@ -8,7 +8,7 @@ import numpy as np
 
 class TorchMultiLayerNetwork(nn.Module):
     def __init__(self, input_dim, list_hidden_dims, output_dim, final_activ_fn=None):
-        super(TorchMultiLayerNetwork, self).__init__()
+        super().__init__()
         layers = []
         last_dim = input_dim
         for dim in list_hidden_dims:
@@ -38,7 +38,7 @@ class PolicyModelCrossentropy:
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(params=self.policy_net.parameters(), lr=lr)  # recebe os parametros da rede, para poder fazer ajustes neles
 
-    def partial_train(self, observations, target_acts):
+    def partial_fit(self, observations, target_acts):
         obs_v = torch.FloatTensor(observations)
         acts_v = torch.LongTensor(target_acts)
         self.optimizer.zero_grad()                           # zera os arrays com os gradientes associados aos parâmetros
@@ -76,7 +76,7 @@ class PolicyModelPG:
         self.optimizer = optim.Adam(params=self.policy_net.parameters(), lr=lr)
         self.softmax = nn.Softmax(dim=1)
 
-    def partial_train(self, states, actions, states_vals):
+    def partial_fit(self, states, actions, states_vals):
         self.optimizer.zero_grad()
         states_v = torch.FloatTensor(states)
         actions_v = torch.LongTensor(actions)
@@ -113,7 +113,7 @@ class ValueModel:
         self.loss_function = nn.MSELoss()
         self.optimizer = optim.Adam(params=self.value_net.parameters(), lr=lr) # inicializado com os parametros da rede
 
-    def partial_train(self, states, values):
+    def partial_fit(self, states, values):
         states_v = torch.FloatTensor(states)
         values_v = torch.FloatTensor(values)
         self.optimizer.zero_grad()  # atencao: o optimizer acessa os parametros de "policy_net" e faz os ajustes nos pesos
@@ -127,3 +127,55 @@ class ValueModel:
         state_tensor = torch.FloatTensor([state])
         value_tensor = self.value_net(state_tensor)
         return value_tensor.data.numpy()[0][0]  # original value: [[V]]
+
+
+
+def test_policy(env, policy, deterministic, num_episodes=5, render=False, videorec=None):
+    """
+    Avalia a política `policy`, usando a melhor ação sempre, de forma determinística.
+    - env: o ambiente
+    - policy: a política
+    - deterministic: `True`, se for usar o método `.best_action(obs)`; `False`, para usar `.sample_action(obs)`
+    - num_episodes: quantidade de episódios a serem executados
+    - render: defina como True se deseja chamar env.render() a cada passo
+    - video: passe uma instância de VideoRecorder (do gym), se desejar gravar
+    
+    Retorna:
+    - um par contendo o valor escalar do retorno médio por episódio e 
+       a lista de retornos de todos os episódios
+    """
+    episodes_returns = []
+    total_steps = 0
+    for i in range(num_episodes):
+        obs = env.reset()
+        if render:
+            env.render()
+        if videorec is not None:
+            videorec.capture_frame()
+        done = False
+        steps = 0
+        episodes_returns.append(0.0)
+        while not done:
+            if deterministic:
+                action = policy.best_action(obs)
+            else:
+                action = policy.sample_action(obs)
+            obs, reward, done, _ = env.step(action)
+            if render:
+                env.render()
+            if videorec is not None:
+                videorec.capture_frame()
+            total_steps += 1
+            episodes_returns[-1] += reward
+            steps += 1
+        print(f"EPISODE {i+1}")
+        print("- steps:", steps)
+        print("- return:", episodes_returns[-1])
+    mean_return = round(np.mean(episodes_returns), 1)
+    print("RESULTADO FINAL: média (por episódio):", mean_return, end="")
+    print(", episódios:", len(episodes_returns), end="")
+    print(", total de passos:", total_steps)
+    if videorec is not None:
+        videorec.close()
+    return mean_return, episodes_returns
+

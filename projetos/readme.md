@@ -23,14 +23,12 @@ Fazer uma *análise de sensibilidade* da taxa de decaimento.
 Semelhante ao anterior.
 
 
-## Aplicar em Outros Ambientes
+## Aplicar em Outros Ambientes - *Bruno* - gym-derk
 
 Adotar ambientes mais desafiadores e tentar achar uma boa solução. Existem muitos ambientes de *jogos* (Atari, Minecraft, Mario, Futebol, etc) e ambientes de *robótica*.
 
 Existem opções no gym e a internet está cheia de opções alternativas que seguem a mesma interface do gym. Veja esta lista:
 https://www.gymlibrary.ml/environments/third_party_environments/
-
-*Bruno* - gym-derk
 
 
 ## AWS Deep Racer
@@ -39,6 +37,17 @@ https://www.gymlibrary.ml/environments/third_party_environments/
 
 Mas você vai treinar especificamente para o ambiente de competição simulado criado pela Amazon:
 https://aws.amazon.com/pt/deepracer/
+
+
+## Projetos Baseados em Artigos da Comunidade
+
+Não estou falando de artigos acadêmicos, mas de artigos de experts e "curiosos" da comunidade.
+
+Existem diversos artigos interessantes que você pode tentar reproduzir e melhorar os resultados. 
+Ou apenas mudar os experimentos para mudar outros fatores.
+
+Exemplos:
+- https://towardsdatascience.com/using-deep-q-learning-in-fifa-18-to-perfect-the-art-of-free-kicks-f2e4e979ee66
 
 
 ## Refazer experimentos do livro

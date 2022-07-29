@@ -96,8 +96,8 @@ if __name__ == "__main__":
     rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
-    filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
+    # Salva em arquivo ou exibe um gráfico episódios x retornos (não descontados)
+    #filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
     plot_result(rewards, r_max_plot, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)

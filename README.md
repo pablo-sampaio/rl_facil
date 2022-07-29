@@ -55,3 +55,10 @@ Vemos como implementar técnicas que auxiliam nos algoritmos anteriores (e em al
 Também estão aqui:
 - Um notebook explicando as equações de Bellman
 - Uma extensão dos algoritmos vistos antes, para fazer atualizações usando dados de "n passos" 
+
+# Cap. 6 - Método Cross-Entropy
+
+Nesta parte, vemos um método que aprende uma política diretamente, onde a política é representada por uma rede neural.
+
+Basicamente, ele transforma um problema de RL em um problema de classificação da aprendizagem supervisionada.
+
