@@ -116,9 +116,9 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
 
 if __name__ == "__main__":
     ENV_NAME = "Taxi-v3"
-    r_max_plot = 10
+    r_max = 10
 
-    EPISODES = 3000
+    EPISODES = 12000
     LR = 0.01
     GAMMA = 0.95
     EPSILON = 0.1
@@ -129,9 +129,8 @@ if __name__ == "__main__":
     returns, Qtable = run_expected_sarsa(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
-    # Salva um arquivo com o gráfico de episódios x retornos (não descontados)
-    filename = f"results/expected_sarsa-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    plot_result(returns, r_max_plot)
+    # Mostra um gráfico de episódios x retornos (não descontados)
+    plot_result(returns, r_max, None)
 
-    test_greedy_Q_policy(env, Qtable, 10, True)
+    test_greedy_Q_policy(env, Qtable, 5, True)
     env.close()

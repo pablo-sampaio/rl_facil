@@ -26,14 +26,15 @@ def repeated_exec(executions, alg_name, algorithm, env, num_steps, *args):
     return alg_name, rewards.mean(axis=0), alg_infos
 
 
-def test_greedy_Q_policy(env, Q, num_episodes=100, render=False):
+def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01):
     """
     Avalia a política gulosa (greedy) definida implicitamente por uma Q-table.
     Ou seja, executa, em todo estado s, a ação "a = argmax Q(s,a)".
     - env: o ambiente
     - Q: a Q-table (tabela Q) que será usada
     - num_episodes: quantidade de episódios a serem executados
-    - render: defina como True se deseja chamar env.render() a cada passo
+    - render: defina como True se deseja chamar `env.render()` a cada passo
+    - render_wait: intervalo de tempo entre as chamadas a `env.render()`
     
     Retorna:
     - um par contendo o valor escalar do retorno médio por episódio e 
@@ -42,20 +43,22 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False):
     episode_returns = []
     total_steps = 0
     for i in range(num_episodes):
+        print(f"Episode {i+1}")
         obs = env.reset()
         if render:
             env.render()
-            time.sleep(0.02)
+            time.sleep(render_wait)
         done = False
         episode_returns.append(0.0)
         while not done:
             action = np.argmax(Q[obs])
             obs, reward, done, _ = env.step(action)
             if render:
-                env.render(mode="ansi")
+                env.render()
+                time.sleep(render_wait)
             total_steps += 1
             episode_returns[-1] += reward
-
+        print("- retorno:", episode_returns[-1])
     mean_return = round(np.mean(episode_returns), 1)
     print("Retorno médio (por episódio):", mean_return, end="")
     print(", episódios:", len(episode_returns), end="")

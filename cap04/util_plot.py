@@ -13,11 +13,11 @@ def plot_result(returns, ymax_suggested=None, filename=None):
     - ymax_suggested (opcional): valor máximo de retorno (eixo y), se tiver um valor máximo conhecido previamente
     - filename: indique um nome de arquivo, se quiser salvar a imagem do gráfico; senão, o gráfico será apenas exibido
     '''
-    # alternative: a moving average
+    plt.figure(figsize=(14,8))
+    # alternativa: usar moving average
     avg_every100 = [np.mean(returns[i:i+100])
                     for i in range(0, len(returns), 100)]
     xvalues = np.arange(1, len(avg_every100)+1) * 100
-    plt.figure(figsize=(14,8))
     plt.plot(xvalues, avg_every100)
     plt.xlabel('Episódios')
     plt.ylabel('Retorno médio')
@@ -62,7 +62,7 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
         # plot the returns smoothed by a moving average with window 100, with x linear
         plt.figure(figsize=(14,8))
         for (alg_name, returns, _) in results:
-            plt.plot(moving_average(returns,50), label=alg_name)
+            plt.plot(moving_average(returns,100), label=alg_name)
         if x_log_scale:
             plt.xscale('log')
         plt.title("Smoothed 100-reward")

@@ -2,6 +2,8 @@
 # Acrescentados por Pablo Sampaio
 *.npy
 *.mp4
+*.meta.json
+results/
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
