@@ -3,7 +3,8 @@ import gym
 from util_experiments import repeated_exec
 from util_plot import plot_multiple_results
 
-from crossentropy_method import run_crossentropy_method
+from crossentropy_method_v1 import run_crossentropy_method
+from crossentropy_method_v2 import run_crossentropy_method_x
 
 
 NUM_EPISODES = 1000

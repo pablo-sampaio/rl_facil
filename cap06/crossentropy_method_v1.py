@@ -44,27 +44,33 @@ def run_crossentropy_method(env, total_episodes, ep_batch_size=10, ep_selected_p
     
     all_returns = []
 
-    for epoch in range(1, total_episodes//ep_batch_size + 1):
+    episodes = 0
+    while episodes < total_episodes:
         # 1. Roda alguns episódios
         trajectories, returns = run_episodes(env, policy_model, ep_batch_size)
         all_returns.extend(returns)
+        episodes += ep_batch_size
 
         # 2. Define o retorno de corte para os melhores episódios
-        return_limit = np.percentile(returns, 100-ep_selected_proportion)
+        return_limit = np.quantile(returns, 1.0-ep_selected_proportion)
         return_mean = float(np.mean(returns))
 
         # 3. Extrai os estados e ações dos melhores episódios
         states = []
         actions = []
+        ep_selected = 0
         for i in range(len(trajectories)):
             if returns[i] >= return_limit:
+                ep_selected += 1
                 states.extend(map(lambda step: step.state, trajectories[i])) # extrai apenas o estado da lista de passos e insere na lista de treinamento
                 actions.extend(map(lambda step: step.action, trajectories[i]))   # extrai apenas o acao da lista de passos e insere na lista de treinamento
+            if ep_selected > round(ep_batch_size * ep_selected_proportion):
+                break
 
         # 4. Treina o modelo para reforcar o mapeamento estado-ação
         p_loss = policy_model.partial_fit(states, actions)
  
-        print("- episode %d: loss=%.3f, reward_mean=%.2f, reward_bound=%.2f" % (epoch*ep_batch_size, p_loss, return_mean, return_limit))
+        print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
     
     return all_returns, policy_model
 
