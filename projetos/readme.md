@@ -18,7 +18,7 @@ Otimizar o algoritmo para todos os parâmetros.
 Fazer uma *análise de sensibilidade* da taxa de decaimento.
 
 
-## Learning Rate Decrescente
+## Learning Rate Decrescente - Diego
 
 Semelhante ao anterior.
 
@@ -95,7 +95,7 @@ Se possível, mostrar exemplo prático de como usar.
 Existem muitas técnicas, mas eu tenho sugestões de dois caps. de diferentes livros. Falar de ambos.
 
 
-## Dyna-Q
+## Dyna-Q - Fábio
 
 Falar dos algoritmos desta família. Capítulo 8 do livro de Sutton e Barto, até seção 8.3 ou 8.4.
 
@@ -109,3 +109,11 @@ Pode ser feito junto com um projeto no mesmo tema. Ver seção 5.7 e seções pr
 
 Pode ser feito junto com um projeto no mesmo tema. Ver seção 7.3 e seções próximas.
 
+
+## Rainbow
+
+Extensão do DQN.
+
+## SAC
+
+Para ações contínuas.
