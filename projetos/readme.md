@@ -38,6 +38,12 @@ https://www.gymlibrary.ml/environments/third_party_environments/
 Mas você vai treinar especificamente para o ambiente de competição simulado criado pela Amazon:
 https://aws.amazon.com/pt/deepracer/
 
+## Google Research Footbal
+
+Ambiente de footbal do Google.
+
+https://github.com/google-research/football
+
 
 ## Projetos Baseados em Artigos da Comunidade
 

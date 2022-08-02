@@ -59,6 +59,7 @@ Também estão aqui:
 # Cap. 6 - Método Cross-Entropy
 
 Nesta parte, vemos um método que aprende uma política diretamente, onde a política é representada por uma rede neural.
+Ele é uma aplicação do método de otimização *cross-entropy* (entropia cruzada) ao problema da aprendizagem por reforço.
 
-Basicamente, ele transforma um problema de RL em um problema de classificação da aprendizagem supervisionada.
+De certa forma, ele transforma um problema de RL em um problema de *classificação* da aprendizagem supervisionada.
 
