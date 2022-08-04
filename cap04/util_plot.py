@@ -1,10 +1,18 @@
-import time
-
 import numpy as np
 import matplotlib.pyplot as plt
 
 
-def plot_result(returns, ymax_suggested=None, filename=None):
+def smooth(data, window):
+  data = np.array(data)
+  n = len(data)
+  y = np.zeros(n)
+  for i in range(n):
+    start = max(0, i-window+1)
+    y[i] = data[start:(i+1)].mean()
+  return y
+
+
+def plot_result(returns, ymax_suggested=None, window=100, filename=None):
     '''Exibe um gráfico "retornos x recompensas", fazendo a média a cada 100 retornos, para suavizar.     
     Se o parâmetro filename for fornecido, salva o gráfico em arquivo ao invés de exibir.
     
@@ -14,31 +22,28 @@ def plot_result(returns, ymax_suggested=None, filename=None):
     - filename: indique um nome de arquivo, se quiser salvar a imagem do gráfico; senão, o gráfico será apenas exibido
     '''
     plt.figure(figsize=(14,8))
-    # alternativa: usar moving average
-    avg_every100 = [np.mean(returns[i:i+100])
-                    for i in range(0, len(returns), 100)]
-    xvalues = np.arange(1, len(avg_every100)+1) * 100
-    plt.plot(xvalues, avg_every100)
+    smoothed_returns = smooth(returns, window)
+    xvalues = np.arange(1, len(returns)+1)
+    plt.plot(xvalues, smoothed_returns)
     plt.xlabel('Episódios')
-    plt.ylabel('Retorno médio')
+    plt.ylabel('Retorno')
     if ymax_suggested is not None:
-        ymax = np.max([ymax_suggested, np.max(avg_every100)])
+        ymax = np.max([ymax_suggested, np.max(smoothed_returns)])
         plt.ylim(top=ymax)
-    plt.title('Retorno médio a cada 100 episódios')
+    plt.title(f"Retorno médio a cada {window} episódios")
     if filename is None:
         plt.show()
-        print("Nenhum arquivo salvo.")
     else:
         plt.savefig(filename)
         print("Arquivo salvo:", filename)
     plt.close()
 
 
-def moving_average(x, w):
-    return np.convolve(x, np.ones(w), 'valid') / w
+#def moving_average(x, w):
+#    return np.convolve(x, np.ones(w), 'valid') / w
 
-def plot_multiple_results(results, cumulative=False, x_log_scale=False):
-    '''Exibe um gráfico "retornos x recompensas" para vários resultados.
+def plot_multiple_results(results, cumulative=False, x_log_scale=False, window=100):
+    '''Exibe um gráfico "episódios x retornos" com vários resultados.
     
     Parâmetros:
     - results: são triplas (nome do resultado, retorno por episódio, outras informações)
@@ -62,10 +67,13 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
         # plot the returns smoothed by a moving average with window 100, with x linear
         plt.figure(figsize=(14,8))
         for (alg_name, returns, _) in results:
-            plt.plot(moving_average(returns,100), label=alg_name)
+            plt.plot(smooth(returns,window), label=alg_name)
+            #plt.plot(moving_average(returns,100), label=alg_name)
         if x_log_scale:
             plt.xscale('log')
-        plt.title("Smoothed 100-reward")
+        plt.xlabel('Episódios')
+        plt.ylabel('Retorno')
+        plt.title(f"Retorno médio a cada {window} episódios")
         plt.legend()
         plt.show()
 
@@ -77,7 +85,9 @@ def plot_multiple_results(results, cumulative=False, x_log_scale=False):
             plt.plot(cumulative_average, label=alg_name)
         if x_log_scale:
             plt.xscale('log')
-        plt.title("Cumulative Average")
+        plt.xlabel('Episódios')
+        plt.ylabel('Retorno')
+        plt.title("Retorno acumulado médio")
         plt.legend()
         plt.show()
 

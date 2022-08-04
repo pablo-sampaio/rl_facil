@@ -35,6 +35,9 @@ class PolicyModelCrossentropy:
         self.softmax = nn.Softmax(dim=1)
         self.loss_function = nn.CrossEntropyLoss()
         self.optimizer = optim.Adam(params=self.policy_net.parameters(), lr=lr)  # recebe os parametros da rede, para poder fazer ajustes neles
+        self.obs_size = obs_size
+        self.n_actions = n_actions
+        self.hidden_sizes = list(hidden_sizes)
 
     def partial_fit(self, observations, target_acts):
         obs_v = torch.FloatTensor(observations)
@@ -60,6 +63,21 @@ class PolicyModelCrossentropy:
     def best_action(self, obs):
         prob_a_s = self.predict(obs)
         return np.argmax(prob_a_s)
+    
+    def clone(self):
+        cp = PolicyModelCrossentropy(self.obs_size, self.hidden_sizes, self.n_actions)
+        policy_state = cp.policy_net.state_dict()
+        for k, v in self.policy_net.state_dict().items():
+            #print(k)
+            policy_state[k] = v
+            cp.policy_net.load_state_dict(policy_state)
+        return cp
+
+    def save(self, filename):
+        torch.save(self.policy_net.state_dict.state_dict(), filename)
+    
+    def load(self, filename):
+        self.policy_net.load_state_dict(torch.load(filename))
 
 
 # approximates pi(a | s)

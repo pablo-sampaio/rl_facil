@@ -40,7 +40,7 @@ https://aws.amazon.com/pt/deepracer/
 
 ## Google Research Footbal
 
-Ambiente de footbal do Google.
+Ambiente de futebol do Google.
 
 https://github.com/google-research/football
 
@@ -116,10 +116,19 @@ Pode ser feito junto com um projeto no mesmo tema. Ver seção 5.7 e seções pr
 Pode ser feito junto com um projeto no mesmo tema. Ver seção 7.3 e seções próximas.
 
 
-## Rainbow
+## Extensões do DQN 
 
-Extensão do DQN.
+Extensões do DQN.
+
+Pode escolher uma dessas opções para falar: Rainbow ou APE-X.
+
 
 ## SAC
 
-Para ações contínuas.
+Algoritmo da família Policy Gradient, para ações contínuas. Estado da arte.
+
+
+## Abordagem Teacher-Student
+
+Uma alternativa ao uso de um currículo estática. Tema de pesquisa, para ser apresentado para a turma.
+

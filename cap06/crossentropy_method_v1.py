@@ -35,19 +35,21 @@ def run_episodes(env, policy_net, batch_size):
     return all_trajectories, all_returns
 
 
-def run_crossentropy_method(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, policy_model=None):
+def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
-    if policy_model is None:
-        policy_model = PolicyModelCrossentropy(obs_size, [64], n_actions, lr=0.01)
-    
+    if initial_policy is None:
+        initial_policy = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.01)
+    else:
+        initial_policy = initial_policy.clone()
+
     all_returns = []
 
     episodes = 0
     while episodes < total_episodes:
         # 1. Roda alguns episódios
-        trajectories, returns = run_episodes(env, policy_model, ep_batch_size)
+        trajectories, returns = run_episodes(env, initial_policy, ep_batch_size)
         all_returns.extend(returns)
         episodes += ep_batch_size
 
@@ -68,11 +70,11 @@ def run_crossentropy_method(env, total_episodes, ep_batch_size=10, ep_selected_p
                 break
 
         # 4. Treina o modelo para reforcar o mapeamento estado-ação
-        p_loss = policy_model.partial_fit(states, actions)
+        p_loss = initial_policy.partial_fit(states, actions)
  
         print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
     
-    return all_returns, policy_model
+    return all_returns, initial_policy
 
 
 if __name__ == "__main__":
@@ -82,16 +84,17 @@ if __name__ == "__main__":
     #ENV_NAME, rmax = "MountainCar-v0", 0  # resultados ruins
     ENV = gym.make(ENV_NAME)
 
-    EPISODES = 700         # total de episódios
-    BATCH_SIZE = 10        # quantidade de episódios executados por época de treinamento
-    PERCENT_BEST = 0.2     # percentual dos episódios (do batch) que serão selecionados
+    EPISODES   =  400    # total de episódios
+    BATCH_SIZE =   20    # quantidade de episódios executados por época de treinamento
+    PROPORTION =  0.1    # percentual dos episódios (do batch) que serão selecionados
 
-    returns, policy = run_crossentropy_method(ENV, EPISODES, BATCH_SIZE, PERCENT_BEST)
+    policy = PolicyModelCrossentropy(ENV.observation_space.shape[0], [128, 256], ENV.action_space.n, lr=0.01)
+    returns, policy = run_crossentropy_method1(ENV, EPISODES, BATCH_SIZE, PROPORTION, initial_policy=policy)
 
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(returns, rmax, None)
+    plot_result(returns, rmax, window=50)
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     test_policy(ENV, policy, False, 5, render=True)

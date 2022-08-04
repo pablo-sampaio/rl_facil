@@ -41,12 +41,17 @@ def run_episodes(env, policy_net, batch_size, render_last):
     return all_trajectories, all_returns
 
 
-def run_crossentropy_method_x(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, policy_model=None, render=False):
+def run_crossentropy_method2(env, max_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None, target_return=None, render=False):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
-    if policy_model is None:
+    if initial_policy is None:
         policy_model = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.005)
+    else:
+        policy_model = initial_policy.clone()
+    
+    if target_return is None:
+        target_return = float("inf")
     
     all_returns = []
 
@@ -54,7 +59,7 @@ def run_crossentropy_method_x(env, total_episodes, ep_batch_size=10, ep_selected
     elite_trajectories = [ (float("-inf"), []) for i in range(episodes_to_select)]
 
     episodes = 0
-    while episodes < total_episodes:
+    while episodes < max_episodes:
 
         # 1. Roda alguns episódios
         episodes += ep_batch_size
@@ -62,9 +67,13 @@ def run_crossentropy_method_x(env, total_episodes, ep_batch_size=10, ep_selected
         trajectories, returns = run_episodes(env, policy_model, ep_batch_size, render_last)
         all_returns.extend(returns)
 
-        # 2. Define o retorno de corte para os melhores episódios
+        # 2. Define o valor de corte do "retorno" para os melhores episódios
         return_limit = np.quantile(returns, 1.0-ep_selected_proportion)
         return_mean = float(np.mean(returns))
+
+        if return_mean >= target_return:
+            print("- episode %d: return_mean=%.2f, return_limit=%.2f, target reached!" % (episodes, return_mean, return_limit) )
+            break;
 
         # 3.1. Extrai os estados e ações dos melhores episódios, e seleciona para a "elite"
         states = []
@@ -92,8 +101,8 @@ def run_crossentropy_method_x(env, total_episodes, ep_batch_size=10, ep_selected
         # 4. Treina o modelo para reforcar o mapeamento estado-ação
         p_loss = policy_model.partial_fit(states, actions)
  
-        print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
-        #print("- elite:", list(map(lambda ep: ep[0], elite_trajectories)) )
+        print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f, elite=%s" 
+                % (episodes, ep_selected, p_loss, return_mean, return_limit, list(map(lambda ep: ep[0], elite_trajectories))) )
     
     return all_returns, policy_model
 
@@ -107,33 +116,14 @@ if __name__ == "__main__":
 
     EPISODES = 700         # total de episódios
     BATCH_SIZE = 10        # quantidade de episódios executados por época de treinamento
-    PERCENT_BEST = 0.2     # percentual dos episódios (do batch) que serão selecionados
+    PROPORTION = 0.2     # percentual dos episódios (do batch) que serão selecionados
 
-    returns, policy = run_crossentropy_method_x(ENV, EPISODES, BATCH_SIZE, PERCENT_BEST)
+    returns, policy = run_crossentropy_method2(ENV, EPISODES, BATCH_SIZE, PROPORTION, target_return=-70.0)
 
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(returns, rmax, None)
+    plot_result(returns, rmax, window=50)
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     test_policy(ENV, policy, False, 5, render=True)
-
-    # Expandindo aqui a execução de alguns episódios de forma DETERMINÍSTICA, para fins didáticos
-    for i in range(5):
-        print(f"TEST EPISODE {i+1}")
-        obs = ENV.reset()
-        done = False
-        reward = 0.0
-        steps = 0
-        while not done:
-            ENV.render()
-            action = policy.best_action(obs) # faz so a acao de maior probabilidade
-            obs, r, done, _ = ENV.step(action)
-            reward += r
-            steps += 1
-        ENV.render()
-        print("- steps:", steps)
-        print("- return:", reward)
-
-    ENV.close()
