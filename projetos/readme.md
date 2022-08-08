@@ -132,3 +132,7 @@ Algoritmo da família Policy Gradient, para ações contínuas. Estado da arte.
 
 Uma alternativa ao uso de um currículo estática. Tema de pesquisa, para ser apresentado para a turma.
 
+
+## Algoritmos Evolucionários par RL
+
+Algoritmos evolucionários usados para treinamento de RL.

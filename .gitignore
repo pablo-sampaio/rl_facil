@@ -3,7 +3,13 @@
 *.npy
 *.mp4
 *.meta.json
+*.dat
 results/
+runs/
+cap05/util_*.py
+cap06/util_*.py
+cap07/util_*.py
+cap08/util_*.py
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

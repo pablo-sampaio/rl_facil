@@ -63,3 +63,12 @@ Ele é uma aplicação do método de otimização *cross-entropy* (entropia cruz
 
 De certa forma, ele transforma um problema de RL em um problema de *classificação* da aprendizagem supervisionada.
 
+# Cap. 7 - DQN
+
+Aqui, veremos o DQN, sucessor do Q-Learning que usa uma rede neural para substituir a Q-Table.
+
+
+# Cap. 8 - Métodos Policy Gradient
+
+Aqui, vemos alguns algoritmos que (como o cross-entropy) aprendem a política diretamente, representada como uma rede 
+neural (ou outro modelo diferenciável). Porém, este método usa uma função de custo (*loss function*) específica.

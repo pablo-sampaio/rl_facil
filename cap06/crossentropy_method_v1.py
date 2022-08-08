@@ -15,8 +15,8 @@ EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 
 
 def run_episodes(env, policy_net, batch_size):
-    all_trajectories = []
-    all_returns = []
+    batch_trajectories = []
+    batch_returns = []
     for i in range(0,batch_size):
         sum_rewards = 0.0
         trajectory = []
@@ -30,9 +30,9 @@ def run_episodes(env, policy_net, batch_size):
             sum_rewards += reward
             trajectory.append(EpisodeStep(state=obs, action=action))
             obs = next_obs
-        all_trajectories.append(trajectory)
-        all_returns.append(sum_rewards)
-    return all_trajectories, all_returns
+        batch_trajectories.append(trajectory)
+        batch_returns.append(sum_rewards)
+    return batch_trajectories, batch_returns
 
 
 def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None):
@@ -40,16 +40,16 @@ def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_
     n_actions = env.action_space.n
 
     if initial_policy is None:
-        initial_policy = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.01)
+        policy_model = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.01)
     else:
-        initial_policy = initial_policy.clone()
+        policy_model = initial_policy.clone()
 
     all_returns = []
 
     episodes = 0
     while episodes < total_episodes:
         # 1. Roda alguns episódios
-        trajectories, returns = run_episodes(env, initial_policy, ep_batch_size)
+        trajectories, returns = run_episodes(env, policy_model, ep_batch_size)
         all_returns.extend(returns)
         episodes += ep_batch_size
 
@@ -70,11 +70,11 @@ def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_
                 break
 
         # 4. Treina o modelo para reforcar o mapeamento estado-ação
-        p_loss = initial_policy.partial_fit(states, actions)
+        p_loss = policy_model.partial_fit(states, actions)
  
         print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
     
-    return all_returns, initial_policy
+    return all_returns, policy_model
 
 
 if __name__ == "__main__":
