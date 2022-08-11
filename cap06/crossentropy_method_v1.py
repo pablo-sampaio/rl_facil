@@ -53,7 +53,7 @@ def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_
         all_returns.extend(returns)
         episodes += ep_batch_size
 
-        # 2. Define o retorno de corte para os melhores episódios
+        # 2. Define o valor de corte do "retorno" para os melhores episódios
         return_limit = np.quantile(returns, 1.0-ep_selected_proportion)
         return_mean = float(np.mean(returns))
 

@@ -116,7 +116,7 @@ Pode ser feito junto com um projeto no mesmo tema. Ver seção 5.7 e seções pr
 Pode ser feito junto com um projeto no mesmo tema. Ver seção 7.3 e seções próximas.
 
 
-## Extensões do DQN 
+## Extensões do DQN - Hugo (Rainbow)
 
 Extensões do DQN.
 

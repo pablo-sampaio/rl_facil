@@ -38,6 +38,7 @@ class PolicyModelCrossentropy:
         self.obs_size = obs_size
         self.n_actions = n_actions
         self.hidden_sizes = list(hidden_sizes)
+        self.lr = lr
 
     def partial_fit(self, observations, target_acts):
         obs_v = torch.FloatTensor(observations)
@@ -65,7 +66,7 @@ class PolicyModelCrossentropy:
         return np.argmax(prob_a_s)
     
     def clone(self):
-        cp = PolicyModelCrossentropy(self.obs_size, self.hidden_sizes, self.n_actions)
+        cp = PolicyModelCrossentropy(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
         policy_state = cp.policy_net.state_dict()
         for k, v in self.policy_net.state_dict().items():
             #print(k)
@@ -91,6 +92,10 @@ class PolicyModelPG:
         self.policy_net = TorchMultiLayerNetwork(state_size, hidden_sizes, n_actions)
         self.optimizer = optim.Adam(params=self.policy_net.parameters(), lr=lr)
         self.softmax = nn.Softmax(dim=1)
+        self.obs_size = state_size
+        self.n_actions = n_actions
+        self.hidden_sizes = list(hidden_sizes)
+        self.lr = lr
 
     def partial_fit(self, states, actions, states_vals):
         self.optimizer.zero_grad()
@@ -120,6 +125,14 @@ class PolicyModelPG:
     def best_action(self, obs):
         probs = self.predict(obs)
         return np.argmax(probs)
+
+    def clone(self):
+        cp = PolicyModelPG(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
+        policy_state = cp.policy_net.state_dict()
+        for k, v in self.policy_net.state_dict().items():
+            policy_state[k] = v
+            cp.policy_net.load_state_dict(policy_state)
+        return cp
 
 
 # approximates V(s)

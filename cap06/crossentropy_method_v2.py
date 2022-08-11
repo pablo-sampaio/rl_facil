@@ -15,8 +15,8 @@ EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 
 
 def run_episodes(env, policy_net, batch_size, render_last):
-    all_trajectories = []
-    all_returns = []
+    batch_trajectories = []
+    batch_returns = []
     render = False
     for i in range(0,batch_size):
         sum_rewards = 0.0
@@ -36,9 +36,9 @@ def run_episodes(env, policy_net, batch_size, render_last):
             if render:
                 env.render()
             obs = next_obs
-        all_trajectories.append(trajectory)
-        all_returns.append(sum_rewards)
-    return all_trajectories, all_returns
+        batch_trajectories.append(trajectory)
+        batch_returns.append(sum_rewards)
+    return batch_trajectories, batch_returns
 
 
 def run_crossentropy_method2(env, max_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None, target_return=None, render=False):
@@ -73,7 +73,7 @@ def run_crossentropy_method2(env, max_episodes, ep_batch_size=10, ep_selected_pr
 
         if return_mean >= target_return:
             print("- episode %d: return_mean=%.2f, return_limit=%.2f, target reached!" % (episodes, return_mean, return_limit) )
-            break;
+            break
 
         # 3.1. Extrai os estados e ações dos melhores episódios, e seleciona para a "elite"
         states = []
