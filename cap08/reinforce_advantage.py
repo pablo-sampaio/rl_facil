@@ -1,14 +1,13 @@
 ################
-# Algoritmo "REINFORCE", da familia policy-gradient (ou Vanila Police Gradient - VPG).
+# Algoritmo "REINFORCE", da familia policy-gradient, acrescido da técnica de "Advantage"
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
-import time
 import gym
 from collections import namedtuple, deque
 import numpy as np
 
-from models_torch import PolicyModelPG, ValueModel, test_policy
+from models_torch_pg import PolicyModelPG, ValueModel, test_policy
 from util_plot import plot_result
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
@@ -64,7 +63,7 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
         target_return = float("inf")
 
     all_returns = []
-    total_steps = 0
+    all_steps = 0
 
     episodes = 0
     while episodes < total_episodes:
@@ -72,11 +71,11 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
         trajectories, returns, steps = run_episodes(env, policy_model, 1)
         all_returns.extend(returns)
         episodes += 1 
-        total_steps += steps
+        all_steps += steps
         ep_return = float(np.mean(returns))
 
         if target_return is not None and np.mean(all_returns[-50:]) >= target_return:
-            print("- episode %d (step %d): return_mean_50=%.2f, target reached!" % (episodes, total_steps, np.mean(all_returns[-50:])))
+            print("- episode %d (step %d): return_mean_50=%.2f, target reached!" % (episodes, all_steps, np.mean(all_returns[-50:])))
             break
 
         # 2. Retorna listas separadas com estados, ações, retornos futuros G_i (a partir do estado) e vantagens
@@ -88,7 +87,7 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
         # 4. Treina o modelo de V(.), usando o par (s, G), onde  's' é entrada da rede, e 'G' é a saída (regressão)
         loss_v = Vmodel.partial_fit(states, st_returns)
         
-        print("- episode %d (step %d): losses[v/p]=%.5f/%.5f, ep_return=%.2f" % (episodes, total_steps, loss_p, loss_v, ep_return))
+        print("- episode %d (step %d): losses[v/p]=%.5f/%.5f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
  
     return all_returns, policy_model
 

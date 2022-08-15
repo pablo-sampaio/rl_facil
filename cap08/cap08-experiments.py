@@ -16,9 +16,8 @@ enviroment = gym.make("CartPole-v1")
 
 results = []
 
-for lr in [0.001, 0.0001]:
+for lr in [0.0001, 0.0005, 0.001]:
     initial_policy = PolicyModelPG(enviroment.observation_space.shape[0], [128,512], enviroment.action_space.n, lr=lr)
-    
     results.append( repeated_exec(2, f"Reinforce (lr={lr})", run_reinforce, enviroment, NUM_EPISODES, GAMMA, initial_policy) )
     results.append( repeated_exec(2, f"Reinforce+Advtg (lr={lr})", run_advantage_reinforce, enviroment, NUM_EPISODES, GAMMA, initial_policy) )
 

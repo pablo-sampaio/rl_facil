@@ -8,7 +8,7 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
-from models_torch import PolicyModelPG, test_policy
+from models_torch_pg import PolicyModelPG, test_policy
 from util_plot import plot_result
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
