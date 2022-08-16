@@ -3,7 +3,6 @@
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
-import time
 import gym
 from collections import namedtuple, deque
 import numpy as np

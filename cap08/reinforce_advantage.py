@@ -57,7 +57,7 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
     else:
         policy_model = initial_policy.clone()
 
-    Vmodel = ValueModel(obs_size, [128], lr=0.008)
+    Vmodel = ValueModel(obs_size, [128], lr=0.005)
 
     if target_return is None:
         target_return = float("inf")
@@ -87,7 +87,7 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
         # 4. Treina o modelo de V(.), usando o par (s, G), onde  's' é entrada da rede, e 'G' é a saída (regressão)
         loss_v = Vmodel.partial_fit(states, st_returns)
         
-        print("- episode %d (step %d): losses[v/p]=%.5f/%.5f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
+        print("- ep %d \ step %d: losses[v/p]=%.4f/%.4f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
  
     return all_returns, policy_model
 

@@ -70,5 +70,11 @@ Aqui, veremos o DQN, sucessor do Q-Learning que usa uma rede neural para substit
 
 # Cap. 8 - Métodos Policy Gradient
 
-Aqui, vemos alguns algoritmos que (como o cross-entropy) aprendem a política diretamente, representada como uma rede 
-neural (ou outro modelo diferenciável). Porém, este método usa uma função de custo (*loss function*) específica.
+Aqui, complementando o cap. 6, vemos mais alguns algoritmos que aprendem a política diretamente, sendo esta representada 
+como uma rede neural (ou outro modelo diferenciável). Porém, estes métodos usam funções de custo (*loss function*) específicas
+para RL.
+
+# Cap. 9 - Bibliotecas
+
+Neste ponto do curso, vamos ver algumas bibliotecas que oferecem algoritmos do estado da arte.
+

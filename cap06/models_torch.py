@@ -81,60 +81,6 @@ class PolicyModelCrossentropy:
         self.policy_net.load_state_dict(torch.load(filename))
 
 
-# approximates pi(a | s)
-class PolicyModelPG:
-    '''
-    A network model that outputs probability p(a|s), for policy gradient methods.
-    It is trained to minimize the sum of the returns of the states (maybe subtracted
-    from baseline values) each multiplied by the log of the probability of the action.
-    '''
-    def __init__(self, state_size, hidden_sizes, n_actions, lr=0.01):
-        self.policy_net = TorchMultiLayerNetwork(state_size, hidden_sizes, n_actions)
-        self.optimizer = optim.Adam(params=self.policy_net.parameters(), lr=lr)
-        self.softmax = nn.Softmax(dim=1)
-        self.obs_size = state_size
-        self.n_actions = n_actions
-        self.hidden_sizes = list(hidden_sizes)
-        self.lr = lr
-
-    def partial_fit(self, states, actions, states_vals):
-        self.optimizer.zero_grad()
-        states_v = torch.FloatTensor(states)
-        actions_v = torch.LongTensor(actions)
-        state_vals_v = torch.FloatTensor(states_vals)
-
-        logits_v = self.policy_net(states_v)
-        log_prob_v = nn.functional.log_softmax(logits_v, dim=1)
-        log_prob_actions_v = state_vals_v * log_prob_v[range(len(states)), actions_v]
-        basic_loss_v = -log_prob_actions_v.mean()
-
-        basic_loss_v.backward()
-        self.optimizer.step()
-        return basic_loss_v.item()
-
-    def predict(self, observation):
-        obs_tensor = torch.FloatTensor([observation])
-        act_probs_tensor = self.softmax( self.policy_net(obs_tensor) )
-        return act_probs_tensor.data.numpy()[0]
-
-    def sample_action(self, obs):
-        probs = self.predict(obs)
-        num_actions = len(probs)
-        return np.random.choice(num_actions, p=probs)
-
-    def best_action(self, obs):
-        probs = self.predict(obs)
-        return np.argmax(probs)
-
-    def clone(self):
-        cp = PolicyModelPG(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
-        policy_state = cp.policy_net.state_dict()
-        for k, v in self.policy_net.state_dict().items():
-            policy_state[k] = v
-            cp.policy_net.load_state_dict(policy_state)
-        return cp
-
-
 def test_policy(env, policy, deterministic, num_episodes=5, render=False, videorec=None):
     """
     Avalia a política `policy`, usando a melhor ação sempre, de forma determinística.

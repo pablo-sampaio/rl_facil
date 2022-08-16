@@ -10,6 +10,7 @@ cap05/util_*.py
 cap06/util_*.py
 cap07/util_*.py
 cap08/util_*.py
+*.db
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

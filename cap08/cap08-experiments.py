@@ -1,5 +1,5 @@
 import gym
-from models_torch import PolicyModelPG
+from models_torch_pg import PolicyModelPG
 
 from util_experiments import repeated_exec
 from util_plot import plot_multiple_results
