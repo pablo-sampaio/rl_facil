@@ -5,10 +5,33 @@ from tqdm import tqdm
 
 import numpy as np
 
+from util_plot import plot_result
 
-def repeated_exec(executions, alg_name, algorithm, env, num_steps, *args):
+
+def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **kwargs):
     env_name = str(env.unwrapped).replace('<','_').replace('>','_')
-    result_file_name = f"results/{env_name}-{alg_name}-execs{executions}.npy"
+    result_file_name = f"results/{env_name}-{alg_name}-episodes{num_episodes}-execs{executions}.npy"
+    if os.path.exists(result_file_name):
+        print("Loading results from", result_file_name)
+        RESULTS = np.load(result_file_name, allow_pickle=True)
+        return RESULTS
+    rewards = np.zeros(shape=(executions, num_episodes))
+    alg_infos = np.empty(shape=(executions,), dtype=object)
+    t = time.time()
+    print(f"Executing {algorithm}:")
+    for i in tqdm(range(executions)):
+        rewards[i], alg_infos[i] = algorithm(env, num_episodes, *args, **kwargs)
+    t = time.time() - t
+    print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
+    RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)
+    np.save(result_file_name, RESULTS, allow_pickle=True)
+    return alg_name, rewards.mean(axis=0), alg_infos
+
+
+# for algorithms that return a list of pairs (timestep, return)
+def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, **kwargs):
+    env_name = str(env.unwrapped).replace('<','_').replace('>','_')
+    result_file_name = f"results/{env_name}-{alg_name}-steps{num_steps}-execs{executions}.npy"
     if os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
@@ -18,13 +41,33 @@ def repeated_exec(executions, alg_name, algorithm, env, num_steps, *args):
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        rewards[i], alg_infos[i] = algorithm(env, num_steps, *args)
+        # executa o algoritmo
+        list_pairs, alg_infos[i] = algorithm(env, num_steps, *args, **kwargs)
+        final_steps_i, returns_i = list(zip(*list_pairs))
+        final_steps_i, returns_i = list(final_steps_i), list(returns_i)
+        prev_return = 0
+        prev_final_step = 0
+        for step in range(num_steps):
+            if not final_steps_i:
+                # lista vazia antes do fim
+                rewards[i,step] = None
+            elif step == final_steps_i[0]:
+                # passo final de um episodio
+                rewards[i,step] = returns_i[0]
+                prev_return = returns_i[0]
+                prev_final_step = step
+                final_steps_i.pop(0)
+                returns_i.pop(0)
+            else:
+                # passo intermediário - faz uma interpolação
+                next_return = returns_i[0]
+                next_final_step = final_steps_i[0]
+                rewards[i, step] = prev_return + (next_return - prev_return)*(step - prev_final_step) / (next_final_step - prev_final_step)
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
     RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)
     np.save(result_file_name, RESULTS, allow_pickle=True)
     return alg_name, rewards.mean(axis=0), alg_infos
-
 
 def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01):
     """

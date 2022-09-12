@@ -12,8 +12,8 @@ def smooth(data, window):
   return y
 
 
-def plot_result(returns, ymax_suggested=None, window=100, filename=None):
-    '''Exibe um gráfico "retornos x recompensas", fazendo a média a cada 100 retornos, para suavizar.     
+def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=100, return_type='episode', filename=None):
+    '''Exibe um gráfico "retornos x recompensas", fazendo a média a cada 100 retornos, para suavizar.
     Se o parâmetro filename for fornecido, salva o gráfico em arquivo ao invés de exibir.
     
     Parâmetros:
@@ -22,20 +22,33 @@ def plot_result(returns, ymax_suggested=None, window=100, filename=None):
     - filename: indique um nome de arquivo, se quiser salvar a imagem do gráfico; senão, o gráfico será apenas exibido
     '''
     plt.figure(figsize=(14,8))
-    smoothed_returns = smooth(returns, window)
-    xvalues = np.arange(1, len(returns)+1)
-    plt.plot(xvalues, smoothed_returns)
-    plt.xlabel('Episódios')
+
+    if return_type == 'episode':
+        plt.xlabel('Episódios')
+        yvalues = smooth(returns, window)
+        xvalues = np.arange(1, len(returns)+1)
+        plt.plot(xvalues, yvalues)
+        plt.title(f"Retorno médio a cada {window} episódios")
+    else:
+        plt.xlabel('Passos')
+        xvalues, yvalues = list(zip(*returns))
+        plt.plot(xvalues, yvalues)
+        plt.title(f"Retorno médio a cada {window} passos")
+
+    if x_log_scale:
+        plt.xscale('log')
+
     plt.ylabel('Retorno')
     if ymax_suggested is not None:
-        ymax = np.max([ymax_suggested, np.max(smoothed_returns)])
+        ymax = np.max([ymax_suggested, np.max(yvalues)])
         plt.ylim(top=ymax)
-    plt.title(f"Retorno médio a cada {window} episódios")
+
     if filename is None:
         plt.show()
     else:
         plt.savefig(filename)
         print("Arquivo salvo:", filename)
+    
     plt.close()
 
 
