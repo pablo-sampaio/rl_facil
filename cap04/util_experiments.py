@@ -5,8 +5,6 @@ from tqdm import tqdm
 
 import numpy as np
 
-from util_plot import plot_result
-
 
 def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **kwargs):
     env_name = str(env.unwrapped).replace('<','_').replace('>','_')
@@ -16,19 +14,21 @@ def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **k
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
     rewards = np.zeros(shape=(executions, num_episodes))
-    alg_infos = np.empty(shape=(executions,), dtype=object)
+    #alg_infos = np.empty(shape=(executions,), dtype=object)
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        rewards[i], alg_infos[i] = algorithm(env, num_episodes, *args, **kwargs)
+        rewards[i], _ = algorithm(env, num_episodes, *args, **kwargs)
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
-    RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)
+    rew_mean, rew_std = rewards.mean(axis=0), rewards.std(axis=0)
+    RESULTS = np.array([alg_name, rew_mean, rew_std], dtype=object)
     np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rewards.mean(axis=0), alg_infos
+    return alg_name, rew_mean, rew_std
 
 
 # for algorithms that return a list of pairs (timestep, return)
+# fazer: descartar o alg_info
 def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, **kwargs):
     env_name = str(env.unwrapped).replace('<','_').replace('>','_')
     result_file_name = f"results/{env_name}-{alg_name}-steps{num_steps}-execs{executions}.npy"
@@ -37,12 +37,12 @@ def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, 
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
     rewards = np.zeros(shape=(executions, num_steps))
-    alg_infos = np.empty(shape=(executions,), dtype=object)
+    #alg_infos = np.empty(shape=(executions,), dtype=object)
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
         # executa o algoritmo
-        list_pairs, alg_infos[i] = algorithm(env, num_steps, *args, **kwargs)
+        list_pairs, _ = algorithm(env, num_steps, *args, **kwargs)
         final_steps_i, returns_i = list(zip(*list_pairs))
         final_steps_i, returns_i = list(final_steps_i), list(returns_i)
         prev_return = 0
@@ -65,9 +65,11 @@ def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, 
                 rewards[i, step] = prev_return + (next_return - prev_return)*(step - prev_final_step) / (next_final_step - prev_final_step)
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
-    RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)
+    rew_mean, rew_std = rewards.mean(axis=0), rewards.std(axis=0)
+    RESULTS = np.array([alg_name, rew_mean, rew_std], dtype=object)
     np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rewards.mean(axis=0), alg_infos
+    return alg_name, rew_mean, rew_std
+
 
 def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01):
     """

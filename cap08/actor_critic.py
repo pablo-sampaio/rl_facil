@@ -12,7 +12,7 @@ from util_plot import plot_result
 
 
 # Algoritmo actor-critic básico
-def run_basic_actor_critic(env, total_steps, gamma, initial_policy=None, initial_vmodel=None, target_return=None):
+def run_basic_actor_critic(env, max_steps, gamma, initial_policy=None, initial_vmodel=None, target_return=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -37,7 +37,7 @@ def run_basic_actor_critic(env, total_steps, gamma, initial_policy=None, initial
     ep_return = 0.0
 
     #while episodes < total_episodes:
-    while steps < total_steps:
+    while steps < max_steps:
         state = next_state
 
         # 1. Faz 1 passo
@@ -55,9 +55,9 @@ def run_basic_actor_critic(env, total_steps, gamma, initial_policy=None, initial
         Vmodel.partial_fit([state], [G_est])
         
         if done:
-            all_returns.append(ep_return)
+            all_returns.append((steps-1, ep_return))
             episodes += 1 
-            reward_m = np.mean(all_returns[-50:])
+            reward_m = np.mean( [ ret for (st,ret) in all_returns[-50:] ] )
 
             if target_return is not None and reward_m >= target_return:
                 print("-> target reached!")
@@ -68,6 +68,9 @@ def run_basic_actor_critic(env, total_steps, gamma, initial_policy=None, initial
             next_state = env.reset()
             ep_return = 0.0
     
+    if not done:
+        all_returns.append((steps-1, ep_return))
+
     print("step %d / ep %d: return_mean_50=%.2f - end of training!" % (steps, episodes, reward_m))
     return all_returns, policy_model
 
@@ -91,7 +94,7 @@ if __name__ == "__main__":
     returns, policy = run_basic_actor_critic(ENV, NUM_STEPS, GAMMA, initial_policy=policy_model, initial_vmodel=Vmodel, target_return=rmax-100)
 
     # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(returns, rmax, window=50)
+    plot_result(returns, rmax, window=50, return_type='steps')
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     test_policy(ENV, policy, False, 5, render=True)

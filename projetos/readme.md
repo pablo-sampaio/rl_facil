@@ -2,7 +2,7 @@
 
 Os projetos serão individuais.
 
-## Implementar Programação Dinâmica
+## Implementar Programação Dinâmica - Bruno
 
 Implementar algum desses algoritmos: policy iteration ou o value iteration.
 
@@ -23,7 +23,7 @@ Fazer uma *análise de sensibilidade* da taxa de decaimento.
 Semelhante ao anterior.
 
 
-## Aplicar em Outros Ambientes - *Bruno* - gym-derk
+## Aplicar em Outros Ambientes
 
 Adotar ambientes mais desafiadores e tentar achar uma boa solução. Existem muitos ambientes de *jogos* (Atari, Minecraft, Mario, Futebol, etc) e ambientes de *robótica*.
 
@@ -37,6 +37,7 @@ https://www.gymlibrary.ml/environments/third_party_environments/
 
 Mas você vai treinar especificamente para o ambiente de competição simulado criado pela Amazon:
 https://aws.amazon.com/pt/deepracer/
+
 
 ## Google Research Footbal
 
@@ -62,7 +63,7 @@ Escolher alguns dos experimentos registrados no livro para reproduzir ou alguns 
 - Example 6.6: implementar o ambiente e refazer o experimento, mostrando a política e plotando o gráfico
 - Exercício 5.12
 
-## Usar Softmax
+## Usar Softmax - Mateus Wei
 
 Nos algoritmos baseados em Q-table (Q-Learning, Expected-SARSA), ao invés de epsilon-greedy, usar uma política softmax e comparar os resultados.
 
@@ -75,10 +76,18 @@ Exemplos:
 - Algoritmos TD de n passos *off-policy*: ver seções 7.3 e 7.5
 - Dyna-Q: seção 8.2
 
+## Algoritmos Evolucionários - João Victor
+
+Aplicar em algum ambiente e fazer experimentos cuidadosos.
+
 
 # 2. Ideias de Seminários
 
 Para apresentar de forma individual ou em dupla.
+
+## Programação Dinâmica - Bruno
+
+Explicar o assunto.
 
 ## Contextual Bandits - J. Rodrigues, Lucas Lins
 
@@ -130,9 +139,32 @@ Algoritmo da família Policy Gradient, para ações contínuas. Estado da arte.
 
 ## Abordagem Teacher-Student
 
-Uma alternativa ao uso de um currículo estática. Tema de pesquisa, para ser apresentado para a turma.
+Uma alternativa ao uso de um currículo estático. 
 
 
-## Algoritmos Evolucionários para RL
+## Algoritmos Evolucionários para RL - Joao Victor e Sávio
 
 Algoritmos evolucionários usados para treinamento de RL.
+
+
+# Datas dos Seminários 
+
+19/09
+- Maely e Matheus Felipe - MonteCarlo Off-policy 
+- Giulia e Luiz Fernando - TD de n passos off-policy 
+- Fábio - Dyna-Q
+
+22/set
+- Hugo - Rainbow
+- Mateus Lins - Serviços de RL da GCP
+- Bruno - Progr. Dinâmica
+
+26/set
+- Rodrigues e Lucas - Contextual Bandits (antecipar para 22)
+- Daniel, Mateus Wei e Diego - Aprendizagem por Reforço Multiagente
+- Joao Victor - Algoritmos Evolucionários
+
+29/set
+- Sávio - Algoritmos Evolucionários
+- Pablo - AlphaZero
+

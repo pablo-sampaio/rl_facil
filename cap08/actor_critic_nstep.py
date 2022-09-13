@@ -108,7 +108,7 @@ def run_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_policy=None, 
             ep_return = 0.0
     
     if not done:
-        all_returns.append((max_steps-1, ep_return))
+        all_returns.append((steps-1, ep_return))
     
     if verbose:
         print("step %d / ep %d: return_mean=%.2f, end of training!" % (steps, episodes, reward_m))
@@ -123,7 +123,7 @@ if __name__ == "__main__":
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 10000
+    NUM_STEPS = 20000
     GAMMA     = 0.99
     NSTEP     = 32
     EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
@@ -132,8 +132,8 @@ if __name__ == "__main__":
     outputs = ENV.action_space.n
 
     #policy_model = PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=3e-5)
-    policy_model = PolicyModelPG(inputs, [256, 256], outputs, lr=5e-5)
-    Vmodel = ValueModel(inputs, [256,32], lr=1e-4)
+    policy_model = PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5) #5e-5
+    Vmodel = ValueModel(inputs, [256,32], lr=8e-5) #1e-4
 
     returns, policy = run_actor_critic_nstep(ENV, NUM_STEPS, GAMMA, nstep=NSTEP, initial_policy=policy_model, initial_vmodel=Vmodel, target_return=rmax-100)
     #print(returns)
