@@ -31,7 +31,7 @@ def experiments_num_episodes():
 
 
 def experiments_max_steps():
-    NUM_STEPS = 15000
+    NUM_STEPS = 5000
     all_results = []
     for v_lr in [1e-4, 5e-5]:
         for p_lr in [5e-5, 1e-5]:
