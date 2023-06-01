@@ -1,11 +1,34 @@
 
-from time import time
+# TODO: remove this file
+#        and use the same functions used for full-RL algorithms
+
+import time
+import os
 from tqdm import tqdm
 
 import numpy as np
 import matplotlib.pyplot as plt
 
-import os
+
+def repeated_exec(executions, alg_name, algorithm, env, num_episodes, reload=False, *args):
+    result_file_name = f"results/{env}-{alg_name}-execs{executions}.npy"
+    if reload and os.path.exists(result_file_name):
+        print("Loading results from", result_file_name)
+        RESULTS = np.load(result_file_name, allow_pickle=True)
+        return RESULTS
+    rewards = np.zeros(shape=(executions, num_episodes))
+    #alg_infos = np.empty(shape=(executions,), dtype=object)
+    t = time.time()
+    print(f"Executing {algorithm}:")
+    for i in tqdm(range(executions)):
+        rewards[i], _ = algorithm(env, num_episodes, *args)
+    t = time.time() - t
+    print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
+    rewards_mean, rewards_std = rewards.mean(axis=0), rewards.std(axis=0)
+    RESULTS = np.array([alg_name, rewards_mean, rewards_std], dtype=object)
+    np.save(result_file_name, RESULTS, allow_pickle=True)
+    return alg_name, rewards_mean, rewards_std
+
 
 
 def plot_results(results, max_value):
@@ -42,23 +65,3 @@ def plot_results(results, max_value):
         print()
 
     return
-
-
-def repeated_exec(executions, alg_name, algorithm, env, *args):
-    result_file_name = f"results/{env}-{alg_name}-execs{executions}.npy"
-    if os.path.exists(result_file_name):
-        print("Loading results from", result_file_name)
-        RESULTS = np.load(result_file_name, allow_pickle=True)
-        return RESULTS
-    num_steps = env.get_max_steps()
-    rewards = np.zeros(shape=(executions, num_steps))
-    alg_infos = np.empty(shape=(executions,), dtype=object)
-    t = time()
-    print(f"Executing {algorithm}:")
-    for i in tqdm(range(executions)):
-        rewards[i], alg_infos[i] = algorithm(env, *args)
-    t = time() - t
-    print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
-    RESULTS = np.array([alg_name, rewards.mean(axis=0), alg_infos], dtype=object)
-    np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rewards.mean(axis=0), alg_infos

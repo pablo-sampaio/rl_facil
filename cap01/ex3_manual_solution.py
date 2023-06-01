@@ -10,10 +10,10 @@ sum_rewards = 0.0
 
 while not done:
     env.render()
-    
-    #action = env.action_space.sample()
-    print(obs)
-    if obs[0] < 0.0 and obs[1] < 0:
+
+    # se a velocidade for negativa, acelera para a esquerda    
+    # senão, acelera para a direita
+    if obs[1] < 0:
         action = 0
     else:
         action = 2

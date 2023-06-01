@@ -21,10 +21,10 @@ def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **k
         rewards[i], _ = algorithm(env, num_episodes, *args, **kwargs)
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
-    rew_mean, rew_std = rewards.mean(axis=0), rewards.std(axis=0)
-    RESULTS = np.array([alg_name, rew_mean, rew_std], dtype=object)
+    rewards_mean, rewards_std = rewards.mean(axis=0), rewards.std(axis=0)
+    RESULTS = np.array([alg_name, rewards_mean, rewards_std], dtype=object)
     np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rew_mean, rew_std
+    return alg_name, rewards_mean, rewards_std
 
 
 # for algorithms that return a list of pairs (timestep, return)

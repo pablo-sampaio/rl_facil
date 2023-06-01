@@ -1,15 +1,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
-
-def smooth(data, window):
-  data = np.array(data)
-  n = len(data)
-  y = np.zeros(n)
-  for i in range(n):
-    start = max(0, i-window+1)
-    y[i] = data[start:(i+1)].mean()
-  return y
+from . import smooth
 
 
 # future: rever a ORDEM dos parâmetros (e rever onde esta função é usada)
@@ -56,9 +48,6 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     
     plt.close()
 
-
-#def moving_average(x, w):
-#    return np.convolve(x, np.ones(w), 'valid') / w
 
 def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, return_type='episode', window=10, plot_stddev=False):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.

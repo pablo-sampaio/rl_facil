@@ -1,10 +1,14 @@
 
 import numpy as np
 
-from bandit_envs import SimpleMultiArmedBandit
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from util.bandit_envs import MultiArmedBanditEnv
 
 
-def run_epsilon_greedy(env, epsilon):
+def run_epsilon_greedy(env, total_steps, epsilon):
     num_actions = env.get_num_actions()
 
     # estatisticas por ação
@@ -14,18 +18,16 @@ def run_epsilon_greedy(env, epsilon):
     env.reset()
 
     reward_per_step = []    # recompensas recebidas a cada passo
-    done = False
 
-    while not done:
+    for _ in range(total_steps):
         # gera um valor aleatório entre 0 e 1
         # se ele ficar abaixo de "epsilon", faz ação aleatória
         if (np.random.random() <= epsilon):
             a = np.random.randint(num_actions)
-            #a = np.random.choice(num_actions)
         else:
             a = np.argmax(Q)
         
-        r, done = env.step(a)
+        r = env.step(a)
 
         reward_per_step.append(r)
         
@@ -43,13 +45,13 @@ def run_epsilon_greedy(env, epsilon):
 
 if __name__ == '__main__':
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
-    mab_problem = SimpleMultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)
+    mab_problem = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
 
-    rewards, _ = run_epsilon_greedy(mab_problem, 0.1)
+    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.1)
     print(f"Eps-greedy (0.1) - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_epsilon_greedy(mab_problem, 0.4)
+    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.4)
     print(f"Eps-greedy (0.4) - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_epsilon_greedy(mab_problem, 0.01)
+    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.01)
     print(f"Eps-greedy (0.01) - soma de recompensas:", sum(rewards))

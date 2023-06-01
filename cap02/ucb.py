@@ -1,7 +1,7 @@
 
 import numpy as np
 
-from bandit_envs import SimpleMultiArmedBandit
+from bandit_envs import MultiArmedBandit
 from epsilon_greedy import run_epsilon_greedy
 
 
@@ -50,7 +50,7 @@ def run_ucb(env):
 
 if __name__ == '__main__':
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
-    mab_problem = SimpleMultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)
+    mab_problem = MultiArmedBandit(BANDIT_PROBABILITIES, max_steps=10000)
 
     rewards, _ = run_ucb(mab_problem)
     print(f"UCB - soma de recompensas:", sum(rewards))
