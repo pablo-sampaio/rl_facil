@@ -14,13 +14,10 @@ def run_random(env, total_steps):
  
     env.reset()
     reward_per_step = []    # recompensa recebida a cada passo
-    #done = False
 
     # realiza todos os passos escolhendo ações aleatórias
-    #while not done:
     for _ in range(total_steps):
         action = np.random.choice(num_actions)
-        #r, done = env.step(a)
         reward = env.step(action)
         reward_per_step.append(reward)
 

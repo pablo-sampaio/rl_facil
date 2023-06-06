@@ -14,7 +14,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     - x_log_scale: se for True, mostra o eixo x na escala log (para detalhar mais os resultados iniciais)
     - window: permite fazer a média dos últimos resultados, para suavizar o gráfico
     - return_type: use 'episode' ou 'step' para indicar o que representa o eixo x; também afeta como será lido o parâmetro 'returns'
-    - filename: se for fornecida uma string, salva o gráfico em arquivo ao invés de exibir.
+    - filename: se for fornecida uma string, salva um arquivo de imagem ao invés de exibir.
     '''
     plt.figure(figsize=(14,8))
 
@@ -49,7 +49,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     plt.close()
 
 
-def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, return_type='episode', window=10, plot_stddev=False):
+def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, return_type='episode', window=10, plot_stddev=False, yreference=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
     Parâmetros:
@@ -57,44 +57,42 @@ def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, ret
     - cumulative: indica se as recompensas anteriores devem ser acumuladas, para calcular a média histórica por episódio
     - x_log_scale: se for True, mostra o eixo x na escala log (para detalhar mais os resultados iniciais)
     - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative=False
+    - plot_stddev: exibe sombra com o desvio padrão, ou seja, entre média-desvio e média+desvio
+    - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
     '''
-    if not cumulative:
-        # plot the returns smoothed by a moving average with the given window
-        plt.figure(figsize=(14,8))
-        for (alg_name, returns, std) in list_returns:
-            xvalues = np.arange(1, len(returns)+1)
-            plt.plot(xvalues, smooth(returns,window), label=alg_name)
-            if plot_stddev:
-                plt.fill_between(xvalues, returns-std, returns+std, alpha=0.4)
-        
-        if x_log_scale:
-            plt.xscale('log')
-        
-        if return_type == 'episode':
-            plt.xlabel('Episódio')
+    total_steps = list_returns[0][1].shape[1]
+    plt.figure(figsize=(12,8))
+    for (alg_name, returns) in list_returns:
+        xvalues = np.arange(1, total_steps+1)
+        if cumulative:
+            # calculate the cumulative sum along axis 1
+            cumreturns = np.cumsum(returns, axis=1) #, out=yvalues)
+            cumreturns = cumreturns / xvalues
+            yvalues = cumreturns.mean(axis=0)
+            std = cumreturns.std(axis=0)
         else:
-            plt.xlabel('Passo')
-        
-        plt.ylabel('Retorno')
-        plt.title(f"Retorno médio a cada {window} episódios")
-        plt.legend()
-        plt.show()
+            yvalues = smooth(returns.mean(axis=0),window)
+            std = returns.std(axis=0)
+        plt.plot(xvalues, yvalues, label=alg_name)
+        if plot_stddev:
+            plt.fill_between(xvalues, yvalues-std, yvalues+std, alpha=0.4)
+    
+    if yreference is not None:
+        y_ref_line = [ yreference ] * total_steps
+        plt.plot(y_ref_line, linestyle="--", color="gray")
 
+    if x_log_scale:
+        plt.xscale('log')
+    
+    if return_type == 'episode':
+        plt.xlabel('Episódio')
     else:
-        # plot cumulative average returns
-        plt.figure(figsize=(14,8))
-        for (alg_name, returns, _) in list_returns:
-            xvalues = np.arange(1, len(returns)+1)
-            cumulative_average = np.cumsum(returns) / xvalues
-            plt.plot(xvalues, cumulative_average, label=alg_name)
-        
-        if x_log_scale:
-            plt.xscale('log')
-        
-        plt.xlabel('Episódio' if return_type=='episode' else 'Passo')
-        plt.ylabel('Retorno')
+        plt.xlabel('Passo')
+    
+    plt.ylabel('Retorno')
+    if cumulative:
         plt.title("Retorno acumulado médio")
-        plt.legend()
-        plt.show()
-
-    return
+    else:
+        plt.title(f"Retorno médio a cada {window} episódios")
+    plt.legend()
+    plt.show()

@@ -74,7 +74,7 @@ if __name__ == '__main__':
 
     print("Versão simples")
     env1 = MultiArmedBanditEnv()
-    done = False
+    env1.reset()
     actions = [1, 0] * (max_steps // 2)
     for _ in range(12):
         a = actions.pop()
@@ -84,7 +84,7 @@ if __name__ == '__main__':
 
     print("Versão gaussiana")
     env2 = GaussianMultiArmedBanditEnv()
-    done = False
+    env2.reset()
     actions = [1, 0] * (max_steps // 2)
     for _ in range(12):
         a = actions.pop()

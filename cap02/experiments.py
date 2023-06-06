@@ -1,29 +1,34 @@
-
-from bandit_envs import MultiArmedBandit, GaussianMultiArmedBandit
-from util import repeated_exec, plot_results
-
 from baseline_algorithms import run_greedy, run_random
 from epsilon_greedy import run_epsilon_greedy
 from ucb import run_ucb
 
+from util.bandit_envs import MultiArmedBanditEnv, GaussianMultiArmedBanditEnv
+
+from util.experiments import repeated_exec
+from util.plot import plot_multiple_results
 
 
-NUM_EXECUTIONS = 30
-NUM_STEPS = 10000
+RUNS  = 50
+STEPS = 10000
 
 BANDITS_PROBABILITIES = [0.2, 0.5, 0.75]
-enviroment = MultiArmedBandit(BANDITS_PROBABILITIES)
-#enviroment = GaussianMultiArmedBandit(BANDITS_PROBABILITIES, max_steps=10000)
+enviroment = MultiArmedBanditEnv(BANDITS_PROBABILITIES)
+#enviroment = GaussianMultiArmedBanditEnv(BANDITS_PROBABILITIES)
 
 results = []
 
-results.append( repeated_exec(NUM_EXECUTIONS, "RANDOM", run_random, enviroment, NUM_STEPS, False) )
-results.append( repeated_exec(NUM_EXECUTIONS, "GREEDY", run_greedy, enviroment, NUM_STEPS, False) )
+results.append( repeated_exec(RUNS, "RANDOM", run_random, enviroment, STEPS) )
+#results.append( repeated_exec(RUNS, "GREEDY", run_greedy, enviroment, STEPS) )
 
-#for epsilon in [0.1, 0.4, 0.01]:
-    #results.append( repeated_exec(NUM_EXECUTIONS, f"EPS({epsilon})-GREEDY", run_epsilon_greedy, enviroment, epsilon) )
+for epsilon in [0.10, 0.40]:
+    results.append( repeated_exec(RUNS, f"EPS({epsilon})-GREEDY", run_epsilon_greedy, enviroment, STEPS, epsilon) )
 
-#results.append( repeated_exec(NUM_EXECUTIONS, "UCB", run_ucb, enviroment) )
+results.append( repeated_exec(RUNS, "UCB", run_ucb, enviroment, STEPS) )
 
+for (alg_name, rewards) in results:
+    print("Summary for " + alg_name)
+    print(" - total reward:", rewards.sum())
+    print(" - avg reward (win rate):", rewards.sum() / STEPS)
+    print()
 
-plot_results(results, enviroment.get_max_mean_reward())
+plot_multiple_results(results, cumulative=True, x_log_scale=True, yreference=enviroment.get_max_mean_reward())

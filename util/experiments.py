@@ -7,14 +7,17 @@ import numpy as np
 
 
 def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **kwargs):
-    env_name = str(env.unwrapped).replace('<','_').replace('>','_')
+    env_name = type(env).__name__ 
+    auto_load = False
+    if ('auto_load' in kwargs):
+        auto_load = kwargs['auto_load']
+        kwargs.pop('auto_load')
     result_file_name = f"results/{env_name}-{alg_name}-episodes{num_episodes}-execs{executions}.npy"
-    if os.path.exists(result_file_name):
+    if auto_load and os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
     rewards = np.zeros(shape=(executions, num_episodes))
-    #alg_infos = np.empty(shape=(executions,), dtype=object)
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
@@ -24,7 +27,8 @@ def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **k
     rewards_mean, rewards_std = rewards.mean(axis=0), rewards.std(axis=0)
     RESULTS = np.array([alg_name, rewards_mean, rewards_std], dtype=object)
     np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rewards_mean, rewards_std
+    #return alg_name, rewards_mean, rewards_std
+    return alg_name, rewards
 
 
 # for algorithms that return a list of pairs (timestep, return)
