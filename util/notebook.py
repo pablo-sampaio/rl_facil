@@ -8,8 +8,7 @@ from pathlib import Path
 
 def display_video(videopath: str) -> str:
     """
-    Gets a string containing a b4-encoded version of the MP4 video
-    at the specified path.
+    Displays a single video file in a notebook.
     """
     mp4 = open(videopath, 'rb').read()
     base64_encoded_mp4 = b64encode(mp4).decode()
