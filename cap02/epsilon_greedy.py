@@ -6,6 +6,7 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from util.bandit_envs import MultiArmedBanditEnv
+from cap02.baseline_algorithms import run_random
 
 
 def run_epsilon_greedy(env, total_steps, epsilon):
@@ -45,13 +46,16 @@ def run_epsilon_greedy(env, total_steps, epsilon):
 
 if __name__ == '__main__':
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
-    mab_problem = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
+    env = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
 
-    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.1)
+    rewards, _ = run_epsilon_greedy(env, total_steps=10000, epsilon=0.3)
+    print(f"Eps-greedy (0.3) - soma de recompensas:", sum(rewards))
+
+    rewards, _ = run_epsilon_greedy(env, total_steps=10000, epsilon=0.1)
     print(f"Eps-greedy (0.1) - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.4)
-    print(f"Eps-greedy (0.4) - soma de recompensas:", sum(rewards))
+    rewards, _ = run_epsilon_greedy(env, total_steps=10000, epsilon=0.02)
+    print(f"Eps-greedy (0.02) - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_epsilon_greedy(mab_problem, total_steps=10000, epsilon=0.01)
-    print(f"Eps-greedy (0.01) - soma de recompensas:", sum(rewards))
+    rewards, _ = run_random(env, total_steps=10000)
+    print("Random - soma de recompensas:", sum(rewards))

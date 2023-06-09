@@ -8,7 +8,7 @@ from util.experiments import repeated_exec
 from util.plot import plot_multiple_results
 
 
-RUNS  = 50
+RUNS  = 100
 STEPS = 10000
 
 BANDITS_PROBABILITIES = [0.2, 0.5, 0.75]
@@ -20,10 +20,11 @@ results = []
 results.append( repeated_exec(RUNS, "RANDOM", run_random, enviroment, STEPS) )
 #results.append( repeated_exec(RUNS, "GREEDY", run_greedy, enviroment, STEPS) )
 
-for epsilon in [0.10, 0.40]:
-    results.append( repeated_exec(RUNS, f"EPS({epsilon})-GREEDY", run_epsilon_greedy, enviroment, STEPS, epsilon) )
+epsilon = 0.02
+results.append( repeated_exec(RUNS, f"EPS({epsilon})-GREEDY", run_epsilon_greedy, enviroment, STEPS, epsilon) )
 
-results.append( repeated_exec(RUNS, "UCB", run_ucb, enviroment, STEPS) )
+c = 0.5
+results.append( repeated_exec(RUNS, f"UCB(c=c)", run_ucb, enviroment, STEPS, c) )
 
 for (alg_name, rewards) in results:
     print("Summary for " + alg_name)
@@ -31,4 +32,4 @@ for (alg_name, rewards) in results:
     print(" - avg reward (win rate):", rewards.sum() / STEPS)
     print()
 
-plot_multiple_results(results, cumulative=True, x_log_scale=True, yreference=enviroment.get_max_mean_reward())
+plot_multiple_results(results, cumulative=True, x_log_scale=True, yreference=enviroment.get_max_mean_reward(), plot_stddev=True)

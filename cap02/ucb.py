@@ -6,7 +6,7 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from util.bandit_envs import MultiArmedBanditEnv
-from epsilon_greedy import run_epsilon_greedy
+from cap02.baseline_algorithms import run_random
 
 
 def run_ucb(env, total_steps, c=2.0):
@@ -52,11 +52,17 @@ def run_ucb(env, total_steps, c=2.0):
 
 if __name__ == '__main__':
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
-    mab_problem = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
+    env = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
 
-    rewards, _ = run_ucb(mab_problem, 10000)
-    print(f"UCB - soma de recompensas:", sum(rewards))
+    rewards, _ = run_ucb(env, 10000, c=2.0)
+    print(f"UCB(c=2.0) - soma de recompensas:", sum(rewards))
 
-    rewards, _ = run_epsilon_greedy(mab_problem, 10000, 0.1)
-    print(f"Eps-greedy (0.1) - soma de recompensas:", sum(rewards))
+    rewards, _ = run_ucb(env, 10000, c=1.0)
+    print(f"UCB(c=1.0) - soma de recompensas:", sum(rewards))
+
+    rewards, _ = run_ucb(env, 10000, c=0.5)
+    print(f"UCB(c=0.5) - soma de recompensas:", sum(rewards))
+
+    rewards, _ = run_random(env, total_steps=10000)
+    print("Random - soma de recompensas:", sum(rewards))
 
