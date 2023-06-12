@@ -36,7 +36,7 @@ def run_ucb(env, total_steps, c=2.0):
     # a ação de melhor valor na fórmula do UCB
     for _ in range(total_steps-num_actions):
         # no parametro do argmax: operações aritméticas em arrays, que resultam em um array de tamanho "num_actions"
-        a = np.argmax( Q + np.sqrt(c * np.log(steps) / action_cnt) )
+        a = np.argmax( Q + c * np.sqrt(np.log(steps) / action_cnt) )
         
         r = env.step(a)
         steps += 1
