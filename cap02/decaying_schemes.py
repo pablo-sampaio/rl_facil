@@ -40,9 +40,10 @@ def logarithmic_decay(minimum_epsilon, target_step, initial_epsilon=1.0, plateau
 
 
 def sigmoidal_decay(steepness=4.0):
-    # o steepness representa o maior valor de x a ser passado para a função sigmoid (expit)
-    # e o max_decay representa o maior valor de decay que poderá ser obtido usando a função sigmoid (expit) sem correção
-    # obs.: a função "expit" é a implementação da função sigmoid-logística do scipy
+    # a função sigmóide (representada por "expit") é usada para indicar o fator de "decay"
+    # o steepness representa o maior valor de x a ser passado para a sigmóide, i.e. ela será usada no domínio [0; steepness]
+    # o max_decay representa o maior valor de decay que seria obtido com o cálculo abaixo, sem correção
+    # o máximo deveria ser 1.0, mas este só é atingido para x -> +inf
     max_decay = 2.0 * expit(steepness) - 1.0
 
     def sigmoidal_decay_fixed_steepness(minimum_epsilon, target_step, initial_epsilon=1.0, plateau_at_min=True):
