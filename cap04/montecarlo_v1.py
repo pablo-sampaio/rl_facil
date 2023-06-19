@@ -8,9 +8,6 @@
 import gym
 import numpy as np
 
-from util_plot import plot_result
-from util_experiments import test_greedy_Q_policy
-
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
@@ -24,7 +21,9 @@ def choose_action(Q, state, num_actions, epsilon):
 # Algoritmo Monte-Carlo de Controle, variante "toda-visita".
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
 def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
-    # assert?
+    assert isinstance(env.observation_space, gym.spaces.Discrete)
+    assert isinstance(env.action_space, gym.spaces.Discrete)
+
     num_actions = env.action_space.n
     
     # dicionário com todos os retornos descontados, para cada par (estado,ação)
@@ -48,8 +47,8 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
         # PARTE 1: executa um episódio completo
         while done != True:   
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            #if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
-            #    env.render()
+            if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
+                env.render()
                 
             # escolhe a próxima ação -- usa epsilon-greedy
             action = choose_action(Q, state, num_actions, epsilon)
@@ -75,21 +74,28 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
         for (s, a, r) in reversed(ep_trajectory):
             Gt = r + gamma*Gt
             
-            if returns_history.get((s,a)) is not None:
-                returns_history[s,a].append(Gt)
-            else:
+            if returns_history.get((s,a)) is None:
                 returns_history[s,a] = [ Gt ]
+            else:
+                returns_history[s,a].append(Gt)
             
             # média entre todas as ocorrências de (s,a) encontradas nos episódios
-            #Q[s,a] = np.mean(returns_history[s,a]) # LENTO! -> vamos melhorar
-            delta = Gt - Q[s,a]
-            Q[s,a] = Q[s,a] + (1/len(returns_history[s,a])) * delta
+            Q[s,a] = np.mean(returns_history[s,a]) # LENTO! -> vamos melhorar
+            #delta = Gt - Q[s,a]
+            #Q[s,a] = Q[s,a] + (1/len(returns_history[s,a])) * delta
 
     return sum_rewards_per_ep, Q
 
 
 
 if __name__ == "__main__":
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+    from util.plot import plot_result
+    from util.experiments import test_greedy_Q_policy
+
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 

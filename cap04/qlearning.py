@@ -5,9 +5,6 @@
 import gym
 import numpy as np
 
-from util_plot import plot_result
-from util_experiments import test_greedy_Q_policy
-
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
@@ -33,7 +30,7 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
     sum_rewards_per_ep = []
-    
+
     # loop principal
     for i in range(episodes):
         done = False
@@ -41,7 +38,7 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         
         state = env.reset()
     
-        # executa 1 episódio completo, fazendo atualizações na Q-table
+        # executa um episódio completo, fazendo atualizações na Q-table
         while not done: 
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
@@ -71,7 +68,7 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         #epsilon = np.exp(-0.005*i)
 
         sum_rewards_per_ep.append(sum_rewards)
-        
+
         # a cada 100 episódios, imprime informação sobre o progresso 
         if (i+1) % 100 == 0:
             avg_reward = np.mean(sum_rewards_per_ep[-100:])
@@ -82,6 +79,13 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
 
 
 if __name__ == "__main__":
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+    from util.plot import plot_result
+    from util.experiments import test_greedy_Q_policy
+
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
 
@@ -96,7 +100,8 @@ if __name__ == "__main__":
     rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Salva em arquivo ou exibe um gráfico episódios x retornos (não descontados)
+    # Mostra um gráfico de episódios x retornos não descontados
+    # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
     #filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
     plot_result(rewards, r_max_plot, None)
 

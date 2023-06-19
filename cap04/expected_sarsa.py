@@ -1,8 +1,8 @@
 import gym
 import numpy as np
 
-from util_plot import plot_result
-from util_experiments import test_greedy_Q_policy
+from util.plot import plot_result
+from util.experiments import test_greedy_Q_policy
 
 # esta função pode ser usada para converter um array "x" de valores
 # numéricos quaisquer em probabilidades
