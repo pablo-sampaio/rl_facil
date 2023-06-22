@@ -4,8 +4,8 @@ from collections import deque
 import gym
 import numpy as np
 
-from util_plot import plot_result
-from util_experiments import test_greedy_Q_policy
+from util.plot import plot_result
+from util.experiments import test_greedy_Q_policy
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores

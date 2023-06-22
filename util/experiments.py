@@ -4,10 +4,15 @@ import os
 from tqdm import tqdm
 
 import numpy as np
+import gym
 
 
 def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **kwargs):
-    env_name = type(env).__name__ 
+    # gets a string to identify the environment
+    if isinstance(env, gym.Env):
+        env_name = str(env).replace('<', '_').replace('>', '')
+    else:
+        env_name = type(env).__name__ 
     auto_load = False
     if ('auto_load' in kwargs):
         auto_load = kwargs['auto_load']
