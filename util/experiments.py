@@ -84,7 +84,7 @@ def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, 
     return alg_name, rew_mean, rew_std
 
 
-def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01):
+def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01, recorded_video_folder=None):
     """
     Avalia a política gulosa (greedy) definida implicitamente por uma Q-table.
     Ou seja, executa, em todo estado s, a ação "a = argmax Q(s,a)".
@@ -98,6 +98,8 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
     - um par contendo o valor escalar do retorno médio por episódio e 
        a lista de retornos de todos os episódios
     """
+    if recorded_video_folder is not None:
+        env = gym.wrappers.RecordVideo(env, recorded_video_folder)
     episode_returns = []
     total_steps = 0
     for i in range(num_episodes):
@@ -121,4 +123,5 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
     print("Retorno médio (por episódio):", mean_return, end="")
     print(", episódios:", len(episode_returns), end="")
     print(", total de passos:", total_steps)
+    env.close()
     return mean_return, episode_returns
