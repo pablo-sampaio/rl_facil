@@ -33,7 +33,7 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
     # usar o estado como índice das linhas e a ação como índice das colunas
     Q = np.zeros(shape = (env.observation_space.n, num_actions))
 
-    # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
+    # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
 
     # loop principal

@@ -4,7 +4,12 @@ import optuna
 
 from expected_sarsa import run_expected_sarsa
 from qlearning import run_qlearning
-from wrappers import DiscreteObservationWrapper
+
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from util.wrappers import DiscreteObservationWrapper
 
 
 ENV = gym.make("MountainCar-v0")
@@ -18,8 +23,8 @@ def train_with_exp_sarsa(trial : optuna.Trial):
     lr = trial.suggest_uniform('learning_rate', 0.001, 1.0)
     #lr = trial.suggest_loguniform('learning_rate', 0.001, 1.0)
     eps = trial.suggest_uniform('epsilon', 0.01, 0.2)
-    bins1 = trial.suggest_int('bins1', 5, 100)
-    bins2 = trial.suggest_int('bins2', 5, 100)
+    bins1 = trial.suggest_int('bins1', 10, 100, step=10)
+    bins2 = trial.suggest_int('bins2', 10, 100, step=10)
     
     print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}, bins={bins1},{bins2}")
 
@@ -33,12 +38,17 @@ def train_with_exp_sarsa(trial : optuna.Trial):
 def train_with_qlearning(trial : optuna.Trial):
     
     # chama os métodos do "trial" (tentativa) para sugerir valores para os parâmetros
-    lr = trial.suggest_loguniform('learning_rate', 0.001, 1.0)
+    lr = trial.suggest_uniform('learning_rate', 0.001, 1.0)
+    #lr = trial.suggest_loguniform('learning_rate', 0.001, 1.0)
     eps = trial.suggest_uniform('epsilon', 0.01, 0.2)
-    print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}")
+    bins1 = trial.suggest_int('bins1', 10, 100, step=10)
+    bins2 = trial.suggest_int('bins2', 10, 100, step=10)
+    
+    print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}, bins={bins1},{bins2}")
 
     # roda o algoritmo e recebe os retornos não-descontados
-    (returns, _) = run_qlearning(ENV, 3000, lr=lr, epsilon=eps, render=False)
+    env_wrapper = DiscreteObservationWrapper(ENV, [bins1,bins2])
+    (returns, _) = run_qlearning(env_wrapper, 2000, lr=lr, epsilon=eps, render=False)
 
     return sum(returns[-100:])/100 
 

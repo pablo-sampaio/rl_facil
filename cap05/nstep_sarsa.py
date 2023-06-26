@@ -4,9 +4,6 @@ from collections import deque
 import gym
 import numpy as np
 
-from util.plot import plot_result
-from util.experiments import test_greedy_Q_policy
-
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
@@ -22,6 +19,7 @@ def choose_action(Q, state, num_actions, epsilon):
 def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
+    assert isinstance(nstep, int)
 
     num_actions = env.action_space.n
     
@@ -33,7 +31,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
     gamma_array = np.array([ gamma**i for i in range(0,nstep)])
     gamma_power_nstep = gamma**nstep
 
-    # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
+    # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
     
     # loop principal
@@ -69,7 +67,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
             ha.append(action)
             hr.append(reward)
             
-            # se o histórico estiver completo, 
+            # se o histórico estiver completo com 'n' passos
             # vai fazer uma atualização no valor Q do estado mais antigo
             if len(hs) == nstep:
                 if done: 
@@ -95,7 +93,8 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
             hs.popleft()
             ha.popleft()
             hr.popleft()
-            delta = ( sum(gamma_array[0:j]*hr) + 0 ) - Q[hs[0],ha[0]]
+            #delta = ( sum(gamma_array[0:j]*hr) + V_next_state ) - Q[hs[0],ha[0]]
+            delta = ( sum(gamma_array[0:j]*hr) + 0 ) - Q[hs[0],ha[0]]   # assumindo que V_next_state == 0, mas isso pode não ser verdade em episódios truncados
             Q[hs[0],ha[0]] += lr * delta
 
         sum_rewards_per_ep.append(sum_rewards)
@@ -110,8 +109,15 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
 
 
 if __name__ == "__main__":
-    ENV_NAME = "Taxi-v3"
-    r_max_plot = 10
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+    from util.plot import plot_result
+    from util.experiments import test_greedy_Q_policy
+
+    ENV_NAME, r_max = "FrozenLake-v1", 1.0
+    #ENV_NAME, r_max = "Taxi-v3", 10.0
 
     EPISODES = 10000
     LR = 0.01
@@ -122,11 +128,11 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo "n-step SARSA"
-    rewards, Qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=False)
+    rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=False)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(rewards, r_max_plot, None)
+    plot_result(rewards, r_max, None)
 
-    test_greedy_Q_policy(env, Qtable, 10, True)
+    test_greedy_Q_policy(env, qtable, 10, True)
     env.close()

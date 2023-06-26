@@ -1,20 +1,18 @@
 import gym
 import numpy as np
 
-from util.plot import plot_result
-from util.experiments import test_greedy_Q_policy
 
 # esta função pode ser usada para converter um array "x" de valores
 # numéricos quaisquer em probabilidades
-def softmax(x):
+def softmax_probs(x):
     x = x - np.max(x)
     x = np.exp(x)
     x = x / np.sum(x)
     return x
 
 # escolhe uma ação da Q-table usando uma estratégia softmax
-def softmax_policy(Q, state):
-    probs = softmax(Q[state])
+def softmax_choice(Q, state):
+    probs = softmax_probs(Q[state])
     return np.random.choice(len(probs), p=probs)
 
 # define as probabilidades de escolher uma ação usando uma estratégia epsilon-greedy
@@ -43,7 +41,7 @@ def epsilon_greedy_probs(Q, state, num_actions, epsilon):
             probs.append(non_greedy_action_probability)
     return probs
 
-def epsilon_greedy_policy(Q, state, epsilon=0.1):
+def epsilon_greedy_choice(Q, state, epsilon=0.1):
     num_actions = len(Q[state])
     probs = epsilon_greedy_probs(Q, state, num_actions, epsilon)
     return np.random.choice(num_actions, p=probs)
@@ -62,9 +60,9 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
     Q = np.random.uniform(low = -1.0, high = 0.0, 
                           size = (env.observation_space.n, num_actions))
 
-    # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
+    # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
-     
+    
     # loop principal
     for i in range(episodes):
         done = False
@@ -79,19 +77,19 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
                 env.render()
             
             # escolhe a próxima ação -- usa epsilon-greedy
-            action = epsilon_greedy_policy(Q, state, epsilon)
-            #action = softmax_policy(Q, state)  # bad results!
+            action = epsilon_greedy_choice(Q, state, epsilon)
+            #action = softmax_choice(Q, state)  # bad results!
 
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, done, _ = env.step(action)
 
             if done: 
                 # para estados terminais
-                V_next_state = 0 
+                V_next_state = 0
             else:
                 # para estados não-terminais -- valor esperado
                 p_next_actions = epsilon_greedy_probs(Q, next_state, num_actions, epsilon)
-                #p_next_actions = softmax(Q[next_state_num])
+                #p_next_actions = softmax_probs(Q[next_state_num])
                 V_next_state = np.sum( p_next_actions * Q[next_state] ) 
 
             # atualiza a Q-table
@@ -115,11 +113,18 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
 
 
 if __name__ == "__main__":
-    ENV_NAME = "Taxi-v3"
-    r_max = 10
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-    EPISODES = 12000
-    LR = 0.01
+    from util.plot import plot_result
+    from util.experiments import test_greedy_Q_policy
+
+    ENV_NAME, r_max = "FrozenLake-v1", 1.0
+    #ENV_NAME, r_max = "Taxi-v3", 10.0
+
+    EPISODES = 10000
+    LR = 0.2
     GAMMA = 0.95
     EPSILON = 0.1
 
@@ -130,7 +135,7 @@ if __name__ == "__main__":
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Mostra um gráfico de episódios x retornos (não descontados)
-    plot_result(returns, r_max, None)
+    plot_result(returns, r_max, None, window=50)
 
     test_greedy_Q_policy(env, Qtable, 5, True)
     env.close()

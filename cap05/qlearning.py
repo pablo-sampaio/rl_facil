@@ -8,7 +8,7 @@ import numpy as np
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
-def choose_action(Q, state, num_actions, epsilon):
+def epsilon_greedy(Q, state, num_actions, epsilon):
     if np.random.random() < epsilon:
         return np.random.randint(0, num_actions)
     else:
@@ -28,9 +28,9 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
     Q = np.random.uniform(low = -1.0, high = 0.0, 
                           size = (env.observation_space.n, num_actions))
 
-    # para cada episódio, guarda sua soma de recompensas (retorno não-discontado)
+    # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
-
+    
     # loop principal
     for i in range(episodes):
         done = False
@@ -38,14 +38,14 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         
         state = env.reset()
     
-        # executa um episódio completo, fazendo atualizações na Q-table
-        while not done: 
+        # executa 1 episódio completo, fazendo atualizações na Q-table
+        while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()
-                
+            
             # escolhe a próxima ação -- usa epsilon-greedy
-            action = choose_action(Q, state, num_actions, epsilon)
+            action = epsilon_greedy(Q, state, num_actions, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, done, _ = env.step(action)
@@ -86,24 +86,24 @@ if __name__ == "__main__":
     from util.plot import plot_result
     from util.experiments import test_greedy_Q_policy
 
-    ENV_NAME = "Taxi-v3"
-    r_max_plot = 10
+    ENV_NAME, r_max = "FrozenLake-v1", 1.0
+    #ENV_NAME, r_max = "Taxi-v3", 10.0
 
-    EPISODES = 20000
-    LR = 0.01
+    EPISODES = 12000
+    LR = 0.05
     GAMMA = 0.95
     EPSILON = 0.1
 
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo Q-Learning
-    rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
-    print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
+    returns, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
+    print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Mostra um gráfico de episódios x retornos não descontados
     # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
     #filename = f"results/qlearning-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    plot_result(rewards, r_max_plot, None)
+    plot_result(returns, r_max, None)
 
     test_greedy_Q_policy(env, Qtable, 10, True)
     env.close()
