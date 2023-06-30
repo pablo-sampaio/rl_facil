@@ -63,6 +63,9 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
             next_state, reward, done, _ = env.step(action)
             sum_rewards += reward
 
+            # escolhe (antecipadamente) a ação do próximo estado
+            next_action = choose_action(Q, next_state, num_actions, epsilon)
+
             hs.append(state)
             ha.append(action)
             hr.append(reward)
@@ -74,13 +77,11 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                     # para estados terminais
                     V_next_state = 0
                 else:
-                    # escolhe (antecipadamente) a ação do próximo estado
-                    next_action = choose_action(Q, next_state, num_actions, epsilon)
                     # para estados não-terminais -- valor máximo (melhor ação)
                     V_next_state = Q[next_state,next_action]
 
                 # delta = (estimativa usando a nova recompensa) - estimativa antiga
-                delta = ( sum(gamma_array*hr) + gamma_power_nstep * V_next_state ) - Q[hs[0],ha[0]]
+                delta = ( sum(gamma_array * hr) + gamma_power_nstep * V_next_state ) - Q[hs[0],ha[0]]
                 
                 # atualiza a Q-table para o par (estado,ação) de n passos atrás
                 Q[hs[0],ha[0]] += lr * delta
