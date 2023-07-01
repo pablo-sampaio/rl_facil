@@ -56,25 +56,32 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     plt.close()
 
 
-def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, return_type='episode', window=10, plot_stddev=False, yreference=None):
+def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, return_type='episode', window=10, plot_stddev=False, yreference=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
     Parâmetros:
     - list_returns: uma lista de triplas (nome do resultado, retorno por episódio/passo, outras informações)
     - cumulative: indica se as recompensas anteriores devem ser acumuladas, para calcular a média histórica por episódio
     - x_log_scale: se for True, mostra o eixo x na escala log (para detalhar mais os resultados iniciais)
-    - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative=False
+    - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative='no'
     - plot_stddev: exibe sombra com o desvio padrão, ou seja, entre média-desvio e média+desvio
     - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
     '''
+    # True and False are here for backward compatibility (remove!)
+    if cumulative is None or cumulative is False:
+        cumulative = 'no'
+    if cumulative is True: 
+        cumulative = 'avg'
+    assert cumulative in ['no', 'sum', 'avg']
     total_steps = list_returns[0][1].shape[1]
     plt.figure(figsize=(14,8))
     for (alg_name, returns) in list_returns:
         xvalues = np.arange(1, total_steps+1)
-        if cumulative:
+        if cumulative == 'sum' or cumulative == 'avg':
             # calculate the cumulative sum along axis 1
-            cumreturns = np.cumsum(returns, axis=1) #, out=yvalues)
-            cumreturns = cumreturns / xvalues
+            cumreturns = np.cumsum(returns, axis=1)
+            if cumulative == 'avg':
+                cumreturns = cumreturns / xvalues
             yvalues = cumreturns.mean(axis=0)
             std = cumreturns.std(axis=0)
         else:
