@@ -61,7 +61,7 @@ def plot_multiple_results(list_returns, cumulative=False, x_log_scale=False, ret
     - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
     '''
     total_steps = list_returns[0][1].shape[1]
-    plt.figure(figsize=(12,8))
+    plt.figure(figsize=(14,8))
     for (alg_name, returns) in list_returns:
         xvalues = np.arange(1, total_steps+1)
         if cumulative:

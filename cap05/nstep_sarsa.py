@@ -39,9 +39,9 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
         done = False
         sum_rewards, reward = 0, 0
         
-        next_state = env.reset()
+        state = env.reset()
         # escolhe a próxima ação
-        next_action = choose_action(Q, next_state, num_actions, epsilon)
+        action = choose_action(Q, state, num_actions, epsilon)
 
         # históricos de: estados, ações e recompensas
         hs = deque(maxlen=nstep)
@@ -54,11 +54,6 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()
                         
-            # preparação para avançar mais um passo
-            # lembrar que a ação a ser realizada já está escolhida
-            state = next_state
-            action = next_action
-
             # realiza a ação
             next_state, reward, done, _ = env.step(action)
             sum_rewards += reward
@@ -85,7 +80,11 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
                 
                 # atualiza a Q-table para o par (estado,ação) de n passos atrás
                 Q[hs[0],ha[0]] += lr * delta
-            
+
+            # preparação para avançar mais um passo
+            # lembrar que a ação a ser realizada já está escolhida
+            state = next_state
+            action = next_action
             # fim do laço por episódio
 
         # ao fim do episódio, atualiza o Q dos estados que restaram no histórico

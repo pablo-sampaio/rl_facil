@@ -7,7 +7,20 @@ import numpy as np
 import gym
 
 
-def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **kwargs):
+def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, **kwargs):
+    '''
+    This file runs repeatedly the given algorithm with the given parameters and returns
+    results compatible with the functions in 'util.plot'.
+
+    Parameters:
+    - executions: number of times that the 'algorithm' will be run from the start
+    - alg_name: a string to represent this setting of algorithm (with the given parameters)
+    - algorithm: must be a function that receives 'env' then and integer (corresponding to the 'num_iterations') then the list of arguments (given by'*args' and/or **kwargs)
+    - num_iterations: number of steps or episodes
+    - *args: list of arguments for 'algorithm'
+    - **kwargs: named arguments for 'algorithm'
+    - 'auto_load': to save the results and reload automatically when re-executed with exactly the same parameters (including the number of executions)
+    '''
     # gets a string to identify the environment
     if isinstance(env, gym.Env):
         env_name = str(env).replace('<', '_').replace('>', '')
@@ -17,23 +30,24 @@ def repeated_exec(executions, alg_name, algorithm, env, num_episodes, *args, **k
     if ('auto_load' in kwargs):
         auto_load = kwargs['auto_load']
         kwargs.pop('auto_load')
-    result_file_name = f"results/{env_name}-{alg_name}-episodes{num_episodes}-execs{executions}.npy"
+    result_file_name = f"results/{env_name}-{alg_name}-episodes{num_iterations}-execs{executions}.npy"
     if auto_load and os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
-    rewards = np.zeros(shape=(executions, num_episodes))
+    rewards = np.zeros(shape=(executions, num_iterations))
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        rewards[i], _ = algorithm(env, num_episodes, *args, **kwargs)
+        rewards[i], _ = algorithm(env, num_iterations, *args, **kwargs)
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
     RESULTS = np.array([alg_name, rewards], dtype=object)
     directory = os.path.dirname(result_file_name)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    np.save(result_file_name, RESULTS, allow_pickle=True)
+    if auto_load:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        np.save(result_file_name, RESULTS, allow_pickle=True)
     return alg_name, rewards
 
 
@@ -125,3 +139,22 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
     print(", total de passos:", total_steps)
     env.close()
     return mean_return, episode_returns
+
+
+def repeated_exec_greedy_Q(executions, alg_name, q_table, env, num_iterations):
+
+    def run_q_greedy(env, num_steps):
+        state = env.reset()
+        sum_r = 0.0 # remover!!!
+        rewards = []
+        for i in range(num_steps):
+            a = np.argmax(q_table[state])
+            state, r, done, _ = env.step(a)
+            sum_r += r
+            rewards.append(sum_r)
+            #rewards.append(r)
+            if done:
+                state = env.reset()
+        return rewards, None
+    
+    return repeated_exec(executions, alg_name, run_q_greedy, env, num_iterations)
