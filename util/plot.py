@@ -5,7 +5,7 @@ from . import smooth
 
 
 # future: rever a ORDEM dos parâmetros (e rever onde esta função é usada)
-def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, return_type='episode', filename=None):
+def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, return_type='episode', filename=None, cumulative=False):
     '''Exibe um gráfico "episódio/passo x retorno", fazendo a média a cada `window` retornos, para suavizar.
     
     Parâmetros:
@@ -20,15 +20,22 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
 
     if return_type == 'episode':
         plt.xlabel('Episódios')
+        if cumulative:
+            returns = np.array(returns)
+            returns = np.cumsum(returns)
         yvalues = smooth(returns, window)
         xvalues = np.arange(1, len(returns)+1)
         plt.plot(xvalues, yvalues)
         plt.title(f"Retorno médio a cada {window} episódios")
     #elif return_type == 'step':
     else:
+        print("Window is ignored for 'step' type of returns")
         plt.xlabel('Passos')
         xvalues, yvalues = list(zip(*returns))
         xvalues = np.array(xvalues) + 1
+        if cumulative:
+            yvalues = np.array(yvalues)
+            yvalues = np.cumsum(yvalues)
         plt.plot(xvalues, yvalues)
         plt.title(f"Retorno médio a cada {window} passos")
 
