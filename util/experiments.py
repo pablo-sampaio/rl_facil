@@ -142,17 +142,13 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
 
 
 def repeated_exec_greedy_Q(executions, alg_name, q_table, env, num_iterations):
-
     def run_q_greedy(env, num_steps):
         state = env.reset()
-        sum_r = 0.0 # remover!!!
         rewards = []
         for i in range(num_steps):
             a = np.argmax(q_table[state])
             state, r, done, _ = env.step(a)
-            sum_r += r
-            rewards.append(sum_r)
-            #rewards.append(r)
+            rewards.append(r)
             if done:
                 state = env.reset()
         return rewards, None
