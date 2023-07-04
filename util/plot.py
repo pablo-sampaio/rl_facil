@@ -29,7 +29,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
         plt.title(f"Retorno médio a cada {window} episódios")
     #elif return_type == 'step':
     else:
-        print("Window is ignored for 'step' type of returns")
+        print("Attention: 'window' is ignored for 'step' type of returns")
         plt.xlabel('Passos')
         xvalues, yvalues = list(zip(*returns))
         xvalues = np.array(xvalues) + 1
@@ -73,6 +73,7 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, retu
     if cumulative is True: 
         cumulative = 'avg'
     assert cumulative in ['no', 'sum', 'avg']
+    assert return_type in ['step', 'episode']
     total_steps = list_returns[0][1].shape[1]
     plt.figure(figsize=(14,8))
     for (alg_name, returns) in list_returns:
@@ -100,13 +101,21 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, retu
     
     if return_type == 'episode':
         plt.xlabel('Episódio')
+        payoff = 'Retorno'
     else:
         plt.xlabel('Passo')
+        payoff = 'Recompensa'
     
     plt.ylabel('Retorno')
-    if cumulative:
-        plt.title("Retorno acumulado médio")
+    
+    if cumulative == 'no':
+        plt.title(f"{payoff} (média móvel a cada {window})")
+    elif cumulative == 'avg':
+        gen = payoff[-1]
+        plt.title(f"{payoff} acumulad{gen} médi{gen}")
     else:
-        plt.title(f"Retorno médio a cada {window} episódios")
+        gen = payoff[-1]
+        plt.title(f"{payoff} acumulad{gen}")
+    
     plt.legend()
     plt.show()
