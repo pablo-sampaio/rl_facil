@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     env = gym.make(ENV_NAME)
     # usando o wrapper para discretizar o ambiente
-    env = DiscreteObservationWrapper(env, [50,50,50,50])
+    env = DiscreteObservationWrapper(env, [70,50,70,50])
 
     # 2. Roda um algoritmo de treinamento
     EPISODES = 10000

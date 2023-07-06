@@ -18,6 +18,10 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     '''
     plt.figure(figsize=(14,8))
 
+    # TODO: uniformizar com a outra função
+    if cumulative == 'no':
+        cumulative = False
+
     if return_type == 'episode':
         plt.xlabel('Episódios')
         if cumulative:

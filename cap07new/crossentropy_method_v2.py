@@ -9,7 +9,7 @@ import gym
 import numpy as np
 
 from models_torch import PolicyModelCrossentropy, test_policy
-from util_plot import plot_result
+from util.plot import plot_result
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 

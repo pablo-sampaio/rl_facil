@@ -2,6 +2,19 @@ import numpy as np
 import gym
 
 
+def convert_to_flattened_index(indices, dimensions):
+    if len(indices) != len(dimensions):
+        raise ValueError("Number of indices must match the number of dimensions")
+
+    flattened_index = 0
+    for i in range(len(indices)):
+        if indices[i] < 0 or indices[i] >= dimensions[i]:
+            raise ValueError(f"Value out of bounds at index {i}: {indices[i]}")
+        flattened_index = flattened_index * dimensions[i] + indices[i]
+
+    return flattened_index
+
+
 class GeneralDiscretizer:
     def __init__(self, env, bins_per_dimension):
         self.bins_per_dim = bins_per_dimension.copy()
@@ -15,14 +28,16 @@ class GeneralDiscretizer:
     def to_single_bin(self, state):
         bin_vector = [(np.digitize(x=state[i], bins=intervals) - 1)
                       for i, intervals in enumerate(self.intervals_per_dim)]
+        return convert_to_flattened_index(bin_vector, self.bins_per_dim)
         # print(bin_vector)
-        return self._bin_vector_to_single_bin(bin_vector, len(bin_vector)-1)
+        #return self._bin_vector_to_single_bin(bin_vector, len(bin_vector)-1)
 
-    def _bin_vector_to_single_bin(self, vector, index):
+    '''def _bin_vector_to_single_bin(self, vector, index):
         if index < 0:
             return 0
         return vector[index] + self.bins_per_dim[index] * self._bin_vector_to_single_bin(vector, index-1)
-
+    '''
+    
     def get_total_bins(self):
         return self.total_bins
 
@@ -48,4 +63,27 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
     def observation(self, obs):
         return self.discretizer.to_single_bin(obs)
 
+
+
+class TupleToDiscreteWrapper(gym.ObservationWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.observation_space = gym.spaces.Discrete(self._calculate_discrete_size(env.observation_space))
+
+    def _calculate_discrete_size(self, observation_space):
+        size = 1
+        assert isinstance(observation_space, gym.spaces.Tuple)
+        self.dimensions = []
+        for space in observation_space:
+            size *= space.n
+            self.dimensions.append(space.n)
+        return size
+
+    def observation(self, observation):
+        convert_to_flattened_index(observation, self.dimensions)
+        #flattened_observation = 0
+        #for i, obs in enumerate(observation):
+            # acho que não está 100% correto
+        #    flattened_observation += obs * self.env.observation_space[i].n ** i
+        #return int(flattened_observation)
 
