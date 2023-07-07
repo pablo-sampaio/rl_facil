@@ -131,6 +131,9 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
                 env.render()
                 time.sleep(render_wait)
             total_steps += 1
+            if total_steps == 2000:
+                print(f"Too long episode, breaking at step {total_steps}.")
+                break
             episode_returns[-1] += reward
         print("- retorno:", episode_returns[-1])
     mean_return = round(np.mean(episode_returns), 1)
