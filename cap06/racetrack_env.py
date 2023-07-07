@@ -20,6 +20,8 @@ def get_positions(track, character):
 
 
 class RacetrackEnv(gym.Env):
+    metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
+
     def __init__(self, book_collision=False):
         self.track = [
             "XXXXXXXXXXXXXXXXXX",
@@ -29,7 +31,6 @@ class RacetrackEnv(gym.Env):
             "GG__________XXXXXX",
             "GG___________XXXXX",
             "GG____________XXXX",
-            #"GG_____________XXX",
             "XXXX___________XXX",
             "XXXXXXX_________XX",
             "XXXXXXXXX________X",
@@ -52,7 +53,7 @@ class RacetrackEnv(gym.Env):
         self.book_collision = book_collision
         self.action_space = spaces.Discrete(9)  # 9 possible actions (0-8)
         
-        self.vel_limit = 4
+        self.vel_limit = 3
         # Dimensions for x position / y position / x velocity / y velocity
         self.obs_dimensions = [len(self.track[0]), len(self.track), 2*self.vel_limit+1, 2*self.vel_limit+1]
         self.observation_space = spaces.Discrete(np.prod(self.obs_dimensions))
@@ -83,14 +84,14 @@ class RacetrackEnv(gym.Env):
     def reset(self):
         idx = np.random.choice(len(self.start_positions))
         start_pos = self.start_positions[idx]
-        self.current_position = (*start_pos, self.vel_limit, self.vel_limit)  # o valor de self.vel_limit representa a velocidade zero
+        self.current_state = (*start_pos, self.vel_limit, self.vel_limit)  # o valor de self.vel_limit representa a velocidade zero
         #return self.current_position
-        return convert_to_flattened_index(self.current_position, self.obs_dimensions)
+        return convert_to_flattened_index(self.current_state, self.obs_dimensions)
     
     def step(self, action):
-        x, y, vx, vy = self.current_position
-        vx = vx- self.vel_limit
-        vy = vy- self.vel_limit
+        x, y, vx, vy = self.current_state
+        vx = vx - self.vel_limit
+        vy = vy - self.vel_limit
         
         # Map action to velocity changes
         dx = action % 3 - 1
@@ -100,9 +101,9 @@ class RacetrackEnv(gym.Env):
         vx_new = vx + dx
         vy_new = vy + dy
         
-        # Limit velocities to [-4, 4]
-        vx_new = np.clip(vx_new, -4, 4)
-        vy_new = np.clip(vy_new, -4, 4)
+        # Limit velocities
+        vx_new = np.clip(vx_new, -self.vel_limit, self.vel_limit)
+        vy_new = np.clip(vy_new, -self.vel_limit, self.vel_limit)
         
         # Update position
         x_new = x + vx_new
@@ -121,7 +122,7 @@ class RacetrackEnv(gym.Env):
                 # stop in current position
                 x_new, y_new, vx_new, vy_new = x, y, 0, 0 
         
-        self.current_position = (x_new, y_new, vx_new + self.vel_limit, vy_new + self.vel_limit)
+        self.current_state = (x_new, y_new, vx_new + self.vel_limit, vy_new + self.vel_limit)
         
         if self.track[y_new][x_new] == 'G':
             reward = 0   # Reached the goal
@@ -130,12 +131,12 @@ class RacetrackEnv(gym.Env):
             reward = -1  # Time step penalty
             done = False
         
-        obs = convert_to_flattened_index(self.current_position, self.obs_dimensions)
+        obs = convert_to_flattened_index(self.current_state, self.obs_dimensions)
         return obs, reward, done, {}
 
     def render_text(self):
         track_copy = self.track.copy()  # Create a copy of the track
-        x, y, _, _ = self.current_position
+        x, y, _, _ = self.current_state
         track_copy[y] = track_copy[y][:x] + 'A' + track_copy[y][x+1:]  # Mark the current position with 'A'
         for row in track_copy:
             print(row)
@@ -158,17 +159,13 @@ class RacetrackEnv(gym.Env):
                 color = self.colors[ch]
                 pygame.draw.rect(self.screen, color, (x * self.square_size, y * self.square_size, self.square_size, self.square_size))
         
-        x, y, _, _ = self.current_position
+        x, y, _, _ = self.current_state
         offset = 2
         pygame.draw.rect(self.screen, self.colors['A'], (x*self.square_size + offset, y*self.square_size + offset, self.square_size - 2*offset, self.square_size - 2*offset))
 
-        #pygame.display.flip()
-        #self.clock.tick(30)  # Limit the frame rate
-        #pygame.event.pump()  # Process events
-
         if mode == "human":
             pygame.event.pump()
-            self.clock.tick(60)
+            self.clock.tick(self.metadata["render_fps"])
             pygame.display.flip()
 
         if mode == "rgb_array":
@@ -205,28 +202,4 @@ if __name__=='__main__':
         #print("Done:", done)
         #print()
     
-    env.close()
-
-
-if __name__=='__main':
-    from cap05.nstep_sarsa import run_nstep_sarsa
-    from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
-
-    EPISODES = 10_000
-    LR = 0.1
-    GAMMA = 0.95
-    EPSILON = 0.1
-    NSTEPS = 3
-
-    env = RacetrackEnv()
-    
-    # Roda o algoritmo "n-step SARSA"
-    rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=True)
-    print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
-
-    # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(rewards, window=50)
-
-    test_greedy_Q_policy(env, qtable, 10, True, render_wait=0.1)
     env.close()
