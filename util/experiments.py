@@ -113,7 +113,7 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
        a lista de retornos de todos os episódios
     """
     if recorded_video_folder is not None:
-        env = gym.wrappers.RecordVideo(env, recorded_video_folder)
+        env = gym.wrappers.RecordVideo(env, recorded_video_folder, episode_trigger=(lambda ep : True))
     episode_returns = []
     total_steps = 0
     for i in range(num_episodes):
@@ -123,6 +123,7 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
             env.render()
             time.sleep(render_wait)
         done = False
+        episode_step = 0
         episode_returns.append(0.0)
         while not done:
             action = np.argmax(Q[obs])
@@ -130,9 +131,10 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
             if render:
                 env.render()
                 time.sleep(render_wait)
+            episode_step += 1
             total_steps += 1
-            if total_steps == 2000:
-                print(f"Too long episode, breaking at step {total_steps}.")
+            if episode_step == 1500:
+                print(f"Too long episode, truncating at step {episode_step}.")
                 break
             episode_returns[-1] += reward
         print("- retorno:", episode_returns[-1])
