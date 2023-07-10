@@ -28,8 +28,8 @@ class GeneralDiscretizer:
     def to_single_bin(self, state):
         bin_vector = [(np.digitize(x=state[i], bins=intervals) - 1)
                       for i, intervals in enumerate(self.intervals_per_dim)]
-        return convert_to_flattened_index(bin_vector, self.bins_per_dim)
         # print(bin_vector)
+        return convert_to_flattened_index(bin_vector, self.bins_per_dim)
         #return self._bin_vector_to_single_bin(bin_vector, len(bin_vector)-1)
 
     '''def _bin_vector_to_single_bin(self, vector, index):
@@ -65,7 +65,7 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
 
 
 
-class TupleToDiscreteWrapper(gym.ObservationWrapper):
+class FromDiscreteTupleToDiscreteObs(gym.ObservationWrapper):
     def __init__(self, env):
         super().__init__(env)
         self.observation_space = gym.spaces.Discrete(self._calculate_discrete_size(env.observation_space))
@@ -80,10 +80,4 @@ class TupleToDiscreteWrapper(gym.ObservationWrapper):
         return size
 
     def observation(self, observation):
-        convert_to_flattened_index(observation, self.dimensions)
-        #flattened_observation = 0
-        #for i, obs in enumerate(observation):
-            # acho que não está 100% correto
-        #    flattened_observation += obs * self.env.observation_space[i].n ** i
-        #return int(flattened_observation)
-
+        return convert_to_flattened_index(observation, self.dimensions)
