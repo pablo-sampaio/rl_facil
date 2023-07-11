@@ -17,7 +17,7 @@ class Action(Enum):
     TURN_COUNTER_CW = 2
 
 
-class SimulatedEnv:
+class SimulatedRobotEnv:
     def __init__(self, count_visits=False, use_real_state=False, reward_option='goal', allow_all_actions=True):
         # 0 is corridor; 1 is wall; 2 is goal (r=1, if reward is goal); 
         # 3 is start position; 

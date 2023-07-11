@@ -1,6 +1,10 @@
 
 import numpy as np
 
+#TODO: Deixar como tarefa continuada de estado único, compliant com o gym
+#TODO: Mudar para modulo env
+#TODO: Rodar depois com o diff-qlearning
+
 
 class MultiArmedBanditEnv :
     '''

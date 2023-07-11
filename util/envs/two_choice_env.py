@@ -1,0 +1,49 @@
+
+import gym
+from gym import spaces
+
+
+class TwoChoiceEnv(gym.Env):
+    def __init__(self):
+        super().__init__()
+
+        # Define the action and observation spaces
+        self.action_space = spaces.Discrete(2)  # Two discrete actions: 0 (left) and 1 (right)
+        self.observation_space = spaces.Discrete(9)  # Nine discrete states: 0 to 8
+
+    def reset(self):
+        # Reset the environment to the initial state
+        self.current_state = 0
+        return self.current_state
+
+    def step(self, action):
+        # Perform the specified action and transition to the next state
+        if action != 0 and action != 1:
+            raise ValueError("Invalid action!")
+
+        reward = 0.0
+
+        if self.current_state == 0:
+            # left
+            if action == 0:
+                reward = 1.0
+                self.current_state = 1
+            # right
+            else:
+                reward = 0.0
+                self.current_state = 5
+        elif self.current_state == 4:
+            reward = 0.0
+            self.current_state = 0
+        elif self.current_state == 8:
+            reward = 2.0
+            self.current_state = 0
+        else:
+            reward = 0.0
+            self.current_state += 1
+
+        return self.current_state, reward, False, {}
+
+    def render(self, mode=None):
+        # Display the current state (optional)
+        print("Current state:", self.current_state)

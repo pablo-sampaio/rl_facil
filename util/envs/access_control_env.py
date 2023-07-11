@@ -41,11 +41,15 @@ class AccessControlEnv(gym.Env):
         return (self.free_servers, self.customer_priority_idx)
     
 
+
 if __name__=='__main__':
-    from util.wrappers import FromDiscreteTupleToDiscreteObs
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+    from wrappers import FromDiscreteTupleToDiscreteObs
 
     env = AccessControlEnv()
-    #env = TupleToDiscreteWrapper(env)
+    env = FromDiscreteTupleToDiscreteObs(env)
 
     state = env.reset()
     done = False
