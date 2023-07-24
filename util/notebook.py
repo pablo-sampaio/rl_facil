@@ -1,7 +1,7 @@
 
 # ideias adaptadas de : https://www.anyscale.com/blog/an-introduction-to-reinforcement-learning-with-openai-gym-rllib-and-google
 from base64 import b64encode
-from IPython.display import HTML, display
+from IPython.display import HTML, display, clear_output
 
 from pathlib import Path
 
@@ -61,3 +61,42 @@ def display_videos_from_path(videos_folder='', prefix='', speed=1.0):
         }}
         </script>
     '''))
+
+
+def display_videos_from_path_widgets(videos_folder='', prefix='', speed=1.0):
+    """
+    :param video_path: (str) Path to the folder containing videos
+    :param prefix: (str) To filter the video files
+    """
+    import ipywidgets as widgets
+
+    # Function to handle button clicks and display the corresponding video
+    def display_video(video_widget):
+        clear_output()
+        display(button_box)  # Display the button box again
+        display(video_widget)
+
+    #video_paths = []
+    video_widgets = []
+    for mp4 in Path(videos_folder).glob("{}*.mp4".format(prefix)):
+        # Define the video paths
+        #video_paths.append(mp4)
+        
+        # Create video widgets for each video
+        #video_widgets = [widgets.Video.from_file(path) for path in video_paths]
+        video_widgets.append(widgets.Video.from_file(mp4))
+
+    # Create a list of buttons for each video widget
+    # Assign the corresponding button click to each video widget
+    buttons = []
+    for i in range(len(video_widgets)):
+        btn = widgets.Button(description=f'Video {i+1}')
+        btn.on_click(lambda event, index=i: display_video(video_widgets[index]))
+        buttons.append(btn)
+
+    # Create a horizontal box to display the buttons
+    button_box = widgets.HBox(buttons)
+
+    # Display the button box and the initial video
+    display(button_box)
+    display(video_widgets[0])
