@@ -4,8 +4,6 @@
 *.mp4
 *.meta.json
 *.dat
-results/
-runs/
 *.db
 
 # Byte-compiled / optimized / DLL files
