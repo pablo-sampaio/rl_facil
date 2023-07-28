@@ -7,9 +7,6 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
-from models_torch_pg import PolicyModelPG, ValueModel, test_policy
-from util_plot import plot_result
-
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
 
 
@@ -48,7 +45,7 @@ def extract_states_actions_returns_advantages(episodes, Vmodel, gamma):
 
 
 # Algoritmo REINFORCE usando "advantage" como ténica de baseline para reduzir a variância
-def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, target_return=None):
+def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, target_return=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -87,13 +84,16 @@ def run_advantage_reinforce(env, total_episodes, gamma, initial_policy=None, tar
         # 4. Treina o modelo de V(.), usando o par (s, G), onde  's' é entrada da rede, e 'G' é a saída (regressão)
         loss_v = Vmodel.partial_fit(states, st_returns)
         
-        print("- ep %d \ step %d: losses[v/p]=%.4f/%.4f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
+        #print("- ep %d \ step %d: losses[v/p]=%.4f/%.4f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
  
     return all_returns, policy_model
 
 
 
 if __name__ == "__main__":
+    from models_torch_pg import PolicyModelPG, ValueModel, test_policy
+    from util.plot import plot_result
+
     ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
     #ENV_NAME, rmax = "LunarLander-v2", 150

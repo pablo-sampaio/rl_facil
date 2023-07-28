@@ -7,11 +7,7 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
-from models_torch_pg import PolicyModelPG, test_policy
-from util_plot import plot_result
-
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
-
 
 def run_episodes(env, policy_net, batch_size=1):
     batch_trajectories = []
@@ -85,6 +81,9 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, target_return
 
 
 if __name__ == "__main__":
+    from models_torch_pg import PolicyModelPG, test_policy
+    from util.plot import plot_result
+
     ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
     #ENV_NAME, rmax = "LunarLander-v2", 150
