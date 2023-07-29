@@ -7,7 +7,11 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
-import models_torch_pg as models
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+import cap08.models_torch_pg as models
 
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
@@ -48,7 +52,7 @@ def extract_states_actions_returns_advantages(episodes, Vmodel, gamma):
 
 
 # Algoritmo REINFORCE usando "advantage" como ténica de baseline para reduzir a variância
-def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, target_return=None):
+def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, initial_v_model=None, target_return=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -57,7 +61,10 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, targ
     else:
         policy_model = initial_policy.clone()
 
-    Vmodel = models.ValueModel(obs_size, [128], lr=0.005)
+    if initial_v_model is None:
+        Vmodel = models.ValueModel(obs_size, [128], lr=0.005)
+    else:
+        Vmodel = initial_v_model.clone()
 
     if target_return is None:
         target_return = float("inf")
@@ -95,7 +102,7 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, targ
 
 
 if __name__ == "__main__":
-    from models_torch_pg import test_policy
+    from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500

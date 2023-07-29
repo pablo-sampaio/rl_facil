@@ -7,7 +7,11 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
-import models_torch_pg as models
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+import cap08.models_torch_pg as models
 
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
@@ -86,7 +90,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, target_return
 
 
 if __name__ == "__main__":
-    from models_torch_pg import test_policy
+    from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
