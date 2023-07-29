@@ -7,6 +7,9 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
+import models_torch_pg as models
+
+
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
 
 
@@ -50,17 +53,17 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, targ
     n_actions = env.action_space.n
 
     if initial_policy is None:
-        policy_model = PolicyModelPG(obs_size, [256], n_actions, lr=0.001)
+        policy_model = models.PolicyModelPG(obs_size, [256], n_actions, lr=0.001)
     else:
         policy_model = initial_policy.clone()
 
-    Vmodel = ValueModel(obs_size, [128], lr=0.005)
+    Vmodel = models.ValueModel(obs_size, [128], lr=0.005)
 
     if target_return is None:
         target_return = float("inf")
 
     all_returns = []
-    all_steps = 0
+    total_steps = 0
 
     episodes = 0
     while episodes < total_episodes:
@@ -68,11 +71,11 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, targ
         trajectories, returns, steps = run_episodes(env, policy_model, 1)
         all_returns.extend(returns)
         episodes += 1 
-        all_steps += steps
+        total_steps += steps
         ep_return = float(np.mean(returns))
 
         if target_return is not None and np.mean(all_returns[-50:]) >= target_return:
-            print("- episode %d (step %d): return_mean_50=%.2f, target reached!" % (episodes, all_steps, np.mean(all_returns[-50:])))
+            print("- episode %d (step %d): return_mean_50=%.2f, target reached!" % (episodes, total_steps, np.mean(all_returns[-50:])))
             break
 
         # 2. Retorna listas separadas com estados, ações, retornos futuros G_i (a partir do estado) e vantagens
@@ -84,14 +87,15 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, targ
         # 4. Treina o modelo de V(.), usando o par (s, G), onde  's' é entrada da rede, e 'G' é a saída (regressão)
         loss_v = Vmodel.partial_fit(states, st_returns)
         
-        #print("- ep %d \ step %d: losses[v/p]=%.4f/%.4f, ep_return=%.2f" % (episodes, all_steps, loss_p, loss_v, ep_return))
+        if episodes % 200 == 0:
+            print("- ep %d \ step %d: losses[v/p]=%.4f/%.4f, ep_return=%.2f" % (episodes, total_steps, loss_p, loss_v, ep_return))
  
     return all_returns, policy_model
 
 
 
 if __name__ == "__main__":
-    from models_torch_pg import PolicyModelPG, ValueModel, test_policy
+    from models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
@@ -105,9 +109,9 @@ if __name__ == "__main__":
     
     inputs = ENV.observation_space.shape[0]
     outputs = ENV.action_space.n
-    policy = PolicyModelPG(inputs, [128, 512], outputs, lr=0.001)
+    policy = models.PolicyModelPG(inputs, [128, 512], outputs, lr=0.001)
 
-    returns, policy = run_advantage_reinforce(ENV, EPISODES, GAMMA, initial_policy=policy, target_return=rmax-100)
+    returns, policy = run_reinforce_with_adv(ENV, EPISODES, GAMMA, initial_policy=policy, target_return=rmax-100)
 
     # Exibe um gráfico episódios x retornos (não descontados)
     plot_result(returns, rmax, window=50)

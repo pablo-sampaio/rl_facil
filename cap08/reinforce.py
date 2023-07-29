@@ -7,7 +7,11 @@ import gym
 from collections import namedtuple, deque
 import numpy as np
 
+import models_torch_pg as models
+
+
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action', 'reward', 'next_state'])
+
 
 def run_episodes(env, policy_net, batch_size=1):
     batch_trajectories = []
@@ -48,7 +52,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, target_return
     n_actions = env.action_space.n
 
     if initial_policy is None:
-        policy_model = PolicyModelPG(obs_size, [256], n_actions, lr=0.001)
+        policy_model = models.PolicyModelPG(obs_size, [256], n_actions, lr=0.001)
     else:
         policy_model = initial_policy.clone()
 
@@ -74,14 +78,15 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, target_return
         # 3. Treina a política usando os trios (s, a, Gi), onde  's' é entrada da rede, 'a' é saída, e o 'G' é usado no cálculo da loss function
         loss_p = policy_model.partial_fit(states, actions, state_returns)
         
-        print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (episodes, total_steps, loss_p, ep_return))
+        if episodes % 200 == 0:
+            print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (episodes, total_steps, loss_p, ep_return))
  
     return all_returns, policy_model
 
 
 
 if __name__ == "__main__":
-    from models_torch_pg import PolicyModelPG, test_policy
+    from models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
@@ -95,7 +100,7 @@ if __name__ == "__main__":
     
     inputs = ENV.observation_space.shape[0]
     outputs = ENV.action_space.n
-    policy = PolicyModelPG(inputs, [128, 512], outputs, lr=0.0005)
+    policy = models.PolicyModelPG(inputs, [128, 512], outputs, lr=0.0005)
 
     returns, policy = run_reinforce(ENV, EPISODES, GAMMA, initial_policy=policy, target_return=200.0)
 

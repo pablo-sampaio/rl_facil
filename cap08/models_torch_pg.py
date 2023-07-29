@@ -94,7 +94,7 @@ class ValueModel:
         loss_v = self.loss_function(scores_v.view(-1), values_v) 
         loss_v.backward()
         self.optimizer.step() 
-        return loss_v.item() # converte the Torch para valor escalar
+        return loss_v.item() # converte de objeto Torch para valor escalar
 
     def predict(self, state):
         state_tensor = torch.FloatTensor([state])
