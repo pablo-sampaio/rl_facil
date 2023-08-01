@@ -57,8 +57,9 @@ class PolicyModelPG:
         return basic_loss_v.item()
 
     def predict(self, observation):
-        obs_tensor = torch.FloatTensor([observation])
-        act_probs_tensor = self.softmax( self.policy_net(obs_tensor) )
+        with torch.no_grad():
+            obs_tensor = torch.FloatTensor([observation])
+            act_probs_tensor = self.softmax( self.policy_net(obs_tensor) )
         return act_probs_tensor.data.numpy()[0]
 
     def sample_action(self, obs):
@@ -97,8 +98,9 @@ class ValueModel:
         return loss_v.item() # converte de objeto Torch para valor escalar
 
     def predict(self, state):
-        state_tensor = torch.FloatTensor([state])
-        value_tensor = self.value_net(state_tensor)
+        with torch.no_grad():
+            state_tensor = torch.FloatTensor([state])
+            value_tensor = self.value_net(state_tensor)
         return value_tensor[0,0].item()  # original value: [[V]]
 
 

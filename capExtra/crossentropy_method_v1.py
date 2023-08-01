@@ -8,8 +8,12 @@ from collections import namedtuple
 import gym
 import numpy as np
 
-from models_torch import PolicyModelCrossentropy, test_policy
-from util_plot import plot_result
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from capExtra.models_torch import PolicyModelCrossentropy, test_policy
+from util.plot import plot_result
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 
