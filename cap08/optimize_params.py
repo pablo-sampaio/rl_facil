@@ -25,7 +25,7 @@ def train_actor_critic_nstep(trial : optuna.Trial):
     for i in range(RUNS_PER_TRIAL):
         policy_model = PolicyModelPGWithExploration(inputs, [256,256], outputs, exploration_factor=expl_factor, lr=pol_lr)
         Vmodel = ValueModel(inputs, [256,32], lr=val_lr)
-        returns, _ = run_actor_critic_nstep(ENV, 20000, 0.99, nstep=nstep, initial_policy=policy_model, initial_vmodel=Vmodel, verbose=False)
+        returns, _ = run_actor_critic_nstep(ENV, 20000, 0.99, nstep=nstep, initial_policy=policy_model, initial_v_model=Vmodel, verbose=False)
         mean_return_50 = sum(returns[-50:])/50.0
         
         trial.report(mean_return_50, i)

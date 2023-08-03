@@ -23,7 +23,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
         policy_model = initial_policy.clone()
 
     all_returns = []
-    total_steps = 0
+    steps = 0
 
     # loop principal
     for i in range(total_episodes):
@@ -71,7 +71,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
         loss_p = policy_model.partial_fit(states, actions, partial_returns)
 
         if (i+1) % 200 == 0:
-            print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (i+1, total_steps, loss_p, ep_return))
+            print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (i+1, steps, loss_p, ep_return))
  
     return all_returns, policy_model
 

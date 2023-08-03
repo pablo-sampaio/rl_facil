@@ -1,12 +1,16 @@
 import gym
 
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
 from models_torch_pg import PolicyModelPG, ValueModel
 
-from util_experiments import repeated_exec, repeated_exec_steps
-from util_plot import plot_multiple_results
+from util.experiments import repeated_exec, repeated_exec_steps
+from util.plot import plot_multiple_results
 
 from reinforce import run_reinforce
-from reinforce_advantage import run_advantage_reinforce
+from reinforce_advantage import run_reinforce_with_adv
 from actor_critic_nstep import run_actor_critic_nstep
 
 
@@ -38,7 +42,7 @@ def experiments_max_steps():
             policy_model = PolicyModelPG(inputs, [256,256], outputs, lr=p_lr)
             Vmodel = ValueModel(inputs, [256,32], lr=v_lr)
             
-            result = repeated_exec_steps(20, f"Actor-critic ({p_lr},{v_lr})", run_actor_critic_nstep, ENV, NUM_STEPS, GAMMA, 32, policy_model, Vmodel, verbose=False)
+            result = repeated_exec_steps(10, f"Actor-critic ({p_lr},{v_lr})", run_actor_critic_nstep, ENV, NUM_STEPS, GAMMA, 32, policy_model, Vmodel, verbose=False)
             all_results.append( result )
     
     plot_multiple_results(all_results, cumulative=False, x_log_scale=True, plot_stddev=True, return_type='steps')

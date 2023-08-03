@@ -28,7 +28,7 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
         Vmodel = initial_v_model.clone()
 
     all_returns = []
-    total_steps = 0
+    steps = 0
 
     # loop principal
     for i in range(total_episodes):
@@ -81,7 +81,7 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
         loss_v = Vmodel.partial_fit(states, partial_returns)
 
         if (i+1) % 200 == 0:
-            print("- episode %d (step %d): losses[v|p]=%.4f|%.4f, ep_return=%.2f" % (i+1, total_steps, loss_p, loss_v, ep_return))
+            print("- episode %d (step %d): losses[v|p]=%.4f|%.4f, ep_return=%.2f" % (i+1, steps, loss_p, loss_v, ep_return))
  
     return all_returns, policy_model
 
