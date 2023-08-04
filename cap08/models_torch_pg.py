@@ -26,10 +26,6 @@ class TorchMultiLayerNetwork(nn.Module):
             y = layer(y)
         return y
 
-    def clone(self):
-        # Create a new instance of the class with the same parameters
-        return copy.deepcopy(self)
-
 
 # approximates pi(a | s)
 class PolicyModelPG:
@@ -87,7 +83,7 @@ class PolicyModelPG:
 
     def clone(self):
         cp = PolicyModelPG(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
-        cp.policy_net = self.policy_net.clone()
+        cp.policy_net.load_state_dict(self.policy_net.state_dict())
         return cp
 
 
@@ -119,7 +115,7 @@ class ValueModel:
 
     def clone(self):
         cp = ValueModel(self.obs_size, self.hidden_sizes, self.lr)
-        cp.value_net = self.value_net.clone()
+        cp.value_net.load_state_dict(self.value_net.state_dict())
         return cp
 
 
