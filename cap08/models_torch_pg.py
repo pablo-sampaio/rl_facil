@@ -1,3 +1,5 @@
+import copy
+
 import torch
 import torch.nn as nn
 import torch.optim as optim
@@ -23,6 +25,10 @@ class TorchMultiLayerNetwork(nn.Module):
         for layer in self.layers:
             y = layer(y)
         return y
+
+    def clone(self):
+        # Create a new instance of the class with the same parameters
+        return copy.deepcopy(self)
 
 
 # approximates pi(a | s)
@@ -71,12 +77,17 @@ class PolicyModelPG:
         probs = self.predict(obs)
         return np.argmax(probs)
 
-    def clone(self):
+    '''def clone(self):
         cp = PolicyModelPG(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
         policy_state = cp.policy_net.state_dict()
         for k, v in self.policy_net.state_dict().items():
             policy_state[k] = v
-            cp.policy_net.load_state_dict(policy_state)
+        cp.policy_net.load_state_dict(policy_state)
+        return cp'''
+
+    def clone(self):
+        cp = PolicyModelPG(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
+        cp.policy_net = self.policy_net.clone()
         return cp
 
 
@@ -86,6 +97,9 @@ class ValueModel:
         self.value_net = TorchMultiLayerNetwork(state_size, hidden_sizes, 1)
         self.loss_function = nn.MSELoss()
         self.optimizer = optim.Adam(params=self.value_net.parameters(), lr=lr) # inicializado com os parametros da rede
+        self.obs_size = state_size
+        self.hidden_sizes = list(hidden_sizes)
+        self.lr = lr
 
     def partial_fit(self, states, values):
         states_v = torch.FloatTensor(states)
@@ -102,6 +116,11 @@ class ValueModel:
             state_tensor = torch.FloatTensor([state])
             value_tensor = self.value_net(state_tensor)
         return value_tensor[0,0].item()  # original value: [[V]]
+
+    def clone(self):
+        cp = ValueModel(self.obs_size, self.hidden_sizes, self.lr)
+        cp.value_net = self.value_net.clone()
+        return cp
 
 
 def test_policy(env, policy, deterministic, num_episodes=5, render=False, videorec=None):

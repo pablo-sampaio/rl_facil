@@ -11,7 +11,7 @@ from util.plot import plot_multiple_results
 
 from reinforce import run_reinforce
 from reinforce_advantage import run_reinforce_with_adv
-from actor_critic_nstep import run_actor_critic_nstep
+from actor_critic_nstep import run_vanilla_actor_critic_nstep
 
 
 GAMMA = 0.99
@@ -28,7 +28,7 @@ def experiments_num_episodes():
     for lr in [0.0001, 0.0005, 0.001]:
         initial_policy = PolicyModelPG(inputs, [128,512], outputs, lr=lr)
         results.append( repeated_exec(2, f"Reinforce (lr={lr})", run_reinforce, ENV, NUM_EPISODES, GAMMA, initial_policy) )
-        results.append( repeated_exec(2, f"Reinforce+Advtg (lr={lr})", run_advantage_reinforce, ENV, NUM_EPISODES, GAMMA, initial_policy) )
+        results.append( repeated_exec(2, f"Reinforce+Advtg (lr={lr})", run_reinforce_with_adv, ENV, NUM_EPISODES, GAMMA, initial_policy) )
     
     plot_multiple_results(results, cumulative=False, x_log_scale=False)
     plot_multiple_results(results, cumulative=True, x_log_scale=False)
@@ -42,7 +42,8 @@ def experiments_max_steps():
             policy_model = PolicyModelPG(inputs, [256,256], outputs, lr=p_lr)
             Vmodel = ValueModel(inputs, [256,32], lr=v_lr)
             
-            result = repeated_exec_steps(10, f"Actor-critic ({p_lr},{v_lr})", run_actor_critic_nstep, ENV, NUM_STEPS, GAMMA, 32, policy_model, Vmodel, verbose=False)
+            #result = repeated_exec_steps(10, f"Actor-critic ({p_lr},{v_lr})", run_vanilla_actor_critic_nstep, ENV, NUM_STEPS, GAMMA, 32, policy_model, Vmodel, verbose=False)
+            result = repeated_exec(10, f"Actor-critic ({p_lr},{v_lr})", run_vanilla_actor_critic_nstep, ENV, NUM_STEPS, GAMMA, 32, policy_model, Vmodel, verbose=False)
             all_results.append( result )
     
     plot_multiple_results(all_results, cumulative=False, x_log_scale=True, plot_stddev=True, return_type='steps')

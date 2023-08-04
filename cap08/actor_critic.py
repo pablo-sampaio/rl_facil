@@ -15,7 +15,7 @@ import cap08.models_torch_pg as models
 
 
 # Algoritmo actor-critic básico
-def run_basic_actor_critic(env, max_steps, gamma, initial_policy=None, initial_v_model=None, verbose=True):
+def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial_v_model=None, verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -54,15 +54,16 @@ def run_basic_actor_critic(env, max_steps, gamma, initial_policy=None, initial_v
         Vmodel.partial_fit([state], [G_estimate])
         
         if done:
-            all_returns.append((steps-1, ep_return))
+            all_returns.append((steps, ep_return))
             episodes += 1 
-            print("step %d / ep %d: return=%.2f" % (steps, episodes, ep_return))
+            if verbose:
+                print("step %d / ep %d: return=%.2f" % (steps, episodes, ep_return))
             
             next_state = env.reset()
             ep_return = 0.0
     
     if not done:
-        all_returns.append((steps-1, ep_return))
+        all_returns.append((steps, ep_return))
 
     if verbose:
         print("step %d / ep %d: return=%.2f - end of training!" % (steps, episodes, ep_return))
@@ -89,10 +90,10 @@ if __name__ == "__main__":
     policy_model = models.PolicyModelPG(inputs, [256,256], outputs, lr=1e-5)
     v_model = models.ValueModel(inputs, [256,32], lr=2e-4)
 
-    returns, policy = run_basic_actor_critic(env, NUM_STEPS, GAMMA, initial_policy=policy_model, initial_v_model=v_model)
+    returns, policy = run_vanilla_actor_critic(env, NUM_STEPS, GAMMA, initial_policy=policy_model, initial_v_model=v_model)
 
     # Exibe um gráfico episódios x retornos (não descontados)
-    plot_result(returns, rmax, window=50, return_type='steps')
+    plot_result(returns, rmax, window=50, x_axis='steps')
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     test_policy(env, policy, False, 5, render=True)

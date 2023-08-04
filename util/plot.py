@@ -4,8 +4,9 @@ import matplotlib.pyplot as plt
 from . import smooth
 
 
-# future: rever a ORDEM dos parâmetros (e rever onde esta função é usada)
-def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, return_type='episode', filename=None, cumulative=False):
+# TODO: future: rever a ORDEM dos parâmetros (e rever onde esta função é usada), deixar similar à outra
+# TODO: remove 'return_type'
+def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, x_axis='episode', filename=None, cumulative=False, return_type=None):
     '''Exibe um gráfico "episódio/passo x retorno", fazendo a média a cada `window` retornos, para suavizar.
     
     Parâmetros:
@@ -16,13 +17,16 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     - return_type: use 'episode' ou 'step' para indicar o que representa o eixo x; também afeta como será lido o parâmetro 'returns'
     - filename: se for fornecida uma string, salva um arquivo de imagem ao invés de exibir.
     '''
-    plt.figure(figsize=(14,8))
+    plt.figure(figsize=(12,7))
 
     # TODO: uniformizar com a outra função
     if cumulative == 'no':
         cumulative = False
+    
+    if return_type is not None:
+        x_axis = return_type
 
-    if return_type == 'episode':
+    if x_axis == 'episode':
         plt.xlabel('Episódios')
         if cumulative:
             returns = np.array(returns)
@@ -31,7 +35,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
         xvalues = np.arange(1, len(returns)+1)
         plt.plot(xvalues, yvalues)
         plt.title(f"Retorno médio a cada {window} episódios")
-    #elif return_type == 'step':
+    #elif x_axis == 'step':
     else:
         print("Attention: 'window' is ignored for 'step' type of returns")
         plt.xlabel('Passos')
@@ -60,7 +64,9 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, retu
     plt.close()
 
 
-def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, return_type='episode', window=10, plot_stddev=False, yreference=None):
+# TODO: remove 'return_type' parameter (review scripts where it is used)
+# TODO: remove True/False values for cumulative (review scripts)
+def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None, return_type=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
     Parâmetros:
@@ -77,9 +83,13 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, retu
     if cumulative is True: 
         cumulative = 'avg'
     assert cumulative in ['no', 'sum', 'avg']
-    assert return_type in ['step', 'episode']
+    assert x_axis in ['step', 'episode']
+    if return_type is not None:
+        x_axis = return_type
+    
     total_steps = list_returns[0][1].shape[1]
-    plt.figure(figsize=(14,8))
+    plt.figure(figsize=(12,7))
+    
     for (alg_name, returns) in list_returns:
         xvalues = np.arange(1, total_steps+1)
         if cumulative == 'sum' or cumulative == 'avg':
@@ -103,7 +113,7 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, retu
     if x_log_scale:
         plt.xscale('log')
     
-    if return_type == 'episode':
+    if x_axis == 'episode':
         plt.xlabel('Episódio')
         payoff = 'Retorno'
     else:

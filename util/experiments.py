@@ -7,6 +7,21 @@ import numpy as np
 import gym
 
 
+def process_returns_linear_interpolation(step_return_list, total_time):
+    assert total_time == step_return_list[-1][0], "The algorithm did not return a final (partial) return at the last time step!"
+    partial_returns = [0] * total_time
+    X = 0
+    t1 = 0
+    for i in range(len(step_return_list)):
+        t2, Y = step_return_list[i]
+        for t in range(t1+1, min(t2, total_time) + 1):
+            partial_returns[t - 1] = X + ( (Y - X) * (t - t1) / (t2 - t1) )
+            #alt.: partial_returns[t - 1] = ((t2 - t) * X + (t - t1) * Y) / (t2 - t1)
+        t1 = t2
+        X = Y
+    return partial_returns
+
+
 def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, **kwargs):
     '''
     This file runs repeatedly the given algorithm with the given parameters and returns
@@ -39,7 +54,13 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        rewards[i], _ = algorithm(env, num_iterations, *args, **kwargs)
+        temp_returns, _ = algorithm(env, num_iterations, *args, **kwargs)
+        if isinstance(temp_returns[0], tuple):
+            # when the algorithm outputs a list of pairs (time, return)
+            rewards[i] = process_returns_linear_interpolation(temp_returns, num_iterations)
+        else:
+            # when the algoritm outputs a simple list of returns
+            rewards[i] = temp_returns
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
     RESULTS = np.array([alg_name, rewards], dtype=object)
@@ -51,6 +72,7 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
     return alg_name, rewards
 
 
+# TODO: REMOVE (o repeated_exec já funciona para saídas com pares (passo, retorno))
 # for algorithms that return a list of pairs (timestep, return)
 # fazer: descartar o alg_info
 def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, **kwargs):
