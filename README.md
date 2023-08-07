@@ -37,7 +37,7 @@ Com base nisso, introduzimos os conceitos de funções de valor ($V$ e $Q$) asso
 # Cap. 4 - Métodos Monte Carlo Básicos
 
 Implementações de algoritmos de aprendizagem por reforço que são baseados em estimativas da função $Q$ (valor estado-ação)
-representadas na forma de tabela (array bidimensional ou similar), que costuma ser chamada *Q-Table*8*.
+representadas na forma de tabela (array bidimensional ou similar), que costuma ser chamada *Q-Table*.
 
 Foi implementado o algoritmo:
 - *Monte-Carlo Control* (duas versões) - gera episódios inteiros, para atualizar Q (método on-policy)
