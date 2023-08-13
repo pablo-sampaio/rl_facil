@@ -8,17 +8,22 @@ import gym
 
 
 def process_returns_linear_interpolation(step_return_list, total_time):
-    assert total_time == step_return_list[-1][0], "The algorithm did not return a final (partial) return at the last time step!"
+    #assert total_time == step_return_list[-1][0], "The algorithm did not return a final (partial) return at the last time step!"
     partial_returns = [0] * total_time
     X = 0
     t1 = 0
     for i in range(len(step_return_list)):
         t2, Y = step_return_list[i]
+        
+        # if t1+1 > total_time, it wont't enter the loop
+        # if t2 > total_time, it will calculate up to total_time
         for t in range(t1+1, min(t2, total_time) + 1):
             partial_returns[t - 1] = X + ( (Y - X) * (t - t1) / (t2 - t1) )
             #alt.: partial_returns[t - 1] = ((t2 - t) * X + (t - t1) * Y) / (t2 - t1)
+        
         t1 = t2
         X = Y
+    
     return partial_returns
 
 
