@@ -13,19 +13,19 @@ RUNS_PER_TRIAL = 2
 def train_actor_critic_nstep(trial : optuna.Trial):
     
     # chama os métodos do "trial" (tentativa) para sugerir valores para os parâmetros
-    nstep = trial.suggest_int('nstep', 1, 128)
+    nsteps = trial.suggest_int('nsteps', 1, 128)
     pol_lr = trial.suggest_loguniform('policy_lr', 1e-6, 1e-1)
     val_lr = trial.suggest_loguniform('value_lr', 1e-6, 1e-1)
     expl_factor = trial.suggest_uniform('expl_factor', 1e-3, 4.0)
     
-    print(f"\nTRIAL #{trial.number}: {nstep=}, {pol_lr=}, {val_lr=}, {expl_factor=}")
+    print(f"\nTRIAL #{trial.number}: {nsteps=}, {pol_lr=}, {val_lr=}, {expl_factor=}")
 
     sum_results = 0.0
 
     for i in range(RUNS_PER_TRIAL):
         policy_model = PolicyModelPGWithExploration(inputs, [256,256], outputs, exploration_factor=expl_factor, lr=pol_lr)
         Vmodel = ValueModel(inputs, [256,32], lr=val_lr)
-        returns, _ = run_vanilla_actor_critic_nstep(ENV, 20000, 0.99, nstep=nstep, initial_policy=policy_model, initial_v_model=Vmodel, verbose=False)
+        returns, _ = run_vanilla_actor_critic_nstep(ENV, 20000, 0.99, nsteps=nsteps, initial_policy=policy_model, initial_v_model=Vmodel, verbose=False)
         mean_return_50 = sum(returns[-50:])/50.0
         
         trial.report(mean_return_50, i)

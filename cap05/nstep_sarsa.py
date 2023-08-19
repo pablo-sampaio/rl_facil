@@ -16,10 +16,10 @@ def choose_action(Q, state, num_actions, epsilon):
 
 # Algoritmo "n-step SARSA", online learning
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
-    assert isinstance(nstep, int)
+    assert isinstance(nsteps, int)
 
     num_actions = env.action_space.n
     
@@ -28,8 +28,8 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
     Q = np.random.uniform(low = -1.0, high = 0.0, 
                           size = (env.observation_space.n, num_actions))
 
-    gamma_array = np.array([ gamma**i for i in range(0,nstep)])
-    gamma_power_nstep = gamma**nstep
+    gamma_array = np.array([ gamma**i for i in range(0,nsteps)])
+    gamma_power_nstep = gamma**nsteps
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
@@ -44,9 +44,9 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
         action = choose_action(Q, state, num_actions, epsilon)
 
         # históricos de: estados, ações e recompensas
-        hs = deque(maxlen=nstep)
-        ha = deque(maxlen=nstep)
-        hr = deque(maxlen=nstep)
+        hs = deque(maxlen=nsteps)
+        ha = deque(maxlen=nsteps)
+        hr = deque(maxlen=nsteps)
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done: 
@@ -67,7 +67,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
             
             # se o histórico estiver completo com 'n' passos
             # vai fazer uma atualização no valor Q do estado mais antigo
-            if len(hs) == nstep:
+            if len(hs) == nsteps:
                 if done: 
                     # para estados terminais
                     V_next_state = 0
@@ -100,7 +100,7 @@ def run_nstep_sarsa(env, episodes, nstep=1, lr=0.1, gamma=0.95, epsilon=0.1, ren
         sum_rewards_per_ep.append(sum_rewards)
         
         # a cada 100 episódios, imprime informação sobre o progresso 
-        if (i+1) % 100 == 0:
+        if render and ((i+1) % 100 == 0):
             avg_reward = np.mean(sum_rewards_per_ep[-100:])
             print(f"Episode {i+1} Average Reward (last 100): {avg_reward:.3f}")
 

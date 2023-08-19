@@ -17,7 +17,7 @@ import cap08.models_torch_pg as models
 
 
 # Algoritmo actor-critic com parâmetro nsteps
-def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_policy=None, initial_v_model=None, verbose=True):
+def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -31,8 +31,8 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_polic
     else:
         Vmodel = initial_v_model.clone()
 
-    gamma_array = np.array([ gamma**i for i in range(0,nstep)])
-    gamma_power_nstep = gamma**nstep
+    gamma_array = np.array([ gamma**i for i in range(0,nsteps)])
+    gamma_power_nstep = gamma**nsteps
 
     all_returns = []
     episodes = 0
@@ -42,9 +42,9 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_polic
     ep_return = 0.0
     
     # históricos de: estados, ações e recompensas
-    hist_s = deque(maxlen=nstep)
-    hist_a = deque(maxlen=nstep)
-    hist_r = deque(maxlen=nstep)
+    hist_s = deque(maxlen=nsteps)
+    hist_a = deque(maxlen=nsteps)
+    hist_r = deque(maxlen=nsteps)
 
     while steps < max_steps:
         state = next_state
@@ -61,7 +61,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_polic
         hist_r.append(r)
 
         # se o histórico estiver completo, faz uma atualização nos modelos
-        if len(hist_s) == nstep:
+        if len(hist_s) == nsteps:
             G_estimate = sum(gamma_array*hist_r) + gamma_power_nstep*Vmodel.predict(next_state)
 
             # 3. Treina a política
@@ -77,11 +77,11 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nstep=2, initial_polic
 
             # ao fim do episódio, atualiza o modelo para os estados que restaram no histórico
             # trata de forma especial o caso em que o tamanho episódio é inferior ao "nstep"
-            if len(hist_s) == nstep:
+            if len(hist_s) == nsteps:
                 hist_s.popleft()
                 hist_a.popleft()
                 hist_r.popleft()
-                laststeps = nstep - 1
+                laststeps = nsteps - 1
             else:
                 laststeps = len(hist_s) 
             
@@ -131,7 +131,7 @@ if __name__ == "__main__":
     policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5) #5e-5
     v_model = models.ValueModel(inputs, [256,32], lr=8e-5) #1e-4
 
-    returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nstep=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
+    returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
     
     # Exibe um gráfico passos x retornos (não descontados)
     plot_result(returns, rmax, window=1, x_axis='steps')

@@ -29,8 +29,8 @@ for learning_rate in [0.1, 0.5, 1.0]:
 '''
 for lr in [0.1, 0.5]:
     results = []
-    for nstep in [1, 2, 4, 8]:
-        results.append( repeated_exec(RUNS, f"{nstep}-step SARSA (LR={lr})", run_nstep_sarsa, enviroment, NUM_EPISODES, nstep, lr) )
+    for nsteps in [1, 2, 4, 8]:
+        results.append( repeated_exec(RUNS, f"{nsteps}-step SARSA (LR={lr})", run_nstep_sarsa, enviroment, NUM_EPISODES, nsteps, lr) )
     plot_multiple_results(results, cumulative=False, x_log_scale=True)
 #'''
 
