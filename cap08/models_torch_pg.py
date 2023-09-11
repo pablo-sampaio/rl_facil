@@ -204,5 +204,5 @@ class PolicyModelPGWithExploration(PolicyModelPG):
         policy_state = cp.policy_net.state_dict()
         for k, v in self.policy_net.state_dict().items():
             policy_state[k] = v
-            cp.policy_net.load_state_dict(policy_state)
+        cp.policy_net.load_state_dict(policy_state)
         return cp
