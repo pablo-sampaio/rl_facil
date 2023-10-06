@@ -36,8 +36,7 @@ def run_epsilon_greedy(env, total_steps, epsilon):
         action_cnt[a] += 1
 
         # atualiza a recompensa média da ação
-        delta = r - Q[a]
-        Q[a] += (1/action_cnt[a]) * delta
+        Q[a] += (1/action_cnt[a]) * (r - Q[a])
         # alternativa equivalente: Q[a] = ((action_cnt[a]-1)*Q[a] + r) / action_cnt[a]
 
     return reward_per_step, Q
