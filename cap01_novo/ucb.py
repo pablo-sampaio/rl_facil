@@ -6,7 +6,6 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from util.bandit_envs import MultiArmedBanditEnv
-from cap02.baseline_algorithms import run_random
 
 
 def run_ucb(env, total_steps, c=2.0):
@@ -51,6 +50,8 @@ def run_ucb(env, total_steps, c=2.0):
 
 
 if __name__ == '__main__':
+    from cap01.baseline_algorithms import run_random
+
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
     env = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
 

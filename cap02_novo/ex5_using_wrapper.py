@@ -1,5 +1,5 @@
 
-import gym
+import gymnasium as gym
 
 
 class PunishEarlyStop(gym.Wrapper):
@@ -7,27 +7,26 @@ class PunishEarlyStop(gym.Wrapper):
         super().__init__(env)
     
     def step(self, action):
-        obs, reward, done, info = self.env.step(action)
+        obs, reward, terminated, truncated, info = self.env.step(action)
         # if ended because the pole fell down
-        #if done and self.env._elapsed_steps < self.env._max_episode_steps:
-        if 'TimeLimit.truncated' not in info:
+        if terminated:
             reward = -100
-        return obs, reward, done, info
+        return obs, reward, terminated, truncated, info
 
 
-
-env = gym.make("CartPole-v1")
+env = gym.make("CartPole-v1", render_mode="human")
 env = PunishEarlyStop(env)
-gym.__version__
-obs = env.reset()
-done = False
+
+obs, _ = env.reset()
+terminated = truncated = False
 sum_rewards = 0.0
 
-while not done:
+while not (terminated or truncated):
     env.render()
     action = env.action_space.sample()
 
-    next_obs, reward, done, info = env.step(action)
+    next_obs, reward, terminated, truncated, info = env.step(action)
+
     sum_rewards += reward
 
     obs = next_obs

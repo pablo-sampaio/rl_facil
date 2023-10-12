@@ -36,13 +36,13 @@ def display_videos_from_path(videos_folder='', prefix=''):
 '''
 
 # by chatgpt
-def display_videos_from_path(videos_folder='', prefix='', speed=1.0):
+def display_videos_from_path(video_folder='', prefix='rl-video', speed=1.0):
     """
     :param video_path: (str) Path to the folder containing videos
     :param prefix: (str) To filter the video files
     """
     html = []
-    for mp4 in Path(videos_folder).glob("{}*.mp4".format(prefix)):
+    for mp4 in Path(video_folder).glob("{}*.mp4".format(prefix)):
         video_b64 = b64encode(mp4.read_bytes())
         html.append('''<video alt="{}" autoplay 
                     loop controls style="height: 400px;">

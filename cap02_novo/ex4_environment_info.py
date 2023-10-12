@@ -1,13 +1,11 @@
 
-import time
+import gymnasium as gym
 
-import gym
-
-#env = gym.make("MountainCar-v0")
-env = gym.make("Taxi-v3")
-#env = gym.make("CartPole-v1")
-#env = gym.make("Pendulum-v1")
-#env = gym.make("LunarLander-v2")
+#env = gym.make("MountainCar-v0", render_mode="human")
+env = gym.make("Taxi-v3", render_mode="human")
+#env = gym.make("CartPole-v1", render_mode="human")
+#env = gym.make("Pendulum-v1", render_mode="human")
+#env = gym.make("LunarLander-v2", render_mode="human")
 
 
 def print_space_info(space):

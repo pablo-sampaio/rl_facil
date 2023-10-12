@@ -1,5 +1,5 @@
 
-import gym
+import gymnasium as gym
 import time
 
 #env = gym.make("MountainCar-v0")

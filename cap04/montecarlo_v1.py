@@ -5,7 +5,7 @@
 # - Lazy programmer's implementation
 # - https://www.analyticsvidhya.com/blog/2018/11/reinforcement-learning-introduction-monte-carlo-learning-openai-gym/
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 
@@ -42,7 +42,7 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
         sum_rewards, reward = 0, 0
         ep_trajectory = []
         
-        state = env.reset()
+        state, _ = env.reset()
     
         # PARTE 1: executa um episódio completo
         while done != True:   
@@ -54,7 +54,8 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
             action = choose_action(Q, state, num_actions, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             
             # adiciona a tripla que representa este passo
             ep_trajectory.append( (state, action, reward) )

@@ -5,6 +5,8 @@
 *.meta.json
 *.dat
 *.db
+log_dir/
+*.zip
 
 # Byte-compiled / optimized / DLL files
 __pycache__/

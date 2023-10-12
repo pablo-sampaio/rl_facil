@@ -6,7 +6,6 @@ from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from util.bandit_envs import MultiArmedBanditEnv
-from cap02.baseline_algorithms import run_random
 
 
 def run_epsilon_greedy(env, total_steps, epsilon):
@@ -44,6 +43,8 @@ def run_epsilon_greedy(env, total_steps, epsilon):
 
 
 if __name__ == '__main__':
+    from cap01.baseline_algorithms import run_random
+
     BANDIT_PROBABILITIES = [0.2, 0.5, 0.75]
     env = MultiArmedBanditEnv(BANDIT_PROBABILITIES)
 

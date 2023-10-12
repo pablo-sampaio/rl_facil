@@ -4,7 +4,7 @@ import os
 from tqdm import tqdm
 
 import numpy as np
-import gym
+import gymnasium as gym
 
 
 def process_returns_linear_interpolation(step_return_list, total_time):
