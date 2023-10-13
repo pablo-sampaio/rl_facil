@@ -3,8 +3,6 @@
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
-import gym
-
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
@@ -37,7 +35,7 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
         reward = 0
         ep_trajectory = []
         
-        state = env.reset()
+        state, _ = env.reset()
     
         # PARTE 1: Executa um episódio completo
         while not done:
@@ -49,7 +47,8 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
             action = policy_model.sample_action(state)
         
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             
             # adiciona a tripla que representa este passo
             ep_trajectory.append( (state, action, reward) )
@@ -75,10 +74,10 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
 
         # PARTE 3: Atualiza a política usando os trios (s, a, At), 
         #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'At' é o "advantage" usado no cálculo da loss function
-        loss_p = policy_model.partial_fit(states, actions, advantages)
+        loss_p = policy_model.update_weights(states, actions, advantages)
         
         # PARTE 4: Atualiza o modelo de V(.), usando o par (s, Gt), onde  's' é entrada da rede, e 'Gt' é o retorno parcial cuja esperança deve ser dada como saída da rede
-        loss_v = Vmodel.partial_fit(states, partial_returns)
+        loss_v = Vmodel.update_weights(states, partial_returns)
 
         if (i+1) % 200 == 0:
             print("- episode %d (step %d): losses[v|p]=%.4f|%.4f, ep_return=%.2f" % (i+1, steps, loss_p, loss_v, ep_return))
@@ -87,6 +86,7 @@ def run_reinforce_with_adv(env, total_episodes, gamma, initial_policy=None, init
 
 
 if __name__ == "__main__":
+    import gymnasium as gym
     from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 

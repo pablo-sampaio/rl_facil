@@ -3,8 +3,6 @@
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
-import gym
-
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
@@ -32,7 +30,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
         reward = 0
         ep_trajectory = []
         
-        state = env.reset()
+        state, _ = env.reset()
     
         # PARTE 1: Executa um episódio completo
         while not done:
@@ -44,7 +42,8 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
             action = policy_model.sample_action(state)
         
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             
             # adiciona a tripla que representa este passo
             ep_trajectory.append( (state, action, reward) )
@@ -68,7 +67,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
 
         # PARTE 3: Atualiza a política usando os trios (s, a, Gt), 
         #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'Gt' é usado no cálculo da loss function
-        loss_p = policy_model.partial_fit(states, actions, partial_returns)
+        loss_p = policy_model.update_weights(states, actions, partial_returns)
 
         if (i+1) % 200 == 0:
             print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (i+1, steps, loss_p, ep_return))
@@ -77,6 +76,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
 
 
 if __name__ == "__main__":
+    import gymnasium as gym
     from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 

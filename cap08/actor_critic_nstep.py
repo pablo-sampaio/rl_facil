@@ -6,7 +6,6 @@
 ################
 
 from collections import deque
-import gym
 import numpy as np
 
 import sys
@@ -38,7 +37,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
     episodes = 0
     steps = 0
 
-    next_state = env.reset()
+    next_state, _ = env.reset()
     ep_return = 0.0
     
     # históricos de: estados, ações e recompensas
@@ -51,7 +50,10 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
 
         # 1. Faz 1 passo
         action = policy_model.sample_action(state)
-        next_state, r, done, _ = env.step(action)
+        
+        next_state, r, terminated, trunc, _ = env.step(action)
+        done = terminated or trunc
+        
         ep_return += r
         steps += 1
 
@@ -62,14 +64,19 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
 
         # se o histórico estiver completo, faz uma atualização nos modelos
         if len(hist_s) == nsteps:
-            G_estimate = sum(gamma_array*hist_r) + gamma_power_nstep*Vmodel.predict(next_state)
+            if terminated:
+                V_next_state = 0
+            else:
+                V_next_state = Vmodel.predict(next_state)
+            
+            G_estimate = sum(gamma_array*hist_r) + gamma_power_nstep * V_next_state
 
             # 3. Treina a política
             advantage = G_estimate - Vmodel.predict(hist_s[0])
-            policy_model.partial_fit([hist_s[0]], [hist_a[0]], [advantage])
+            policy_model.update_weights([hist_s[0]], [hist_a[0]], [advantage])
 
             # 4. Treina o modelo de V(.),
-            Vmodel.partial_fit([hist_s[0]], [G_estimate])
+            Vmodel.update_weights([hist_s[0]], [G_estimate])
         
         if done:
             all_returns.append((steps, ep_return))
@@ -88,8 +95,8 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
             for j in range(laststeps,0,-1):
                 G_estimate = ( sum(gamma_array[0:j]*hist_r) + 0 )
                 advantage = G_estimate - Vmodel.predict(state)
-                policy_model.partial_fit([hist_s[0]], [hist_a[0]], [advantage])
-                Vmodel.partial_fit([hist_s[0]], [G_estimate])
+                policy_model.update_weights([hist_s[0]], [hist_a[0]], [advantage])
+                Vmodel.update_weights([hist_s[0]], [G_estimate])
                 hist_s.popleft()
                 hist_a.popleft()
                 hist_r.popleft()
@@ -97,7 +104,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
             if verbose:
                 print("step %d / ep %d: return=%.2f" % (steps, episodes, ep_return))
 
-            next_state = env.reset()
+            next_state, _ = env.reset()
             ep_return = 0.0
     
     if not done:
@@ -110,6 +117,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
 
 
 if __name__ == "__main__":
+    import gymnasium as gym
     from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 
@@ -120,16 +128,17 @@ if __name__ == "__main__":
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
     NUM_STEPS = 20000
     GAMMA     = 0.99
-    NSTEP     = 32
-    EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
-    
+    NSTEP     = 16
+    #EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
+
     env = gym.make(ENV_NAME)
     inputs = env.observation_space.shape[0]
     outputs = env.action_space.n
 
-    #policy_model = models.PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=3e-5)
-    policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5) #5e-5
-    v_model = models.ValueModel(inputs, [256,32], lr=8e-5) #1e-4
+    #policy_model = models.PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=4e-5)   
+    policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5)
+
+    v_model = models.ValueModel(inputs, [256,32], lr=1e-4)
 
     returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
     

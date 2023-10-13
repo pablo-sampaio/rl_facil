@@ -4,9 +4,6 @@
 # Baseado em códigos de "Lazy Programmer" do curso do Udemy e codigos do livro de M. Lapan.
 ################
 
-import gym
-import numpy as np
-
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
@@ -33,7 +30,7 @@ def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial
     episodes = 0
     steps = 0
 
-    next_state = env.reset()
+    next_state, _ = env.reset()
     ep_return = 0.0
 
     while steps < max_steps:
@@ -41,17 +38,22 @@ def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial
 
         # 1. Faz 1 passo
         action = policy_model.sample_action(state)
-        next_state, r, done, _ = env.step(action)
+        next_state, r, terminated, truncated, _ = env.step(action)
+        done = terminated or truncated
         ep_return += r
         steps += 1
 
         # 2. Treina a política
-        G_estimate = r + gamma * Vmodel.predict(next_state)
+        if terminated:
+            V_next_state = 0.0
+        else:
+            V_next_state = Vmodel.predict(next_state)
+        G_estimate = r + gamma * V_next_state
         advantage = G_estimate - Vmodel.predict(state)
-        policy_model.partial_fit([state], [action], [advantage])
+        policy_model.update_weights([state], [action], [advantage])
 
         # 3. Treina o modelo de V(.),
-        Vmodel.partial_fit([state], [G_estimate])
+        Vmodel.update_weights([state], [G_estimate])
         
         if done:
             all_returns.append((steps, ep_return))
@@ -59,7 +61,7 @@ def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial
             if verbose:
                 print("step %d / ep %d: return=%.2f" % (steps, episodes, ep_return))
             
-            next_state = env.reset()
+            next_state, _ = env.reset()
             ep_return = 0.0
     
     if not done:
@@ -72,6 +74,7 @@ def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial
 
 
 if __name__ == "__main__":
+    import gymnasium as gym
     from cap08.models_torch_pg import test_policy
     from util.plot import plot_result
 

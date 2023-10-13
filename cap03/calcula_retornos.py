@@ -2,17 +2,17 @@
 import gymnasium as gym
 import time
 
-#env = gym.make("MountainCar-v0")
-#env = gym.make("Taxi-v3")
-env = gym.make("CartPole-v1")
-#env = gym.make("Pendulum-v1")
-#env = gym.make("LunarLander-v2")
+#env = gym.make("MountainCar-v0", render_mode="human")
+#env = gym.make("Taxi-v3", render_mode="human")
+#env = gym.make("CartPole-v1", render_mode="human")
+#env = gym.make("Pendulum-v1", render_mode="human")
+env = gym.make("LunarLander-v2", render_mode="human")
 
 TOTAL_STEPS = 5
 GAMMA = 0.9
 
 i = 0
-obs = env.reset()
+obs, _ = env.reset()
 trajectory = []  # ou rollout -> são os detalhes do episódio
 
 done = False
@@ -22,7 +22,7 @@ for i in range(0,TOTAL_STEPS):
     env.render()
     action = env.action_space.sample()
 
-    next_obs, reward, done, info = env.step(action)
+    next_obs, reward, terminated, truncated, info = env.step(action)
 
     trajectory.append( (obs, action, reward) )
 
