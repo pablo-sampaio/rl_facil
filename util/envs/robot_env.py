@@ -1,4 +1,6 @@
 
+import gymnasium as gym
+
 from enum import Enum, unique
 from itertools import product
 
@@ -17,13 +19,19 @@ class Action(Enum):
     TURN_COUNTER_CW = 2
 
 
-class SimulatedRobotEnv:
+## TODO: ainda não está compliant com o gym
+##  - definir action e observation spaces
+##  - renderização?
+
+class SimulatedRobotEnv(gym.Env):
+
     def __init__(self, count_visits=False, use_real_state=False, reward_option='goal', allow_all_actions=True):
-        # 0 is corridor; 1 is wall; 2 is goal (r=1, if reward is goal); 
-        # 3 is start position; 
-        # 4 is a hole that terminates the episode (r=-1, if reward is goal); 
+        # codes used in the bi-dimensional map:
+        # - 0 is corridor; 1 is wall; 2 is goal (terminal state); 
+        # - 3 is start position; 
+        # - 4 is a hole (terminal state); 
         self.map = [ 
-            [ 0, 0, 0, 0, 0, 0, 2],
+            [ 0, 0, 0, 0, 4, 0, 2],
             [ 0, 0, 0, 0, 0, 0, 0],
             [ 0, 1, 1, 1, 1, 1, 1],
             [ 0, 0, 0, 0, 0, 0, 0],
@@ -48,9 +56,7 @@ class SimulatedRobotEnv:
         else:
             self.STEP_REWARD = -1.0
             self.GOAL_REWARD = 0.0
-            self.HOLE_REWARD = -1000.0
-
-        self.allow_all_actions = allow_all_actions
+            self.HOLE_REWARD = -50.0
 
         if count_visits:
             self.visits = [[0 for x in range(len(self.map[0]))] for x in range(len(self.map))]
@@ -63,24 +69,9 @@ class SimulatedRobotEnv:
         actionset_no_front.remove(Action.FRONT)
         self.actionset_no_front = tuple(actionset_no_front)
 
-        self.step = self.apply_action # another name for the function (similar to the name used in gym)
 
-    def all_actions(self):
-        return self.actionset
-    
-    def curr_actions(self):
-        assert self.state is not None, "Invalid state - reset the environment"
-        if self.allow_all_actions:
-            return self.actionset
-        state_ahead = self._internal_apply_action(self.state, Action.FRONT) 
-        if 0 <= state_ahead[0] < len(self.map) \
-                and 0 <= state_ahead[1] < len(self.map[0]) \
-                and self.map[state_ahead[0]][state_ahead[1]] != 1:
-            return self.actionset
-        else:
-            return self.actionset_no_front
-
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
+        super().reset(seed=seed)
         self.state = self.initial_state 
         if self.use_real_state:
             self.observation = self.state
@@ -117,7 +108,7 @@ class SimulatedRobotEnv:
             self.visits = [[0 for x in range(len(self.map[0]))] for x in range(len(self.map))]
         return old_visits
 
-    def apply_action(self, action):
+    def step(self, action):
         assert self.state is not None, "Environment must be reset"
 
         new_state = self._internal_apply_action(self.state, action)
@@ -129,12 +120,9 @@ class SimulatedRobotEnv:
             self.observation = self._internal_apply_action(self.observation, action)
             if self.visits is not None and action == Action.FRONT:
                 self.visits[new_state[0]][new_state[1]] += 1
-        elif self.allow_all_actions:
-            # invalid moves: don't change self.state and self.observation
-            new_state = self.state
         else:
-            # invalid moves are not accepted
-            raise Exception(f"Action {action} is not valid in state {self.state}!")
+            # invalid moves: don't change state
+            new_state = self.state
         
         is_terminal = False
         if self.map[new_state[0]][new_state[1]] == 2:  # goal
@@ -148,7 +136,6 @@ class SimulatedRobotEnv:
             reward = self.STEP_REWARD
         
         if is_terminal:
-            self.state = None  # indicates that a reset is needed; but don't change the observation that will be returned
+            self.state = None  # indicates that a reset is needed (but it is not returned in this step)
 
-        return self.observation, reward, is_terminal
-
+        return self.observation, reward, is_terminal, False, None

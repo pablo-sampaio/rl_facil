@@ -5,7 +5,7 @@
 # - Lazy programmer's implementation
 # - https://www.analyticsvidhya.com/blog/2018/11/reinforcement-learning-introduction-monte-carlo-learning-openai-gym/
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 
@@ -39,10 +39,10 @@ def run_montecarlo2(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False
         sum_rewards, reward = 0, 0
         ep_trajectory = []
         
-        state = env.reset()
+        state, _ = env.reset()
     
         # PARTE 1: executa um episódio completo
-        while done != True:   
+        while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()
@@ -51,7 +51,8 @@ def run_montecarlo2(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False
             action = choose_action(Q, state, num_actions, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             
             # adiciona a tripla que representa este passo
             ep_trajectory.append( (state, action, reward) )
@@ -96,7 +97,7 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo Monte-Carlo para o problema de controle (ou seja, para achar a política ótima)
-    rewards, Qtable = run_montecarlo2(env, EPISODES, LR, GAMMA, EPSILON, render=False)
+    rewards, Qtable = run_montecarlo2(env, EPISODES, LR, GAMMA, EPSILON, render=True)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Mostra um gráfico de episódios x retornos não descontados

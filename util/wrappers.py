@@ -1,5 +1,5 @@
 import numpy as np
-import gym
+import gymnasium as gym
 
 
 def convert_to_flattened_index(indices, dimensions):
@@ -62,7 +62,6 @@ class DiscreteObservationWrapper(gym.ObservationWrapper):
 
     def observation(self, obs):
         return self.discretizer.to_single_bin(obs)
-
 
 
 class FromDiscreteTupleToDiscreteObs(gym.ObservationWrapper):

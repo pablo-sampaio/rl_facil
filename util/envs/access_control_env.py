@@ -1,5 +1,5 @@
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import numpy as np
 
 
@@ -14,10 +14,11 @@ class AccessControlEnv(gym.Env):
         
         self.reset()
         
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
+        super().reset(seed=seed)
         self.free_servers = self.num_servers
         self.time_step = 0
-        return self._get_state()
+        return self._get_state(), {}
     
     def step(self, action):
         assert self.action_space.contains(action), "Invalid action"
@@ -27,17 +28,17 @@ class AccessControlEnv(gym.Env):
         if action == 0 and self.free_servers > 0:
             self.free_servers -= 1
             reward = self.priorities[self.customer_priority_idx]
-        
+
         self.time_step += 1
 
         # Update server states
-        if self.free_servers < self.num_servers and np.random.rand() < self.server_busy_prob:
+        if self.free_servers < self.num_servers and self.np_random.random() < self.server_busy_prob:
             self.free_servers += 1       
 
-        return self._get_state(), reward, False, {}
+        return self._get_state(), reward, False, False, {}
     
     def _get_state(self):
-        self.customer_priority_idx = np.random.choice(len(self.priorities))
+        self.customer_priority_idx = self.np_random.choice(len(self.priorities))
         return (self.free_servers, self.customer_priority_idx)
     
 
@@ -51,14 +52,14 @@ if __name__=='__main__':
     env = AccessControlEnv()
     env = FromDiscreteTupleToDiscreteObs(env)
 
-    state = env.reset()
+    state, _ = env.reset()
     done = False
     total_reward = 0
 
     for i in range(30):
         action = 0  # Replace with your RL agent's action selection
 
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, termi, trunc, _ = env.step(action)
         total_reward += reward
 
         print(f'State {state=}, Action {action=}, Reward {reward=}')

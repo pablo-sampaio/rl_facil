@@ -45,7 +45,7 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
         state, _ = env.reset()
     
         # PARTE 1: executa um episódio completo
-        while done != True:   
+        while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
             if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
                 env.render()

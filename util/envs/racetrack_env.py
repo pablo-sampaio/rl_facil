@@ -1,16 +1,16 @@
 import numpy as np
-import gym
-from gym import spaces
+import gymnasium as gym
+from gymnasium import spaces
 import pygame
 
 import sys
 from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
 
 from util.wrappers import convert_to_flattened_index
 
 
-def get_positions(track, character):
+def find_positions_with_char(track, character):
     positions = []
     for y, row in enumerate(track):
         for x, ch in enumerate(row):
@@ -22,7 +22,7 @@ def get_positions(track, character):
 class RacetrackEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, book_collision=False):
+    def __init__(self, render_mode="human", collision_restarts=False, observation_as_tuple=False):
         self.track = [
             "XXXXXXXXXXXXXXXXXX",
             "GG___XXXXXXXXXXXXX",
@@ -50,21 +50,28 @@ class RacetrackEnv(gym.Env):
             "XXXXXXX_______XXXX",
             "XXXXXXXSSSSSSSXXXX",
         ]        
-        self.book_collision = book_collision
+        self.collision_restarts = collision_restarts
+        self.render_mode = render_mode
+        self.observation_as_tuple = observation_as_tuple
+        
         self.action_space = spaces.Discrete(9)  # 9 possible actions (0-8)
         
         self.vel_limit = 3
+        
         # Dimensions for x position / y position / x velocity / y velocity
         self.obs_dimensions = [len(self.track[0]), len(self.track), 2*self.vel_limit+1, 2*self.vel_limit+1]
-        self.observation_space = spaces.Discrete(np.prod(self.obs_dimensions))
-        '''self.observation_space = spaces.Tuple((
-            spaces.Discrete(self.obs_dimensions[0]),  # x position
-            spaces.Discrete(self.obs_dimensions[1]),  # y position
-            spaces.Discrete(self.obs_dimensions[2]),  # x velocity
-            spaces.Discrete(self.obs_dimensions[3])  # y velocity
-        ))'''
+
+        if observation_as_tuple:
+            self.observation_space = spaces.Tuple((
+                spaces.Discrete(self.obs_dimensions[0]),  # x position
+                spaces.Discrete(self.obs_dimensions[1]),  # y position
+                spaces.Discrete(self.obs_dimensions[2]),  # x velocity
+                spaces.Discrete(self.obs_dimensions[3])   # y velocity
+            ))
+        else:
+            self.observation_space = spaces.Discrete(np.prod(self.obs_dimensions))
         
-        self.start_positions = get_positions(self.track, 'S')
+        self.start_positions = find_positions_with_char(self.track, 'S')
         self.reset()
 
         # para renderização
@@ -81,12 +88,15 @@ class RacetrackEnv(gym.Env):
         self.square_size = 20  # Scale factor for rendering
         self.isopen = True
 
-    def reset(self):
-        idx = np.random.choice(len(self.start_positions))
+    def reset(self, *, seed=None, options=None):
+        super().reset(seed=seed)
+        idx = self.np_random.choice(len(self.start_positions))
         start_pos = self.start_positions[idx]
         self.current_state = (*start_pos, self.vel_limit, self.vel_limit)  # o valor de self.vel_limit representa a velocidade zero
-        #return self.current_position
-        return convert_to_flattened_index(self.current_state, self.obs_dimensions)
+        if self.observation_as_tuple:
+            return self.current_state, {}
+        else:
+            return convert_to_flattened_index(self.current_state, self.obs_dimensions), {}
     
     def step(self, action):
         x, y, vx, vy = self.current_state
@@ -113,26 +123,32 @@ class RacetrackEnv(gym.Env):
         if x_new < 0 or x_new >= len(self.track[0]) \
                 or y_new < 0 or y_new >= len(self.track) \
                 or self.track[y_new][x_new] == 'X':
-            if self.book_collision:
+            if self.collision_restarts:
                 # go to a random start position
-                idx = np.random.choice(len(self.start_positions))
+                idx = self.np_random.choice(len(self.start_positions))
+                #idx = np.random.choice(len(self.start_positions))
                 x_new, y_new = self.start_positions[idx]
                 vx_new, vy_new = (0, 0)
             else:
                 # stop in current position
                 x_new, y_new, vx_new, vy_new = x, y, 0, 0 
         
+        # velocity is summed to self.vel_limit to make it non-negative
         self.current_state = (x_new, y_new, vx_new + self.vel_limit, vy_new + self.vel_limit)
         
         if self.track[y_new][x_new] == 'G':
             reward = 0   # Reached the goal
-            done = True
+            terminated = True
         else:
             reward = -1  # Time step penalty
-            done = False
+            terminated = False
         
-        obs = convert_to_flattened_index(self.current_state, self.obs_dimensions)
-        return obs, reward, done, {}
+        if self.observation_as_tuple:
+            obs = self.current_state
+        else:
+            obs = convert_to_flattened_index(self.current_state, self.obs_dimensions)
+
+        return obs, reward, terminated, False, {}
 
     def render_text(self):
         track_copy = self.track.copy()  # Create a copy of the track
@@ -141,7 +157,7 @@ class RacetrackEnv(gym.Env):
         for row in track_copy:
             print(row)
 
-    def render(self, mode="human"):
+    def render(self):
         if self.screen is None:
             pygame.init()
             pygame.display.init()
@@ -163,12 +179,12 @@ class RacetrackEnv(gym.Env):
         offset = 2
         pygame.draw.rect(self.screen, self.colors['A'], (x*self.square_size + offset, y*self.square_size + offset, self.square_size - 2*offset, self.square_size - 2*offset))
 
-        if mode == "human":
+        if self.render_mode == "human":
             pygame.event.pump()
             self.clock.tick(self.metadata["render_fps"])
             pygame.display.flip()
 
-        if mode == "rgb_array":
+        if self.render_mode == "rgb_array":
             return np.transpose(
                 np.array(pygame.surfarray.pixels3d(self.screen)), axes=(1, 0, 2)
             )
@@ -185,21 +201,21 @@ class RacetrackEnv(gym.Env):
 
 if __name__=='__main__':
     import time
-    env = RacetrackEnv()
-    state = env.reset()
+    env = RacetrackEnv(collision_restarts=False, observation_as_tuple=True)
+    state, _ = env.reset()
     env.render()
 
-    done = False
-    while not done:
+    terminated = truncated = False
+    while not (terminated or truncated):
         action = env.action_space.sample()
-        next_state, reward, done, _ = env.step(action)
+        next_state, reward, terminated, truncated, _ = env.step(action)
 
-        time.sleep(0.1)
+        time.sleep(0.15)
         env.render()
-        #print("Action:", action)
-        #print("Next State:", next_state)
-        #print("Reward:", reward)
-        #print("Done:", done)
-        #print()
+        print("Action:", action)
+        print("Next State:", next_state)
+        print("Reward:", reward)
+        print("Termi/Trunc:", terminated, truncated)
+        print()
     
     env.close()
