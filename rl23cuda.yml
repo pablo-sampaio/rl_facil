@@ -1,4 +1,4 @@
-name: rl23y
+name: rl23cuda
 channels:
   - pytorch
   - nvidia
