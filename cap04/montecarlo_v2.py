@@ -85,6 +85,7 @@ if __name__ == "__main__":
 
     from util.plot import plot_result
     from util.experiments import test_greedy_Q_policy
+    from util.envs import RacetrackEnv
 
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10
@@ -94,7 +95,8 @@ if __name__ == "__main__":
     GAMMA = 0.95
     EPSILON = 0.1
 
-    env = gym.make(ENV_NAME)
+    #env = gym.make(ENV_NAME)
+    env = RacetrackEnv(render_mode='human')
     
     # Roda o algoritmo Monte-Carlo para o problema de controle (ou seja, para achar a política ótima)
     rewards, Qtable = run_montecarlo2(env, EPISODES, LR, GAMMA, EPSILON, render=True)
