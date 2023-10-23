@@ -39,7 +39,7 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
     - num_iterations: number of steps or episodes
     - *args: list of arguments for 'algorithm'
     - **kwargs: named arguments for 'algorithm'
-    - 'auto_load': to save the results and reload automatically when re-executed with exactly the same parameters (including the number of executions)
+    - auto_load: to save the results and reload automatically when re-executed with exactly the same parameters (including the number of executions)
     '''
     # gets a string to identify the environment
     if isinstance(env, gym.Env):
@@ -125,8 +125,9 @@ def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, 
     return alg_name, rew_mean, rew_std
 
 
-def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.01, recorded_video_folder=None):
+def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.00, recorded_video_folder=None):
     """
+    TODO: remover opções de render e de salvar video??
     Avalia a política gulosa (greedy) definida implicitamente por uma Q-table.
     Ou seja, executa, em todo estado s, a ação "a = argmax Q(s,a)".
     - env: o ambiente
@@ -145,7 +146,7 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
     total_steps = 0
     for i in range(num_episodes):
         print(f"Episode {i+1}")
-        obs = env.reset()
+        obs, _ = env.reset()
         if render:
             env.render()
             time.sleep(render_wait)
@@ -154,7 +155,8 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
         episode_returns.append(0.0)
         while not done:
             action = np.argmax(Q[obs])
-            obs, reward, done, _ = env.step(action)
+            obs, reward, termi, trunc, _ = env.step(action)
+            done = termi or trunc
             if render:
                 env.render()
                 time.sleep(render_wait)
@@ -169,7 +171,7 @@ def test_greedy_Q_policy(env, Q, num_episodes=100, render=False, render_wait=0.0
     print("Retorno médio (por episódio):", mean_return, end="")
     print(", episódios:", len(episode_returns), end="")
     print(", total de passos:", total_steps)
-    env.close()
+    #env.close()
     return mean_return, episode_returns
 
 

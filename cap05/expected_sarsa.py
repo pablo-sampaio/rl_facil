@@ -1,4 +1,4 @@
-import gym
+import gymnasium as gym
 import numpy as np
 
 
@@ -55,25 +55,24 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q com valores aleatórios de -1.0 a 0.0
+    # inicializa a tabela Q toda com zeros
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.random.uniform(low = -1.0, high = 0.0, 
-                          size = (env.observation_space.n, num_actions))
+    Q = np.zeros(shape = (env.observation_space.n, num_actions))
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
-    sum_rewards_per_ep = []
+    all_episode_rewards = []
     
     # loop principal
     for i in range(episodes):
         done = False
         sum_rewards, reward = 0, 0
         
-        state = env.reset()
+        state, _ = env.reset()
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
+            if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
                 env.render()
             
             # escolhe a próxima ação -- usa epsilon-greedy
@@ -81,9 +80,10 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
             #action = softmax_choice(Q, state)  # bad results!
 
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
 
-            if done: 
+            if terminated: 
                 # para estados terminais
                 V_next_state = 0
             else:
@@ -101,14 +101,14 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
             state = next_state
 
         # salva o retorno do episódio que encerrou
-        sum_rewards_per_ep.append(sum_rewards)
+        all_episode_rewards.append(sum_rewards)
         
         # a cada 100 episódios, imprime informação sobre o progresso 
         if (i+1) % 100 == 0:
-            avg_reward = np.mean(sum_rewards_per_ep[-100:])
+            avg_reward = np.mean(all_episode_rewards[-100:])
             print(f"Episode {i+1} Average Reward (last 100): {avg_reward:.3f}")
 
-    return sum_rewards_per_ep, Q
+    return all_episode_rewards, Q
 
 
 
