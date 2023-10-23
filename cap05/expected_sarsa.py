@@ -17,15 +17,34 @@ def softmax_choice(Q, state):
 
 # define as probabilidades de escolher uma ação usando uma estratégia epsilon-greedy
 # um pouco mais detalhada (que considera os empates no valor máximo de Q)
-def epsilon_greedy_probs(Q, state, num_actions, epsilon):
+def epsilon_greedy_probs(Q, state, epsilon):
+    Q_state = Q[state]
+    num_actions = len(Q_state)
+    q_max = np.max(Q_state)
+    
+    non_greedy_action_probability = epsilon / num_actions
+    greedy_actions = np.sum(Q_state == q_max)
+    
+    greedy_action_probability = ((1 - epsilon) / greedy_actions) + non_greedy_action_probability
+    
+    probs = np.where(Q_state == q_max, greedy_action_probability, non_greedy_action_probability)
+    
+    return probs
+
+'''
+# Implementa antiga (remover)
+def epsilon_greedy_probs(Q, state, epsilon):
+    Q_state = Q[state]
+    num_actions = len(Q_state)
+
     # probabilidade que todas as ações têm de ser escolhidas nas decisões exploratórias (não-gulosas)
     non_greedy_action_probability = epsilon / num_actions
 
     # conta quantas ações estão empatadas com o valor máximo de Q neste estado
-    q_max = np.max(Q[state, :])
+    q_max = np.max(Q_state)
     greedy_actions = 0
-    for i in range(num_actions):
-        if Q[state][i] == q_max:
+    for a in range(num_actions):
+        if Q_state[a] == q_max:
             greedy_actions += 1
     
     # probabilidade de cada ação empatada com Q máximo: 
@@ -34,16 +53,18 @@ def epsilon_greedy_probs(Q, state, num_actions, epsilon):
 
     # prepara a lista de probabilidades: cada índice tem a probabilidade da ação daquele índice
     probs = []
-    for i in range(num_actions):
-        if Q[state][i] == q_max:
+    for a in range(num_actions):
+        if Q[state][a] == q_max:
             probs.append(greedy_action_probability)
         else:
             probs.append(non_greedy_action_probability)
     return probs
+'''
+
 
 def epsilon_greedy_choice(Q, state, epsilon=0.1):
     num_actions = len(Q[state])
-    probs = epsilon_greedy_probs(Q, state, num_actions, epsilon)
+    probs = epsilon_greedy_probs(Q, state, epsilon)
     return np.random.choice(num_actions, p=probs)
 
 
@@ -88,7 +109,7 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
                 V_next_state = 0
             else:
                 # para estados não-terminais -- valor esperado
-                p_next_actions = epsilon_greedy_probs(Q, next_state, num_actions, epsilon)
+                p_next_actions = epsilon_greedy_probs(Q, next_state, epsilon)
                 #p_next_actions = softmax_probs(Q[next_state_num])
                 V_next_state = np.sum( p_next_actions * Q[next_state] ) 
 
@@ -137,5 +158,6 @@ if __name__ == "__main__":
     # Mostra um gráfico de episódios x retornos (não descontados)
     plot_result(returns, r_max, None, window=50)
 
-    test_greedy_Q_policy(env, Qtable, 5, True)
+    rendering_env = gym.make(ENV_NAME, render_mode='human')
+    test_greedy_Q_policy(rendering_env, Qtable, 5, True)
     env.close()
