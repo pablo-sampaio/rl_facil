@@ -9,9 +9,9 @@ from util.envs import RacetrackEnv
 
 
 if __name__=='__main__':
-    from cap05.nstep_sarsa import run_nstep_sarsa
+    from nstep_sarsa import run_nstep_sarsa
     from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
+    from util.qtable_helper import evaluate_qtable
 
     EPISODES = 10_000
     LR = 0.1
@@ -28,5 +28,5 @@ if __name__=='__main__':
     # Exibe um gráfico episódios x retornos (não descontados)
     plot_result(rewards, window=50)
 
-    test_greedy_Q_policy(env, qtable, 10, True, render_wait=0.00)
+    evaluate_qtable(env, qtable, 10, verbose=True)
     env.close()

@@ -2,8 +2,6 @@
 import gymnasium as gym
 import numpy as np
 
-from .experiments import repeated_exec
-
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
@@ -13,6 +11,7 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
     if np.random.random() < epsilon:
         return np.random.randint(0, num_actions)
     else:
+        # retorna uma ação de valor máximo -- aleatoriza em caso de empates
         return np.random.choice(np.where(q_state == q_state.max())[0])
 
 
@@ -88,6 +87,8 @@ def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
 
 
 def repeated_exec_epsilon_greedy_qtable(executions, alg_name, qtable, env, num_iterations, epsilon=0.0):
+    from util.experiments import repeated_exec
+
     def run_q_greedy(env, num_steps):
         state = env.reset()
         rewards = []

@@ -1,5 +1,5 @@
 
-import gym
+import gymnasium as gym
 import optuna
 
 from expected_sarsa import run_expected_sarsa

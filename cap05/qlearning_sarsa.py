@@ -5,21 +5,23 @@
 import gymnasium as gym
 import numpy as np
 
+from util.qtable_helper import epsilon_greedy_random_tiebreak
+
 # Define se os algoritmos irão ou não imprimir dados parciais na saída de texto
 VERBOSE = False
 
 
 # Esta é a política. Neste caso, escolhe uma ação com base nos valores
 # da tabela Q, usando uma estratégia epsilon-greedy.
-def epsilon_greedy(Q, state, epsilon):
+'''def epsilon_greedy(Q, state, epsilon):
     Q_state = Q[state]
     num_actions = len(Q_state)
     if np.random.random() < epsilon:
         return np.random.randint(0, num_actions)
     else:
-        return np.argmax(Q_state)   # em caso de empates, retorna sempre o menor índice --> mais eficiente, porém não é bom para alguns ambientes (como o FrozenLake)
-        #return np.random.choice(np.where(Q_state == Q_state.max())[0]) # aleatoriza em caso de empates
-
+        # em caso de empates, retorna sempre o menor índice -- mais eficiente, porém não é bom para alguns ambientes
+        return np.argmax(Q_state)
+'''
 
 # Algoritmo Q-learning
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
@@ -45,12 +47,8 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
-            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            #if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
-            #    env.render()
-            
             # escolhe a próxima ação -- usa epsilon-greedy
-            action = epsilon_greedy(Q, state, epsilon)
+            action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, terminated, truncated, _ = env.step(action)
@@ -105,20 +103,16 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
         state, _ = env.reset()
         
         # escolhe a próxima ação
-        action = epsilon_greedy(Q, state, epsilon)
+        action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
-            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            #if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
-            #    env.render()
-                  
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
             # escolhe a próxima ação -- usa epsilon-greedy
-            next_action = epsilon_greedy(Q, state, epsilon)
+            next_action = epsilon_greedy_random_tiebreak(Q, next_state, epsilon)
 
             if terminated: 
                 # para estados terminais

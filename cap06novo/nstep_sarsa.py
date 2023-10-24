@@ -4,18 +4,14 @@ from collections import deque
 import gymnasium as gym
 import numpy as np
 
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-# Esta é a política. Neste caso, escolhe uma ação com base nos valores
-# da tabela Q, usando uma estratégia epsilon-greedy.
-def choose_action(Q, state, epsilon):
-    num_actions = len(Q[state])
-    if np.random.random() < epsilon:
-        return np.random.randint(0, num_actions)
-    else:
-        return np.argmax(Q[state])   # alt. para aleatorizar empates: np.random.choice(np.where(b == bmax)[0])
+from util.qtable_helper import epsilon_greedy_random_tiebreak
 
 
-# Algoritmo "n-step SARSA", online learning
+# Algoritmo "n-step SARSA"
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
 def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
@@ -24,10 +20,9 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q com valores aleatórios de -1.0 a 0.0
+    # inicializa a tabela Q com zeros
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.random.uniform(low = -1.0, high = 0.0, 
-                          size = (env.observation_space.n, num_actions))
+    Q = np.zeros(shape=(env.observation_space.n, num_actions))
 
     gamma_array = np.array([ gamma**i for i in range(0,nsteps)])
     gamma_power_nstep = gamma**nsteps
@@ -40,9 +35,9 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
         done = False
         sum_rewards, reward = 0, 0
         
-        state = env.reset()
+        state, _ = env.reset()
         # escolhe a próxima ação
-        action = choose_action(Q, state, epsilon)
+        action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
 
         # históricos de: estados, ações e recompensas
         hs = deque(maxlen=nsteps)
@@ -52,15 +47,16 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done: 
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
-                env.render()
+            #if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
+            #    env.render()
                         
             # realiza a ação
-            next_state, reward, done, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             sum_rewards += reward
 
             # escolhe (antecipadamente) a ação do próximo estado
-            next_action = choose_action(Q, next_state, num_actions, epsilon)
+            next_action = epsilon_greedy_random_tiebreak(Q, next_state, epsilon)
 
             hs.append(state)
             ha.append(action)
@@ -69,7 +65,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
             # se o histórico estiver completo com 'n' passos
             # vai fazer uma atualização no valor Q do estado mais antigo
             if len(hs) == nsteps:
-                if done: 
+                if terminated: 
                     # para estados terminais
                     V_next_state = 0
                 else:
@@ -110,23 +106,22 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
 
 
 if __name__ == "__main__":
-    import sys
-    from os import path
-    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
+    from gymnasium.wrappers.time_limit import TimeLimit
     from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
+    from util.qtable_helper import evaluate_qtable
+    from util.envs import RacetrackEnv
 
     ENV_NAME, r_max = "FrozenLake-v1", 1.0
     #ENV_NAME, r_max = "Taxi-v3", 10.0
 
     EPISODES = 10000
-    LR = 0.01
+    LR = 0.1  # frozen-lake, use: 0.01
     GAMMA = 0.95
     EPSILON = 0.1
     NSTEPS = 3
 
-    env = gym.make(ENV_NAME)
+    #env = gym.make(ENV_NAME)
+    env = TimeLimit(RacetrackEnv(), 300)
     
     # Roda o algoritmo "n-step SARSA"
     rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=False)
@@ -135,5 +130,5 @@ if __name__ == "__main__":
     # Exibe um gráfico episódios x retornos (não descontados)
     plot_result(rewards, r_max, None)
 
-    test_greedy_Q_policy(env, qtable, 10, True)
+    evaluate_qtable(env, qtable, 10, verbose=True)
     env.close()

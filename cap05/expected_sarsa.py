@@ -4,11 +4,12 @@ import numpy as np
 
 # esta função pode ser usada para converter um array "x" de valores
 # numéricos quaisquer em probabilidades
-def softmax_probs(x):
-    x = x - np.max(x)
-    x = np.exp(x)
-    x = x / np.sum(x)
-    return x
+def softmax_probs(Q, state):
+    values = Q[state]
+    values = values - np.max(values)
+    values = np.exp(values)
+    values = values / np.sum(values)
+    return values
 
 # escolhe uma ação da Q-table usando uma estratégia softmax
 def softmax_choice(Q, state):
@@ -96,7 +97,7 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
             if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
                 env.render()
             
-            # escolhe a próxima ação -- usa epsilon-greedy
+            # escolhe a próxima ação com a 'behavior policy'
             action = epsilon_greedy_choice(Q, state, epsilon)
             #action = softmax_choice(Q, state)  # bad results!
 
@@ -109,6 +110,7 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
                 V_next_state = 0
             else:
                 # para estados não-terminais -- valor esperado
+                # atualiza conforme a 'target policy'
                 p_next_actions = epsilon_greedy_probs(Q, next_state, epsilon)
                 #p_next_actions = softmax_probs(Q[next_state_num])
                 V_next_state = np.sum( p_next_actions * Q[next_state] ) 
