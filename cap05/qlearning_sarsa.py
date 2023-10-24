@@ -17,13 +17,13 @@ def epsilon_greedy(Q, state, epsilon):
     if np.random.random() < epsilon:
         return np.random.randint(0, num_actions)
     else:
-        #return np.argmax(Q_state])   # em caso de empates, retorna sempre o menor índice --> mais eficiente, porém não é bom para alguns ambientes (como o FrozenLake)
-        return np.random.choice(np.where(Q_state == Q_state.max())[0]) # aleatoriza em caso de empates
+        return np.argmax(Q_state)   # em caso de empates, retorna sempre o menor índice --> mais eficiente, porém não é bom para alguns ambientes (como o FrozenLake)
+        #return np.random.choice(np.where(Q_state == Q_state.max())[0]) # aleatoriza em caso de empates
 
 
 # Algoritmo Q-learning
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
 
@@ -46,8 +46,8 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
-                env.render()
+            #if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
+            #    env.render()
             
             # escolhe a próxima ação -- usa epsilon-greedy
             action = epsilon_greedy(Q, state, epsilon)
@@ -84,7 +84,7 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
 
 # Algoritmo SARSA
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
 
@@ -110,8 +110,8 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
             # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
-                env.render()
+            #if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
+            #    env.render()
                   
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, terminated, truncated, _ = env.step(action)
@@ -155,19 +155,19 @@ if __name__ == "__main__":
     from util.plot import plot_result
     from util.experiments import test_greedy_Q_policy
 
-    ENV_NAME, r_max = "FrozenLake-v1", 1.0
-    #ENV_NAME, r_max = "Taxi-v3", 10.0
+    #ENV_NAME, r_max = "FrozenLake-v1", 1.0
+    ENV_NAME, r_max = "Taxi-v3", 10.0
 
-    EPISODES = 15000
-    LR = 0.01
+    EPISODES = 15_000
+    LR = 0.05
     GAMMA = 0.95
     EPSILON = 0.1
 
     env = gym.make(ENV_NAME)
     rendering_env = gym.make(ENV_NAME, render_mode='human')
-
+    #'''
     # Roda o algoritmo Q-Learning
-    returns, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=False)
+    returns, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON)
     print("Q-Learning - Treinamento - últimos retornos: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Mostra um gráfico de episódios x retornos não descontados. Se quiser salvar, passe o nome do arquivo como o 3o parâmetro.
@@ -177,7 +177,7 @@ if __name__ == "__main__":
     test_greedy_Q_policy(rendering_env, Qtable, 5)
 
     print(" ######### ")
-
+    #'''  
     # Roda o algoritmo SARSA
     returns, Qtable = run_sarsa(env, EPISODES, LR, GAMMA, EPSILON, render=False)
     print("SARSA - Treinamento - últimos retornos: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
@@ -188,3 +188,4 @@ if __name__ == "__main__":
     print("SARSA - Executando depois de treinado:")
     test_greedy_Q_policy(rendering_env, Qtable, 5)
     rendering_env.close()
+    #'''

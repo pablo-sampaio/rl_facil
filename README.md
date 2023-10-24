@@ -55,18 +55,22 @@ Foi implementado o algoritmo:
 Aqui tem um notebook explicando as equações de Bellman, usadas nos algoritmos de TD-Learning. Aqui são dadas vários 
 implementações de algoritmos TD-Learning. Todos estão implementados em *Q-Table*, como os anteriores.
 
-Vemos como implementar técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
-- Como lidar com ambientes contínuos
-- Como otimizar os (muitos) parâmetros dos algoritmos e da discretização
-
 Algoritmos implementados:
 - **Q-Learning** - atualiza a cada passo, roda uma polítiva epsilon-greedy, mas atualiza como greedy (off-policy)
 - **SARSA** - atualiza a cada passo, roda uma polítiva epsilon-greedy e atualiza coerentemente (on-policy)
 - **Expected-SARSA** - como os anteriores, mas pode ser on-policy ou off-policy (mas está implementado de forma on-policy)
-- **SARSA de n passos** - atualiza a *Q-Table* com base nos dados coletadas nos últimos n passos
+
+# Cap. 6 - SARSA de n Passos / Técnicas Auxiliares
+
+Vemos o **SARSA de n passos**, que atualiza a *Q-Table* com base nos dados coletadas nos últimos $n$ passos,
+onde este valor é um parâmetro adicional.
+
+Taambém vemos técnicas que auxiliam nos algoritmos anteriores (e em alguns algoritmos futuros):
+- Como lidar com ambientes contínuos
+- Como otimizar os (muitos) parâmetros dos algoritmos e da discretização
 
 
-# Cap. 6 - Algoritmos de MDP de Recompensa Média (Opcional)
+# Cap. 7 - Algoritmos com Modelo (Dyna-Q) e Algoritmos de MDP de Recompensa Média (Opcional)
 
 Nesta parte do curso, vemos uma nova formulação de MDP especialmente apropriada para *tarefas continuadas*, ou seja, tarefas que não 
 têm um estado terminal. Nestes MDPs, o objetivo é achar a política que maximize a recompensa média (a cada passo).
@@ -77,7 +81,7 @@ Algoritmo implementado:
 - **Differential Q-Learning**: versão do Q-Learning para tarefas continuadas, baseado na formulação de recompensa média
 
 
-# Cap. 7 - DQN
+# Cap. 8 - DQN
 
 Aqui, veremos o DQN, sucessor do Q-Learning que usa uma rede neural para substituir a *Q-Table*.
 
@@ -85,7 +89,7 @@ Em especial, esse algoritmo pode ser aplicado naturalmente em ambientes com esta
 (ou outros ambientes com observações dadas na forma de imagens).
 
 
-# Cap. 8 - Métodos Policy Gradient
+# Cap. 9 - Métodos Policy Gradient - Versão Monte Carlo
 
 Nesta parte, vemos métodos que aprendem uma política de forma explícita. Em especial, vamos representá-la com alguma rede neural.
 Em especial, focamos nos métodos da família mais importante do momento, que é chamada *policy gradient*. 
@@ -95,11 +99,18 @@ Estes métodos usam funções de custo (*loss function*) específicas para RL.
 Algoritmos:
 - *REINFORCE* - é o método mais básico, que é uma técnica Monte Carlo (roda episódigos completos, para calcular os $G_t$)
 - *REINFORCE-Adv* - melhoria do anterior, que usa uma rede neural separada para aprender o $V(s)$
+
+# Cap. 10 - Métodos Actor-Critic
+
+Aqui, vemos os métodos *policy gradient* combinados com TD-Learning, que são os métodos chamados **actor-critic**.
+
+Algoritmos (nomenclatura minha):
+
 - *VAC-1* - método ator crítico mais básico de 1 passos, que é uma versão TD-Learning do REINFORCE
 - *VAC-N* - método ator crítico básico de n passos, que é uma extensão do anterior
 
 
-# Cap. 9 - Bibliotecas
+# Cap. 11 - Bibliotecas
 
 Neste ponto do curso, vamos ver algumas bibliotecas que oferecem algoritmos do estado da arte.
 
