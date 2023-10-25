@@ -13,7 +13,7 @@ from util.qtable_helper import epsilon_greedy_random_tiebreak
 
 # Algoritmo "n-step SARSA"
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, verbose=False):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
     assert isinstance(nsteps, int)
@@ -46,10 +46,6 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done: 
-            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            #if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
-            #    env.render()
-                        
             # realiza a ação
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
@@ -97,7 +93,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, re
         sum_rewards_per_ep.append(sum_rewards)
         
         # a cada 100 episódios, imprime informação sobre o progresso 
-        if render and ((i+1) % 100 == 0):
+        if verbose and ((i+1) % 100 == 0):
             avg_reward = np.mean(sum_rewards_per_ep[-100:])
             print(f"Episode {i+1} Average Reward (last 100): {avg_reward:.3f}")
 
@@ -124,10 +120,10 @@ if __name__ == "__main__":
     env = TimeLimit(RacetrackEnv(), 300)
     
     # Roda o algoritmo "n-step SARSA"
-    rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, render=False)
+    rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, verbose=True)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
-    # Exibe um gráfico episódios x retornos (não descontados)
+    # Exibe um gráfico episódios x retornos 
     plot_result(rewards, r_max, None)
 
     evaluate_qtable(env, qtable, 10, verbose=True)

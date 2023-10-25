@@ -7,7 +7,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
 
-from util.wrappers import convert_to_flattened_index
+from util.envs.wrappers import convert_to_flattened_index
 
 
 def find_positions_with_char(track, character):
@@ -96,7 +96,7 @@ class RacetrackEnv(gym.Env):
         if self.observation_as_tuple:
             return self.current_state, {}
         else:
-            return convert_to_flattened_index(self.current_state, self.obs_dimensions), {}
+            return convert_to_flattened_index(self.current_state, self.obs_dimensions), dict(track=list(self.track))
     
     def step(self, action):
         x, y, vx, vy = self.current_state

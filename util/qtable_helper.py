@@ -17,6 +17,8 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
 
 def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='rl-video', epsilon=0.0):
     """
+    TODO: atualizar com a versão usada no n-step
+    Grava um vídeo a partir de uma política epsilon-greedy definida pela 'qtable' e pelo valor de 'epsilon'.
     - env_name: a string do ambiente cadastrada no gymnasium ou a classe do ambiente ou função que o instancia
     - qtable: a tabela Q (Q-table) na forma de array bidimensional
     - length: número de passos do ambiente usados no vídeo
@@ -27,7 +29,7 @@ def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='
     if isinstance(env_name, str):
         env = gym.make(env_name, render_mode="rgb_array")
     else:
-        env = env_name()
+        env = env_name #(render_mode='rgb_array')
     rec_env = gym.wrappers.RecordVideo(env, folder, episode_trigger=lambda i : True, video_length=length, name_prefix=prefix)
     num_steps = 0
     while num_steps < length:
@@ -40,6 +42,7 @@ def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='
             done = termi or trunc
             num_steps += 1
     rec_env.close()
+    env.close()
 
 
 def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
