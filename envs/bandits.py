@@ -1,8 +1,7 @@
 
 import numpy as np
 
-#TODO: Deixar como tarefa continuada de estado único, compliant com o gym
-#TODO: Mudar para modulo env
+#TODO: Criar um wrapper para deixar compliant com o gym, como tarefa continuada?
 #TODO: Rodar depois com o diff-qlearning
 
 
@@ -37,6 +36,9 @@ class MultiArmedBanditEnv :
     
     def __repr__(self):
         return f"MultiArmedBanditEnv{self.arms_prob}"
+    
+    # criar
+    #def to_gym_env(self)
 
 
 class GaussianMultiArmedBanditEnv :

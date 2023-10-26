@@ -7,7 +7,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
 
-from util.envs.wrappers import convert_to_flattened_index
+from envs.wrappers import convert_to_flattened_index
 
 
 def find_positions_with_char(track, character):

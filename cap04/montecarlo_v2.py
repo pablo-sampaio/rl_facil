@@ -85,7 +85,7 @@ if __name__ == "__main__":
 
     from util.plot import plot_result
     from util.experiments import test_greedy_Q_policy
-    from util.envs import RacetrackEnv
+    from envs import RacetrackEnv
 
     ENV_NAME = "Taxi-v3"
     r_max_plot = 10

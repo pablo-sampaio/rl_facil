@@ -1,5 +1,5 @@
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 import sys
@@ -12,7 +12,7 @@ from util.plot import plot_result
 from expected_sarsa import run_expected_sarsa
 from qlearning import run_qlearning
 
-from util.wrappers import DiscreteObservationWrapper
+from envs.wrappers import ObservationDiscretizerWrapper
 
 
 if __name__ == "__main__":
@@ -23,7 +23,7 @@ if __name__ == "__main__":
 
     env = gym.make(ENV_NAME)
     # usando o wrapper para discretizar o ambiente
-    env = DiscreteObservationWrapper(env, [70,50,70,50])
+    env = ObservationDiscretizerWrapper(env, [70,50,70,50])
 
     # 2. Roda um algoritmo de treinamento
     EPISODES = 10000

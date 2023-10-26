@@ -42,7 +42,7 @@ class GeneralDiscretizer:
         return self.total_bins
 
 
-class DiscreteObservationWrapper(gym.ObservationWrapper):
+class ObservationDiscretizerWrapper(gym.ObservationWrapper):
     '''Classe para converter espaços contínuos em espaços discretos.
 
     Esta classe converte ambientes de observações (estados) contínuos em ambientes de estados

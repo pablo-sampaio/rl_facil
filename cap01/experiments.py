@@ -2,7 +2,7 @@ from baseline_algorithms import run_greedy, run_random
 from epsilon_greedy import run_epsilon_greedy
 from ucb import run_ucb
 
-from util.bandit_envs import MultiArmedBanditEnv, GaussianMultiArmedBanditEnv
+from envs.bandits import MultiArmedBanditEnv, GaussianMultiArmedBanditEnv
 
 from util.experiments import repeated_exec
 from util.plot import plot_multiple_results

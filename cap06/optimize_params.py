@@ -9,7 +9,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.envs.wrappers import DiscreteObservationWrapper
+from envs.wrappers import ObservationDiscretizerWrapper
 
 
 
@@ -28,7 +28,7 @@ def train_with_exp_sarsa(trial : optuna.Trial):
     env = gym.make("MountainCar-v0")
 
     # roda o algoritmo e recebe os retornos não-descontados
-    env_wrapper = DiscreteObservationWrapper(env, [bins1,bins2])
+    env_wrapper = ObservationDiscretizerWrapper(env, [bins1,bins2])
     (returns, _) = run_expected_sarsa(env_wrapper, 2000, lr=lr, epsilon=eps)
 
     return sum(returns[-100:])/100 
@@ -47,7 +47,7 @@ def train_with_qlearning(trial : optuna.Trial):
     env = gym.make("MountainCar-v0")
 
     # roda o algoritmo e recebe os retornos não-descontados
-    env_wrapper = DiscreteObservationWrapper(env, [bins1,bins2])
+    env_wrapper = ObservationDiscretizerWrapper(env, [bins1,bins2])
     (returns, _) = run_qlearning(env_wrapper, 2000, lr=lr, epsilon=eps, render=False)
 
     return sum(returns[-100:])/100 

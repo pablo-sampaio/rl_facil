@@ -1,12 +1,11 @@
 
 import numpy as np
-import matplotlib.pyplot as plt
 
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.bandit_envs import MultiArmedBanditEnv
+from envs.bandits import MultiArmedBanditEnv
 
 
 def run_random(env, total_steps):

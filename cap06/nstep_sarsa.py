@@ -102,10 +102,10 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
 
 
 if __name__ == "__main__":
-    from gymnasium.wrappers.time_limit import TimeLimit
+    from gymnasium.wrappers import TimeLimit
+    from envs import RacetrackEnv
     from util.plot import plot_result
     from util.qtable_helper import evaluate_qtable
-    from util.envs import RacetrackEnv
 
     #env = gym.make("FrozenLake-v1")
     #r_max = 1.0
