@@ -107,6 +107,7 @@ class RacetrackEnv(gym.Env):
         vy = vy - self.vel_limit
         
         # Map action to velocity changes
+        # i.e. action 0: (dx=-1, dy=-1) / action 1: (dx=0, dy=-1) / action 2: (dx=+1, dy=-1) / ... / action 8: (dx=+1, dy=+1)
         dx = action % 3 - 1
         dy = action // 3 - 1
         
@@ -136,7 +137,7 @@ class RacetrackEnv(gym.Env):
                 # stop in current position
                 x_new, y_new, vx_new, vy_new = x, y, 0, 0 
         
-        # velocity is summed to self.vel_limit to make it non-negative
+        # Velocity is internally represented summed to self.vel_limit, just to make it non-negative
         self.current_state = (x_new, y_new, vx_new + self.vel_limit, vy_new + self.vel_limit)
         
         if self.track[y_new][x_new] == 'G':
