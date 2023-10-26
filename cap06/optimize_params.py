@@ -2,23 +2,20 @@
 import gymnasium as gym
 import optuna
 
-from expected_sarsa import run_expected_sarsa
-from qlearning import run_qlearning
+from cap05.expected_sarsa import run_expected_sarsa
+from cap05.qlearning_sarsa import run_qlearning
 
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.wrappers import DiscreteObservationWrapper
+from util.envs.wrappers import DiscreteObservationWrapper
 
-
-ENV = gym.make("MountainCar-v0")
 
 
 # Esta função faz um treinamento com o Expected-SARSA, usando parâmetros sugeridos pelo Optuna.
 # Retorna a média dos retornos dos últimos 100 episódios.
 def train_with_exp_sarsa(trial : optuna.Trial):
-    
     # chama os métodos do "trial" (tentativa) para sugerir valores para os parâmetros
     lr = trial.suggest_uniform('learning_rate', 0.001, 1.0)
     #lr = trial.suggest_loguniform('learning_rate', 0.001, 1.0)
@@ -28,15 +25,16 @@ def train_with_exp_sarsa(trial : optuna.Trial):
     
     print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}, bins={bins1},{bins2}")
 
+    env = gym.make("MountainCar-v0")
+
     # roda o algoritmo e recebe os retornos não-descontados
-    env_wrapper = DiscreteObservationWrapper(ENV, [bins1,bins2])
+    env_wrapper = DiscreteObservationWrapper(env, [bins1,bins2])
     (returns, _) = run_expected_sarsa(env_wrapper, 2000, lr=lr, epsilon=eps)
 
     return sum(returns[-100:])/100 
 
 
 def train_with_qlearning(trial : optuna.Trial):
-    
     # chama os métodos do "trial" (tentativa) para sugerir valores para os parâmetros
     lr = trial.suggest_uniform('learning_rate', 0.001, 1.0)
     #lr = trial.suggest_loguniform('learning_rate', 0.001, 1.0)
@@ -46,8 +44,10 @@ def train_with_qlearning(trial : optuna.Trial):
     
     print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}, bins={bins1},{bins2}")
 
+    env = gym.make("MountainCar-v0")
+
     # roda o algoritmo e recebe os retornos não-descontados
-    env_wrapper = DiscreteObservationWrapper(ENV, [bins1,bins2])
+    env_wrapper = DiscreteObservationWrapper(env, [bins1,bins2])
     (returns, _) = run_qlearning(env_wrapper, 2000, lr=lr, epsilon=eps, render=False)
 
     return sum(returns[-100:])/100 
