@@ -22,7 +22,7 @@ def find_positions_with_char(track, character):
 class RacetrackEnv(gym.Env):
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, render_mode="human", collision_restarts=False, observation_as_tuple=False):
+    def __init__(self, render_mode="rgb_array", collision_restarts=False, observation_as_tuple=False):
         self.track = [
             "XXXXXXXXXXXXXXXXXX",
             "GG___XXXXXXXXXXXXX",
@@ -72,7 +72,6 @@ class RacetrackEnv(gym.Env):
             self.observation_space = spaces.Discrete(np.prod(self.obs_dimensions))
         
         self.start_positions = find_positions_with_char(self.track, 'S')
-        self.reset()
 
         # para renderização
         self.screen = None
@@ -88,11 +87,15 @@ class RacetrackEnv(gym.Env):
         self.square_size = 20  # Scale factor for rendering
         self.isopen = True
 
+        self.reset()
+
     def reset(self, *, seed=None, options=None):
         super().reset(seed=seed)
         idx = self.np_random.choice(len(self.start_positions))
         start_pos = self.start_positions[idx]
         self.current_state = (*start_pos, self.vel_limit, self.vel_limit)  # o valor de self.vel_limit representa a velocidade zero
+        if self.render_mode == "human":
+            self.render()
         if self.observation_as_tuple:
             return self.current_state, {}
         else:
@@ -143,6 +146,9 @@ class RacetrackEnv(gym.Env):
             reward = -1  # Time step penalty
             terminated = False
         
+        if self.render_mode == "human":
+            self.render()
+
         if self.observation_as_tuple:
             obs = self.current_state
         else:

@@ -107,18 +107,20 @@ if __name__ == "__main__":
     from util.qtable_helper import evaluate_qtable
     from util.envs import RacetrackEnv
 
-    ENV_NAME, r_max = "FrozenLake-v1", 1.0
-    #ENV_NAME, r_max = "Taxi-v3", 10.0
+    #env = gym.make("FrozenLake-v1")
+    #r_max = 1.0
+    #env = gym.make("Taxi-v3")
+    #r_max = 10.0
 
-    EPISODES = 10000
+    env = TimeLimit(RacetrackEnv(), 300)
+    r_max = 0.0
+
+    EPISODES = 10_000
     LR = 0.1  # frozen-lake, use: 0.01
     GAMMA = 0.95
     EPSILON = 0.1
     NSTEPS = 3
-
-    #env = gym.make(ENV_NAME)
-    env = TimeLimit(RacetrackEnv(), 300)
-    
+  
     # Roda o algoritmo "n-step SARSA"
     rewards, qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, verbose=True)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
@@ -126,5 +128,11 @@ if __name__ == "__main__":
     # Exibe um gráfico episódios x retornos 
     plot_result(rewards, r_max, None)
 
-    evaluate_qtable(env, qtable, 10, verbose=True)
+    #render_env = gym.make("FrozenLake-v1", render_mode="human")
+    #render_env = gym.make("Taxi-v3", render_mode="human")
+    render_env = TimeLimit(RacetrackEnv(render_mode="human"), 300)
+    
+    evaluate_qtable(render_env, qtable, 10, verbose=True)
+    
+    render_env.close()
     env.close()
