@@ -70,15 +70,15 @@ Taambém vemos técnicas que auxiliam nos algoritmos anteriores (e em alguns alg
 - Como otimizar os (muitos) parâmetros dos algoritmos e da discretização
 
 
-# Cap. 7 - Algoritmos com Modelo (Dyna-Q) e Algoritmos de MDP de Recompensa Média (Opcional)
+# Cap. 7 - Algoritmos com Modelo (Dyna-Q) 
 
-Nesta parte do curso, vemos uma nova formulação de MDP especialmente apropriada para *tarefas continuadas*, ou seja, tarefas que não 
-têm um estado terminal. Nestes MDPs, o objetivo é achar a política que maximize a recompensa média (a cada passo).
+Nesta parte do curso, vemos *algoritmos com modelo*. Estes algoritmos usam alguma informação sobre o funcionamento 
+(a *dinâmica*) do ambiente. 
 
-Existem algoritmos específicos propostos com base nesta formulação.
-
-Algoritmo implementado:
-- **Differential Q-Learning**: versão do Q-Learning para tarefas continuadas, baseado na formulação de recompensa média
+Em especial, apresentamos o **Dyna-Q**, que é uma extensão simples do *Q-Learning* que
+- ao interagir com o ambiente, aprende (RL direta)
+- e também aprende um modelo do ambiente
+- e usa este modelo para aprender sem interações com o ambiente (RL indireta)
 
 
 # Cap. 8 - DQN
@@ -99,6 +99,7 @@ Estes métodos usam funções de custo (*loss function*) específicas para RL.
 Algoritmos:
 - *REINFORCE* - é o método mais básico, que é uma técnica Monte Carlo (roda episódigos completos, para calcular os $G_t$)
 - *REINFORCE-Adv* - melhoria do anterior, que usa uma rede neural separada para aprender o $V(s)$
+
 
 # Cap. 10 - Métodos Actor-Critic
 
@@ -121,6 +122,9 @@ Aqui, mostramos outro algoritmo baseado em política que não é da família *po
 que é uma aplicação do método de otimização *cross-entropy* (entropia cruzada) ao problema da aprendizagem por reforço.
 De certa forma, ele transforma um problema de RL em um problema de *classificação* da aprendizagem supervisionada.
 
-Aqui, complementando o cap. 6, vemos mais alguns algoritmos que aprendem a política diretamente, sendo esta representada 
+Aqui, complementando o cap. 9, vemos mais alguns algoritmos que aprendem a política diretamente, sendo esta representada 
 como uma rede neural (ou outro modelo diferenciável). Porém, estes métodos usam funções de custo (*loss function*) específicas
 para RL.
+
+Também vemos algoritmos de *MDPs de recompensa média*, que é uma formulação alternativa especialmente apropriada para *tarefas continuadas*, ou seja, tarefas que não têm um estado terminal. Nestes MDPs, o objetivo é achar a política que maximize a recompensa média (por passo). Existem algoritmos específicos propostos com base nesta formulação. Nós explicamos e implementamos o algoritmo
+**Differential Q-Learning**, que é uma versão do Q-Learning para a formulação de recompensa média.
