@@ -17,19 +17,18 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
 
 def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='rl-video', epsilon=0.0):
     """
-    TODO: atualizar com a versão usada no n-step
     Grava um vídeo a partir de uma política epsilon-greedy definida pela 'qtable' e pelo valor de 'epsilon'.
-    - env_name: a string do ambiente cadastrada no gymnasium ou a classe do ambiente ou função que o instancia
-    - qtable: a tabela Q (Q-table) na forma de array bidimensional
-    - length: número de passos do ambiente usados no vídeo
-    - prefiz: prefixo do nome dos arquivos de vídeo
-    - folder: pasta dos arquivos de vídeo
-    - epsilon:  valor do parâmetro para a escolha epsilon-greedy da ação
+    - env_name: A string do ambiente cadastrada no gymnasium ou uma instância da classe. Ao final, o ambiente é fechado (função `close()`).
+    - qtable: A tabela Q (Q-table) na forma de array bidimensional, com linha representando estados e colunas representando ações.
+    - length: Número de passos do ambiente usados no vídeo.
+    - prefiz: Prefixo do nome dos arquivos de vídeo.
+    - folder: Pasta onde os arquivos de vídeo serão salvos.
+    - epsilon: Valor do parâmetro da política "epsilon-greedy" usada para escolher as ações.
     """
     if isinstance(env_name, str):
         env = gym.make(env_name, render_mode="rgb_array")
     else:
-        env = env_name #(render_mode='rgb_array')
+        env = env_name
     rec_env = gym.wrappers.RecordVideo(env, folder, episode_trigger=lambda i : True, video_length=length, name_prefix=prefix)
     num_steps = 0
     while num_steps < length:
@@ -48,11 +47,11 @@ def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='
 def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
     """
     Avalia a política epsilon-greedy definida implicitamente por uma Q-table.
-    Por padrão, executa com epsilon=0.0; ou seja, executa, em todo estado s, a ação "a = argmax Q(s,a)".
-    - env: o ambiente
-    - qtable: a Q-table (tabela Q) que será usada
-    - num_episodes: quantidade de episódios a serem executados
-    - epsilon: valor do parâmetro para a escolha epsilon-greedy da ação
+    Por padrão, executa com epsilon=0.0; ou seja, executa, em todo estado s, escolhe a ação "a = argmax Q(s,_)".
+    - env: O ambiente instanciado. Ele não é fechado ao final.
+    - qtable: A Q-table (tabela Q) que será usada.
+    - num_episodes: Quantidade de episódios a serem executados.
+    - epsilon: Valor do parâmetro para a escolha epsilon-greedy da ação.
     
     Retorna:
     - um par contendo:
@@ -89,7 +88,12 @@ def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
     return mean_return, episode_returns
 
 
+
 def repeated_exec_epsilon_greedy_qtable(executions, alg_name, qtable, env, num_iterations, epsilon=0.0):
+    """
+    Executa várias vezes uma política epsilon-greedy definida com a qtable dada.
+    Internamente usa o `util.experiments.repeated_exec()`.
+    """
     from util.experiments import repeated_exec
 
     def run_q_greedy(env, num_steps):

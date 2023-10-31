@@ -27,7 +27,7 @@ register(
 ENV_NAME = "Racetrack"
 
 EPISODES_PER_TRIAL = 800   # Se for o Taxi-v3, é suficiente usar por volta de 250
-RUNS_PER_TRIAL     = 3     # Se for o Frozen-Lake, use por volta de 7
+RUNS_PER_TRIAL     = 3     # Se for o FrozenLake, use por volta de 7
 
 
 def train(trial : optuna.Trial):

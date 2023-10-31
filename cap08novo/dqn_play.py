@@ -1,5 +1,4 @@
-#!/usr/bin/env python3
-import gym
+import gymnasium as gym
 import time
 import numpy as np
 
@@ -13,7 +12,7 @@ import collections
 
 ENV_NAME = "PongNoFrameskip-v4"
 ATARI_ENV = True
-MODEL_FILE = "cap07/PongNoFrameskip-v4-agente-treinado.net"
+MODEL_FILE = "cap08novo/PongNoFrameskip-v4-agente-treinado.net"
 
 VIDEO_DIR = None 
 RENDER = True

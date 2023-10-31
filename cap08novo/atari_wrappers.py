@@ -1,6 +1,6 @@
 import cv2
-import gym
-import gym.spaces
+import gymnasium as gym
+import gymnasium.spaces as spaces
 import numpy as np
 import collections
 
@@ -16,14 +16,14 @@ class FireResetEnv(gym.Wrapper):
         return self.env.step(action)
 
     def reset(self):
-        self.env.reset()
-        obs, _, done, _ = self.env.step(1)
-        if done:
-            self.env.reset()
-        obs, _, done, _ = self.env.step(2)
-        if done:
-            self.env.reset()
-        return obs
+        _, info = self.env.reset()
+        obs, _, termi, trunc, _ = self.env.step(1)
+        if termi or trunc:
+            _, info = self.env.reset()
+        obs, _, termi, trunc, _ = self.env.step(2)
+        if termi or trunc:
+            _, info = self.env.reset()
+        return obs, info
 
 
 class MaxAndSkipEnv(gym.Wrapper):
@@ -57,7 +57,7 @@ class MaxAndSkipEnv(gym.Wrapper):
 class ProcessFrame84(gym.ObservationWrapper):
     def __init__(self, env=None):
         super(ProcessFrame84, self).__init__(env)
-        self.observation_space = gym.spaces.Box(low=0, high=255, shape=(84, 84, 1), dtype=np.uint8)
+        self.observation_space = spaces.Box(low=0, high=255, shape=(84, 84, 1), dtype=np.uint8)
 
     def observation(self, obs):
         return ProcessFrame84.process(obs)
@@ -81,8 +81,7 @@ class ImageToPyTorch(gym.ObservationWrapper):
     def __init__(self, env):
         super(ImageToPyTorch, self).__init__(env)
         old_shape = self.observation_space.shape
-        self.observation_space = gym.spaces.Box(low=0.0, high=1.0, shape=(old_shape[-1], old_shape[0], old_shape[1]),
-                                                dtype=np.float32)
+        self.observation_space = spaces.Box(low=0.0, high=1.0, shape=(old_shape[-1], old_shape[0], old_shape[1]), dtype=np.float32)
 
     def observation(self, observation):
         return np.moveaxis(observation, 2, 0)
@@ -98,12 +97,13 @@ class BufferWrapper(gym.ObservationWrapper):
         super(BufferWrapper, self).__init__(env)
         self.dtype = dtype
         old_space = env.observation_space
-        self.observation_space = gym.spaces.Box(old_space.low.repeat(n_steps, axis=0),
+        self.observation_space = spaces.Box(old_space.low.repeat(n_steps, axis=0),
                                                 old_space.high.repeat(n_steps, axis=0), dtype=dtype)
 
     def reset(self):
         self.buffer = np.zeros_like(self.observation_space.low, dtype=self.dtype)
-        return self.observation(self.env.reset())
+        obs, info = self.env.reset()
+        return self.observation(obs), info
 
     def observation(self, observation):
         self.buffer[:-1] = self.buffer[1:]
