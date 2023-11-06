@@ -23,7 +23,7 @@ register(
 )
 
 # Variável para indicar o nome do ambiente a ter o Q-Learning otimizado
-# Tente com "Racetrack" ou "Taxi-v3" ou "Frozen-Lake-v1" outro ambiente de estado discreto
+# Tente com "Racetrack" ou "Taxi-v3" ou "FrozenLake-v1" outro ambiente de estado discreto
 ENV_NAME = "Racetrack"
 
 EPISODES_PER_TRIAL = 800   # Se for o Taxi-v3, é suficiente usar por volta de 250

@@ -1,4 +1,3 @@
-# A Q-Learning implementation
 # Referencia: 
 # - https://towardsdatascience.com/getting-started-with-reinforcement-learning-and-open-ai-gym-c289aca874f
 
@@ -66,7 +65,6 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
             if terminated:
                 # para estados terminais
                 V_next_state = 0
-                next_state = env.reset()
             else:
                 # para estados não-terminais -- valor máximo (melhor ação)
                 V_next_state = np.max(Q[next_state])
