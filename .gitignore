@@ -6,6 +6,7 @@
 *.dat
 *.db
 log_dir/
+runs/
 *.zip
 
 # Byte-compiled / optimized / DLL files
