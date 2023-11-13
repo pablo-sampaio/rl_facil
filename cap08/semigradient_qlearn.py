@@ -16,12 +16,15 @@ from cap09.models_torch_pg import TorchMultiLayerNetwork
 def greedy_action(qnet, state_tensor):
     with torch.no_grad():
         q_values = qnet(state_tensor)
+        q_values = q_values.squeeze()
         action = torch.argmax(q_values)
     return action.item()
 
 def max_qvalue(qnet, state_tensor):
-    q_values = qnet(state_tensor)
-    value = torch.max(q_values).item()
+    with torch.no_grad():
+        q_values = qnet(state_tensor)
+        q_values = q_values.squeeze()
+        value = torch.max(q_values).item()
     return value
 
 
@@ -29,13 +32,14 @@ def max_qvalue(qnet, state_tensor):
 def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, discount_factor=0.99, epsilon=0.1):
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
-    #qnet = MLP(state_dim, [32, 128], action_dim)
+
     qnet = TorchMultiLayerNetwork(state_dim, [32, 128], action_dim)
     optimizer = optim.Adam(qnet.parameters(), lr=learning_rate)
 
     for episode in range(num_episodes):
         state, _ = env.reset()
-        state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
+        state_tensor = torch.tensor(state, dtype=torch.float32) # turns the next_state into a Pytorch tensor
+        state_tensor = state_tensor.unsqueeze(0)                # adds a dimension of size 1 in axis 0 (e.g. from shape (4,) to shape (1,4))
 
         total_reward = 0
         done = False
@@ -51,18 +55,20 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
 
-            next_state_tensor = torch.tensor(next_state, dtype=torch.float32) # turns the next_state into a Pytorch tensor
-            next_state_tensor = next_state_tensor.unsqueeze(0)                # adds a dimension of size 1 in axis 0 (e.g. from shape (4,) to shape (1,4))
+            next_state_tensor = torch.tensor(next_state, dtype=torch.float32).unsqueeze(0)
 
             # Calculate target Q-value
-            target_q = torch.tensor(reward, dtype=torch.float32)  # turns the reward into a tensor
-            if not terminated:
-                next_state_value = max_qvalue(qnet, next_state_tensor)
-                target_q += discount_factor * next_state_value
+            if terminated:
+                target_q = reward
+            else:
+                V_next_state = max_qvalue(qnet, next_state_tensor)
+                target_q = reward + discount_factor * V_next_state
 
             # Calculate current Q-value and update the network
             current_q = qnet(state_tensor)[0, action]
-            loss = nn.MSELoss()(current_q, target_q.detach())
+            
+            #loss = nn.MSELoss()(current_q, target_q)
+            loss = (current_q - target_q) ** 2
 
             optimizer.zero_grad() # Resets gradients from previous iteration
             loss.backward()       # Backward pass, to calculte the gradients of the loss function with respect to the weights
@@ -101,7 +107,7 @@ if __name__ == "__main__":
     env_name = "CartPole-v1"   #or "MountainCar-v0", "Acrobot-v1"
     env = gym.make(env_name)
     
-    q = run_semigradient_qlearning(env, num_episodes=300, learning_rate=0.002, epsilon=0.1)
+    q = run_semigradient_qlearning(env, num_episodes=400, learning_rate=0.001, epsilon=0.1)
     env.close()
 
     test_env = gym.make(env_name, render_mode="human")

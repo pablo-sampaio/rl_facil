@@ -18,7 +18,7 @@ class TorchMultiLayerNetwork(nn.Module):
             layers.append(nn.Linear(last_dim, dim, bias=True))
             layers.append(nn.ReLU())
             last_dim = dim
-        layers.append(nn.Linear(last_dim, output_dim, bias=False))
+        layers.append(nn.Linear(last_dim, output_dim, bias=True))
         if final_activ_fn is not None:
             layers.append(final_activ_fn)
         self.layers = nn.Sequential(*layers)
