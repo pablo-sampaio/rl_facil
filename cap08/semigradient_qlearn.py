@@ -4,40 +4,34 @@ import torch
 import torch.nn as nn
 import torch.optim as optim
 
+from dqn_models import MLP
 
-# Q-Network class
-# Rede com camadas: estado x 32 x 128 x ações
-class QNetwork(nn.Module):
-    def __init__(self, state_dim, action_dim):
-        super(QNetwork, self).__init__()
-        self.dense1 = nn.Linear(state_dim, 32)
-        self.dense2 = nn.Linear(32, 128)
-        self.output_layer = nn.Linear(128, action_dim)
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-    def forward(self, state):
-        x = torch.relu(self.dense1(state))
-        x = torch.relu(self.dense2(x))
-        return self.output_layer(x)
+from cap09.models_torch_pg import TorchMultiLayerNetwork
 
-    def greedy_action(self, state_tensor):
-        with torch.no_grad():
-            q_values = self(state_tensor)
-            action = torch.argmax(q_values)
-        return action.item()
 
-    def max_value(self, state_tensor):
-        with torch.no_grad():
-            q_values = self(state_tensor)
-            value = torch.max(q_values).item()
-        return value
+def greedy_action(qnet, state_tensor):
+    with torch.no_grad():
+        q_values = qnet(state_tensor)
+        action = torch.argmax(q_values)
+    return action.item()
+
+def max_qvalue(qnet, state_tensor):
+    q_values = qnet(state_tensor)
+    value = torch.max(q_values).item()
+    return value
 
 
 # Semi-gradient Q-learning function
 def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, discount_factor=0.99, epsilon=0.1):
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
-    q_network = QNetwork(state_dim, action_dim)
-    optimizer = optim.Adam(q_network.parameters(), lr=learning_rate)
+    #qnet = MLP(state_dim, [32, 128], action_dim)
+    qnet = TorchMultiLayerNetwork(state_dim, [32, 128], action_dim)
+    optimizer = optim.Adam(qnet.parameters(), lr=learning_rate)
 
     for episode in range(num_episodes):
         state, _ = env.reset()
@@ -48,39 +42,39 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
 
         while not done:
             
-            # Epsilon-greedy action selection
+            # epsilon-greedy action selection
             if np.random.rand() < epsilon:
                 action = env.action_space.sample()
             else:
-                action = q_network.greedy_action(state_tensor)
+                action = greedy_action(qnet, state_tensor)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
-
-            next_state_tensor = torch.tensor(next_state, dtype=torch.float32).unsqueeze(0)
             done = terminated or truncated
 
+            next_state_tensor = torch.tensor(next_state, dtype=torch.float32) # turns the next_state into a Pytorch tensor
+            next_state_tensor = next_state_tensor.unsqueeze(0)                # adds a dimension of size 1 in axis 0 (e.g. from shape (4,) to shape (1,4))
+
             # Calculate target Q-value
-            target_q = torch.tensor(reward, dtype=torch.float32)
+            target_q = torch.tensor(reward, dtype=torch.float32)  # turns the reward into a tensor
             if not terminated:
-                next_state_value = q_network.max_value(next_state_tensor)
+                next_state_value = max_qvalue(qnet, next_state_tensor)
                 target_q += discount_factor * next_state_value
 
             # Calculate current Q-value and update the network
-            current_q = q_network(state_tensor)[0, action]
-            loss = nn.MSELoss()(current_q, target_q)
+            current_q = qnet(state_tensor)[0, action]
+            loss = nn.MSELoss()(current_q, target_q.detach())
 
-            optimizer.zero_grad()
-            loss.backward()
-            optimizer.step()
+            optimizer.zero_grad() # Resets gradients from previous iteration
+            loss.backward()       # Backward pass, to calculte the gradients of the loss function with respect to the weights
+            optimizer.step()      # Updates the weights
 
             total_reward += reward
-            #state = next_state
             state_tensor = next_state_tensor
 
         # Print the total reward obtained in this episode
         print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}")
 
-    return q_network
+    return qnet
 
 
 # Function to play episodes using the trained QNetwork
@@ -92,8 +86,7 @@ def play_episodes(q_network, env, num_episodes=5):
 
         while not done:
             state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-            with torch.no_grad():
-                action = q_network.greedy_action(state_tensor)
+            action = greedy_action(q_network, state_tensor)
 
             next_state, reward, terminated, truncated, _ = env.step(action)
             done = terminated or truncated
@@ -103,12 +96,15 @@ def play_episodes(q_network, env, num_episodes=5):
         print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}")
 
 
-# Example usage
+
 if __name__ == "__main__":
-    env_name = "CartPole-v1"   #"MountainCar-v0"
+    env_name = "CartPole-v1"   #or "MountainCar-v0", "Acrobot-v1"
     env = gym.make(env_name)
     
-    q = run_semigradient_qlearning(env, num_episodes=300, learning_rate=0.001, epsilon=0.1)
-    play_episodes(q, env)
-
+    q = run_semigradient_qlearning(env, num_episodes=300, learning_rate=0.002, epsilon=0.1)
     env.close()
+
+    test_env = gym.make(env_name, render_mode="human")
+    play_episodes(q, test_env, 5)
+    test_env.close()
+
