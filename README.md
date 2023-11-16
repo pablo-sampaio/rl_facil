@@ -132,3 +132,19 @@ para RL.
 
 Também vemos algoritmos de *MDPs de recompensa média*, que é uma formulação alternativa especialmente apropriada para *tarefas continuadas*, ou seja, tarefas que não têm um estado terminal. Nestes MDPs, o objetivo é achar a política que maximize a recompensa média (por passo). Existem algoritmos específicos propostos com base nesta formulação. Nós explicamos e implementamos o algoritmo
 **Differential Q-Learning**, que é uma versão do Q-Learning para a formulação de recompensa média.
+
+
+# Referências
+
+Este projeto, no geral, é um trabalho meu. No entanto, nem todo o código foi desenvolvido exclusivamente por mim. Certas seções foram derivadas de várias fontes, incluindo livros, cursos online, artigos da web e exemplos fornecidos por bibliotecas como o stable-baselines.
+
+Pretendo identificar e listar as referências específicas para os repositórios utilizados, e as incluirei nas seções apropriadas desta documentação.
+
+É importante observar que este projeto está disponível gratuitamente, sem custos. Se houver alguma preocupação com o uso de segmentos de código específicos, sinta-se à vontade para entrar em contato, e eu tratarei da questão prontamente.
+
+
+*This project is, in general, my own work. However, not all the code was developed solely by me. Certain sections were derived from various sources, including books, online courses, web articles, and examples provided by libraries such as stable-baselines.*
+
+*It is my goal to identify and list the specific references for the repositories I used, and I will include them in the appropriate sections of this documentation.*
+
+*It's important to note that this project is freely available, without any charge. If you have any concerns about the use of specific code segments, please feel free to reach out, and I will address them promptly.*
