@@ -6,7 +6,7 @@ import torch.optim as optim
 import numpy as np
 
 
-DEFAULT_DEVICE = 'cuda' #'cpu'
+DEFAULT_DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 
 class TorchMultiLayerNetwork(nn.Module):
@@ -124,14 +124,13 @@ class ValueModel:
         return cp
 
 
-def test_policy(env, policy, deterministic, num_episodes=5, render=False):
+def test_policy(env, policy, deterministic, num_episodes=5):
     """
     Avalia a política `policy`, usando a melhor ação sempre, de forma determinística.
     - env: o ambiente
     - policy: a política
     - deterministic: `True`, se for usar o método `.best_action(obs)`; `False`, para usar `.sample_action(obs)`
     - num_episodes: quantidade de episódios a serem executados
-    - render: defina como True se deseja chamar env.render() a cada passo
     
     Retorna:
     - um par contendo o valor escalar do retorno médio por episódio e 
@@ -141,8 +140,6 @@ def test_policy(env, policy, deterministic, num_episodes=5, render=False):
     total_steps = 0
     for i in range(num_episodes):
         obs, _ = env.reset()
-        if render:
-            env.render()
         done = False
         steps = 0
         episodes_returns.append(0.0)
@@ -153,8 +150,6 @@ def test_policy(env, policy, deterministic, num_episodes=5, render=False):
                 action = policy.sample_action(obs)
             obs, reward, termi, trunc, _ = env.step(action)
             done = termi or trunc
-            if render:
-                env.render()
             total_steps += 1
             episodes_returns[-1] += reward
             steps += 1

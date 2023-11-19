@@ -1,9 +1,10 @@
 ################
-# Algoritmo "REINFORCE", da familia policy-gradient, acrescido da técnica de "Advantage" (que é um tipo de baseline).
+# Algoritmo "REINFORCE", da familia policy-gradient, com um baseline simples: a média dos retornos.
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
-#import pygame
+import pygame
+import numpy as np
 
 import sys
 from os import path
@@ -12,8 +13,8 @@ sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 import cap09.models_torch_pg as models
 
 
-# Algoritmo REINFORCE usando "advantage" como ténica de baseline para reduzir a variância
-def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, initial_v_model=None):
+# Algoritmo REINFORCE com baseline simples (média dos retornos)
+def run_reinforce_baseline(env, total_episodes, gamma, initial_policy=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -21,11 +22,6 @@ def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, ini
         policy_model = models.PolicyModelPG(obs_size, [256], n_actions, lr=0.001)
     else:
         policy_model = initial_policy.clone()
-
-    if initial_v_model is None:
-        Vmodel = models.ValueModel(obs_size, [128, 256], lr=0.005)
-    else:
-        Vmodel = initial_v_model.clone()
 
     all_returns = []
     steps = 0
@@ -57,11 +53,10 @@ def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, ini
         
         all_returns.append(ep_return)
 
-        # PARTE 2: Calcula listas separadas de estados, ações e retornos parciais
+        # PARTE 2: Calcula listas separadas de estados, ações e retornos parciais ajustados pelo baseline
         states = []
         actions = []
         partial_returns = []
-        advantages = []
         
         Gt = 0
         for (s, a, r) in reversed(ep_trajectory):
@@ -69,17 +64,19 @@ def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, ini
             states.append(s)
             actions.append(a)
             partial_returns.append(Gt)
-            advantages.append(Gt - Vmodel.predict(s))
 
-        # PARTE 3: Atualiza a política usando os trios (s, a, At), 
-        #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'At' é o "advantage" usado no cálculo da loss function
-        loss_p = policy_model.update_weights(states, actions, advantages)
-        
-        # PARTE 4: Atualiza o modelo de V(.), usando o par (s, Gt), onde  's' é entrada da rede, e 'Gt' é o retorno parcial cuja esperança deve ser dada como saída da rede
-        loss_v = Vmodel.update_weights(states, partial_returns)
+        # Calcula a "média empírica" dos retornos parciais
+        baseline_returns = np.mean(partial_returns)
+
+        # Subtrai a média de cada um dos retornos parciais
+        adjusted_partial_returns = partial_returns - baseline_returns
+
+        # PARTE 3: Atualiza a política usando os trios (s, a, Gt - baseline), 
+        #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'Gt - baseline' será usado no cálculo da loss function
+        loss_p = policy_model.update_weights(states, actions, adjusted_partial_returns)
 
         if (i+1) % 100 == 0:
-            print("- episode %d (step %d): losses[v|p]=%.4f|%.4f, ep_return=%.2f" % (i+1, steps, loss_p, loss_v, ep_return))
+            print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (i+1, steps, loss_p, ep_return))
  
     return all_returns, policy_model
 
@@ -97,12 +94,12 @@ if __name__ == "__main__":
     EPISODES = 700
     GAMMA    = 0.95
 
-    env = gym.make(ENV_NAME)
+    env = gym.make(ENV_NAME) 
     inputs = env.observation_space.shape[0]
     outputs = env.action_space.n
-    policy = models.PolicyModelPG(inputs, [128, 512], outputs, lr=0.001)
+    policy = models.PolicyModelPG(inputs, [128, 512], outputs, lr=0.0005)
 
-    returns, policy = run_reinforce_advantage(env, EPISODES, GAMMA, initial_policy=policy)
+    returns, policy = run_reinforce_baseline(env, EPISODES, GAMMA, initial_policy=policy)
 
     # Exibe um gráfico episódios x retornos (não descontados)
     plot_result(returns, rmax, window=50)

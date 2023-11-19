@@ -3,15 +3,17 @@
 # Referências: curso Udemy (e códigos) de "Lazy Programmer" e livro de Maxim Lapan.
 ################
 
+#import pygame
+
 import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-import cap08.models_torch_pg as models
+import cap09.models_torch_pg as models
 
 
 # Algoritmo REINFORCE original (também chamado de "Vanilla Policy Gradient")
-def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False):
+def run_reinforce(env, total_episodes, gamma, initial_policy=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -34,10 +36,6 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
     
         # PARTE 1: Executa um episódio completo
         while not done:
-            # exibe/renderiza os passos no ambiente, a cada 500 episódios
-            if render and (i+1) % 500 == 0:
-                env.render()
-
             # escolhe a próxima ação
             action = policy_model.sample_action(state)
         
@@ -49,6 +47,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
             ep_trajectory.append( (state, action, reward) )
             
             ep_return += reward
+            steps += 1
             state = next_state
         
         all_returns.append(ep_return)
@@ -69,7 +68,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
         #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'Gt' é usado no cálculo da loss function
         loss_p = policy_model.update_weights(states, actions, partial_returns)
 
-        if (i+1) % 200 == 0:
+        if (i+1) % 100 == 0:
             print("- episode %d (step %d): loss_p=%.5f, ep_return=%.2f" % (i+1, steps, loss_p, ep_return))
  
     return all_returns, policy_model
@@ -77,15 +76,15 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None, render=False)
 
 if __name__ == "__main__":
     import gymnasium as gym
-    from cap08.models_torch_pg import test_policy
+    from cap09.models_torch_pg import test_policy
     from util.plot import plot_result
 
-    ENV_NAME, rmax = "CartPole-v1", 500
+    #ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
-    #ENV_NAME, rmax = "LunarLander-v2", 150
+    ENV_NAME, rmax = "LunarLander-v2", 150
     #ENV_NAME, rmax = "MountainCar-v0", -20
 
-    EPISODES = 1000
+    EPISODES = 700
     GAMMA    = 0.95
 
     env = gym.make(ENV_NAME) 
@@ -93,10 +92,11 @@ if __name__ == "__main__":
     outputs = env.action_space.n
     policy = models.PolicyModelPG(inputs, [128, 512], outputs, lr=0.0005)
 
-    returns, policy = run_reinforce(env, EPISODES, GAMMA, initial_policy=policy, render=True)
+    returns, policy = run_reinforce(env, EPISODES, GAMMA, initial_policy=policy)
 
     # Exibe um gráfico episódios x retornos (não descontados)
     plot_result(returns, rmax, window=50)
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
-    test_policy(env, policy, False, 5, render=True)
+    eval_env = gym.make(ENV_NAME, render_mode="human")
+    test_policy(eval_env, policy, False, 5)
