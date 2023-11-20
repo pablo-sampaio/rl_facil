@@ -13,7 +13,7 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo REINFORCE usando "advantage" como ténica de baseline para reduzir a variância
-def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, initial_v_model=None):
+def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, initial_v_model=None, relative_v_lr=5.0):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -23,7 +23,7 @@ def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, ini
         policy_model = initial_policy.clone()
 
     if initial_v_model is None:
-        Vmodel = models.ValueModel(obs_size, [128, 256], lr=0.005)
+        Vmodel = models.ValueModel(obs_size, [128, 256], lr=(relative_v_lr*policy_model.lr))
     else:
         Vmodel = initial_v_model.clone()
 

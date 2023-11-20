@@ -13,7 +13,7 @@ sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 import cap09.models_torch_pg as models
 
 
-# Algoritmo REINFORCE com baseline simples (média dos retornos)
+# Algoritmo REINFORCE usando uma técnica de baseline simples (média dos retornos)
 def run_reinforce_baseline(env, total_episodes, gamma, initial_policy=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
