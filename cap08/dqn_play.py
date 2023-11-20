@@ -12,7 +12,7 @@ import collections
 
 ENV_NAME = "PongNoFrameskip-v4"
 ATARI_ENV = True
-MODEL_FILE = "cap08novo/PongNoFrameskip-v4-agente-treinado.net"
+MODEL_FILE = "cap08/PongNoFrameskip-v4-agente-treinado.net"
 
 VIDEO_DIR = None 
 RENDER = True

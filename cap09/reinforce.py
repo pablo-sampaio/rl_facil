@@ -36,7 +36,7 @@ def run_reinforce(env, total_episodes, gamma, initial_policy=None):
     
         # PARTE 1: Executa um episódio completo
         while not done:
-            # escolhe a próxima ação
+            # escolhe a próxima ação de forma não-determinística
             action = policy_model.sample_action(state)
         
             # realiza a ação, ou seja, dá um passo no ambiente

@@ -4,6 +4,7 @@
 ################
 
 #import pygame
+import numpy as np
 
 import sys
 from os import path
@@ -69,7 +70,9 @@ def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, ini
             states.append(s)
             actions.append(a)
             partial_returns.append(Gt)
-            advantages.append(Gt - Vmodel.predict(s))
+            #advantages.append(Gt - Vmodel.predict(s))
+
+        advantages = np.asarray(partial_returns) - Vmodel.predict_batch(states)
 
         # PARTE 3: Atualiza a política usando os trios (s, a, At), 
         #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'At' é o "advantage" usado no cálculo da loss function

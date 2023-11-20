@@ -118,6 +118,14 @@ class ValueModel:
             value_tensor = self.value_net(state_tensor)
         return value_tensor[0, 0].item()  # original value: [[V]]
 
+    def predict_batch(self, state_list):
+        with torch.no_grad():
+            states = np.asarray(state_list)
+            states_tensor = torch.FloatTensor(states).to(self.device)
+            values_tensor = self.value_net(states_tensor)
+        # converts from tensor to numpy
+        return values_tensor.cpu().data.numpy().flatten()
+
     def clone(self):
         cp = ValueModel(self.obs_size, self.hidden_sizes, self.lr, self.device)
         cp.value_net.load_state_dict(self.value_net.state_dict())

@@ -12,7 +12,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-import cap08.models_torch_pg as models
+import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic com parâmetro nsteps
@@ -118,15 +118,16 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
 
 if __name__ == "__main__":
     import gymnasium as gym
-    from cap08.models_torch_pg import test_policy
+    from cap09.models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
+    #ENV_NAME, rmax = "LunarLander-v2", 150
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 20000
+    NUM_STEPS = 50_000
     GAMMA     = 0.99
     NSTEP     = 16
     #EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
@@ -143,7 +144,8 @@ if __name__ == "__main__":
     returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
     
     # Exibe um gráfico passos x retornos (não descontados)
-    plot_result(returns, rmax, window=1, x_axis='steps')
+    plot_result(returns, rmax, x_axis='steps')
 
     # Executa alguns episódios de forma determinística e imprime um sumário
-    test_policy(env, policy, True, 5, render=True)
+    eval_env = gym.make(ENV_NAME, render_mode="human")
+    test_policy(eval_env, policy, True, 5)

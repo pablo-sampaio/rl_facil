@@ -66,10 +66,10 @@ def run_reinforce_baseline(env, total_episodes, gamma, initial_policy=None):
             partial_returns.append(Gt)
 
         # Calcula a "média empírica" dos retornos parciais
-        baseline_returns = np.mean(partial_returns)
+        mean_partial_return = np.mean(partial_returns)
 
         # Subtrai a média de cada um dos retornos parciais
-        adjusted_partial_returns = partial_returns - baseline_returns
+        adjusted_partial_returns = partial_returns - mean_partial_return
 
         # PARTE 3: Atualiza a política usando os trios (s, a, Gt - baseline), 
         #          onde  's' é entrada da rede, 'a' é o índice da saída, e o 'Gt - baseline' será usado no cálculo da loss function

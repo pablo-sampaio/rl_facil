@@ -8,7 +8,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-import cap08.models_torch_pg as models
+import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic básico
@@ -75,15 +75,16 @@ def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial
 
 if __name__ == "__main__":
     import gymnasium as gym
-    from cap08.models_torch_pg import test_policy
+    from cap09.models_torch_pg import test_policy
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
+    #ENV_NAME, rmax = "LunarLander-v2", 150
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (estamos seguindo o padrão usado hoje em dia)
-    NUM_STEPS = 10000
+    NUM_STEPS = 50_000
     GAMMA    = 0.99
     
     env = gym.make(ENV_NAME)
@@ -99,4 +100,5 @@ if __name__ == "__main__":
     plot_result(returns, rmax, window=50, x_axis='steps')
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
-    test_policy(env, policy, False, 5, render=True)
+    eval_env = gym.make(ENV_NAME, render_mode="human")
+    test_policy(eval_env, policy, True, 5)
