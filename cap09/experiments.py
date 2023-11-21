@@ -4,36 +4,56 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from models_torch_pg import PolicyModelPG 
+import models_torch_pg as models
 
-from util.experiments import repeated_exec
+from util.experiments import repeated_exec, repeated_exec_parallel
 from util.plot import plot_multiple_results
 
 from reinforce import run_reinforce
 from reinforce_baseline import run_reinforce_baseline
 from reinforce_advantage import run_reinforce_advantage
 
-GAMMA = 0.99
 
-#ENV = gym.make("CartPole-v1")
-#ENV = gym.make("Acrobot-v1")
-ENV = gym.make("LunarLander-v2")
+if __name__ == "__main__":
+    GAMMA = 0.99
 
-inputs = ENV.observation_space.shape[0]
-outputs = ENV.action_space.n
+    #ENV_NAME = "CartPole-v1"
+    #ENV_NAME = "Acrobot-v1"
+    ENV_NAME = "LunarLander-v2"
 
-NUM_RUNS = 5
-NUM_EPISODES = 800
+    env = gym.make(ENV_NAME)
+    inputs = env.observation_space.shape[0]
+    outputs = env.action_space.n
 
-results = []
+    RUNS     = 10
+    EPISODES = 1_000
+    
+    # código para rodar em 1 CPU
+    '''
+    results = []
+    #for lr in [0.0001, 0.0005, 0.0010]:  # piora a partir de lr=0.0020
+    for lr in [0.0001, 0.0010]:
+        initial_policy = PolicyModelPG(inputs, [128,512], outputs, lr=lr)
+        results.append( repeated_exec(RUNS, f"Reinforce (lr={lr})"    , run_reinforce          , env, EPISODES, GAMMA, initial_policy, auto_load=True) )
+        results.append( repeated_exec(RUNS, f"Reinforce+Bas (lr={lr})", run_reinforce_baseline , env, EPISODES, GAMMA, initial_policy, auto_load=True) )
+        results.append( repeated_exec(RUNS, f"Reinforce+Adv (lr={lr})", run_reinforce_advantage, env, EPISODES, GAMMA, initial_policy, auto_load=True) )
+    '''
 
-#for lr in [0.0001, 0.0005, 0.0010]:  # piora com lr=0.0050
-for lr in [0.0001, 0.0010]:
-    initial_policy = PolicyModelPG(inputs, [128,512], outputs, lr=lr)
-    results.append( repeated_exec(NUM_RUNS, f"Reinforce (lr={lr})", run_reinforce, ENV, NUM_EPISODES, GAMMA, initial_policy, auto_load=True) )
-    results.append( repeated_exec(NUM_RUNS, f"Reinforce+Bas (lr={lr})", run_reinforce_baseline, ENV, NUM_EPISODES, GAMMA, initial_policy, auto_load=True) )
-    #results.append( repeated_exec(NUM_RUNS, f"Reinforce+Adv (lr={lr})", run_reinforce_advantage, ENV, NUM_EPISODES, GAMMA, initial_policy, auto_load=True) )
+    # código para rodar em múltiplas CPUs
+    # atenção: no momento, não funciona bem se usar CUDA
+    
+    models.DEFAULT_DEVICE = "cpu"
+    env_factory = lambda: gym.make(ENV_NAME)
+    CPUS = 5
 
-plot_multiple_results(results, cumulative=False, window=20, x_log_scale=False)
-plot_multiple_results(results, cumulative=True, x_log_scale=False)
+    results = []
+    for lr in [0.0001, 0.0005, 0.0010]:
+    #for lr in [0.0005, 0.0010]:
+        initial_policy = models.PolicyModelPG(inputs, [128,512], outputs, lr=lr)
+        results.append( repeated_exec_parallel(RUNS, CPUS, f"Reinforce (lr={lr})"    , run_reinforce          , env_factory, EPISODES, args=(GAMMA, initial_policy), auto_save_load=True) )
+        results.append( repeated_exec_parallel(RUNS, CPUS, f"Reinforce+Bas (lr={lr})", run_reinforce_baseline , env_factory, EPISODES, args=(GAMMA, initial_policy), auto_save_load=True) )
+        results.append( repeated_exec_parallel(RUNS, CPUS, f"Reinforce+Adv (lr={lr})", run_reinforce_advantage, env_factory, EPISODES, args=(GAMMA, initial_policy), auto_save_load=True) )
+
+    plot_multiple_results(results, cumulative=False, window=20, x_log_scale=False)
+    plot_multiple_results(results, cumulative=True, x_log_scale=False)
 

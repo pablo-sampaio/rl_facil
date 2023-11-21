@@ -77,50 +77,46 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
     return alg_name, rewards
 
 
-# TODO: REMOVE (o repeated_exec já funciona para saídas com pares (passo, retorno))
-# for algorithms that return a list of pairs (timestep, return)
-# fazer: descartar o alg_info
-def repeated_exec_steps(executions, alg_name, algorithm, env, num_steps, *args, **kwargs):
-    env_name = str(env.unwrapped).replace('<','_').replace('>','_')
-    result_file_name = f"results/{env_name}-{alg_name}-steps{num_steps}-execs{executions}.npy"
-    if os.path.exists(result_file_name):
+import multiprocessing
+
+def worker(args):
+    i, algorithm, env, num_iterations, alg_args, alg_kwargs = args
+    temp_returns, _ = algorithm(env, num_iterations, *alg_args, **alg_kwargs)
+    if isinstance(temp_returns[0], tuple):
+        # when the algorithm outputs a list of pairs (time, return)
+        return process_returns_linear_interpolation(temp_returns, num_iterations)
+    else:
+        # when the algoritm outputs a simple list of returns
+        return temp_returns
+
+def repeated_exec_parallel(executions, num_cpus, alg_name, algorithm, env_factory, num_iterations, args=(), kwargs=dict(), auto_save_load=False):
+    env = env_factory()
+    assert isinstance(env, gym.Env)
+    env_name = str(env).replace('<', '_').replace('>', '')
+    result_file_name = f"results/{env_name}-{alg_name}-episodes{num_iterations}-execs{executions}.npy"
+    if auto_save_load and os.path.exists(result_file_name):
         print("Loading results from", result_file_name)
         RESULTS = np.load(result_file_name, allow_pickle=True)
         return RESULTS
-    rewards = np.zeros(shape=(executions, num_steps))
-    #alg_infos = np.empty(shape=(executions,), dtype=object)
+
+    rewards = None  # expected final shape: (executions, num_iterations)
     t = time.time()
-    print(f"Executing {algorithm}:")
-    for i in tqdm(range(executions)):
-        # executa o algoritmo
-        list_pairs, _ = algorithm(env, num_steps, *args, **kwargs)
-        final_steps_i, returns_i = list(zip(*list_pairs))
-        final_steps_i, returns_i = list(final_steps_i), list(returns_i)
-        prev_return = 0
-        prev_final_step = 0
-        for step in range(num_steps):
-            if not final_steps_i:
-                # lista vazia antes do fim
-                rewards[i,step] = None
-            elif step == final_steps_i[0]:
-                # passo final de um episodio
-                rewards[i,step] = returns_i[0]
-                prev_return = returns_i[0]
-                prev_final_step = step
-                final_steps_i.pop(0)
-                returns_i.pop(0)
-            else:
-                # passo intermediário - faz uma interpolação
-                next_return = returns_i[0]
-                next_final_step = final_steps_i[0]
-                rewards[i, step] = prev_return + (next_return - prev_return)*(step - prev_final_step) / (next_final_step - prev_final_step)
+    print(f"Executing {algorithm} in {num_cpus} cpus:")
+
+    with multiprocessing.Pool(num_cpus) as p:
+        args_for_worker = [(i, algorithm, env_factory(), num_iterations, args, kwargs) for i in range(executions)]
+        rewards_list = p.map(worker, args_for_worker)
+        rewards = np.array(rewards_list)
+
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")
-    rew_mean, rew_std = rewards.mean(axis=0), rewards.std(axis=0)
-    RESULTS = np.array([alg_name, rew_mean, rew_std], dtype=object)
+
+    RESULTS = np.array([alg_name, rewards], dtype=object)
     directory = os.path.dirname(result_file_name)
-    if not os.path.exists(directory):
-        os.makedirs(directory)
-    np.save(result_file_name, RESULTS, allow_pickle=True)
-    return alg_name, rew_mean, rew_std
+    if auto_save_load:
+        if not os.path.exists(directory):
+            os.makedirs(directory)
+        np.save(result_file_name, RESULTS, allow_pickle=True)
+    
+    return alg_name, rewards
 
