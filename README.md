@@ -102,7 +102,8 @@ técnicas de Monte Carlo, que rodam episódios inteiros antes de atualizar.
 
 Algoritmos:
 - **REINFORCE** - é o método mais básico
-- **REINFORCE-Adv** - melhoria do anterior, que usa uma rede neural adicional para o $V(s)$
+- **REINFORCE com baseline** - é uma melhoria simples do anterior, que usa o *retorno médio* como baseline
+- **REINFORCE com advantage** - caso especial do anterior que usa como uma rede neural adicional para representar $V(s)$
 
 
 # Cap. 10 - Métodos Actor-Critic

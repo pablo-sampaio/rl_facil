@@ -12,7 +12,7 @@ import collections
 
 ENV_NAME = "PongNoFrameskip-v4"
 ATARI_ENV = True
-MODEL_FILE = "cap08/PongNoFrameskip-v4-2022-08-05,21-58-28-best.dat"
+MODEL_FILE = "cap08/PongNoFrameskip-v4-2023-11-21,18-35-12.dat"
 
 if ATARI_ENV:
     env = atari_wrappers.make_env_with_wrappers(ENV_NAME, render_mode="human")
@@ -24,9 +24,10 @@ net.load_state_dict(torch.load(MODEL_FILE, map_location=lambda storage, loc: sto
 
 state, _ = env.reset()
 total_reward = 0.0
+done = False
 c = collections.Counter()
 
-while True:
+while not done:
     start_ts = time.time()
     state_v = torch.tensor(np.array([state], copy=False))
 
@@ -38,8 +39,6 @@ while True:
     state, reward, terminated, truncated, _ = env.step(action)
     done = terminated or truncated
     total_reward += reward
-    if done:
-        break
 
 print("Total reward: %.2f" % total_reward)
 print("Action counts:", c)
