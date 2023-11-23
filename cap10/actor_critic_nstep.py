@@ -16,7 +16,7 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic com parâmetro nsteps
-def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, verbose=True):
+def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, relative_v_lr=5.0, verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -26,7 +26,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
         policy_model = initial_policy.clone()
 
     if initial_v_model is None:
-        Vmodel = models.ValueModel(obs_size, [128], lr=0.008)
+        Vmodel = models.ValueModel(obs_size, [128, 256], lr=(relative_v_lr*policy_model.lr))
     else:
         Vmodel = initial_v_model.clone()
 
@@ -48,16 +48,16 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
     while steps < max_steps:
         state = next_state
 
-        # 1. Faz 1 passo
+        # 1. Escolhe a ação (de forma não-determinística)
         action = policy_model.sample_action(state)
-        
+
+        # 2. Faz 1 passo
         next_state, r, terminated, trunc, _ = env.step(action)
         done = terminated or trunc
-        
         ep_return += r
         steps += 1
 
-        # 2. Adiciona no histórico
+        # 3. Adiciona no histórico
         hist_s.append(state)
         hist_a.append(action)
         hist_r.append(r)
@@ -71,11 +71,11 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
             
             G_estimate = sum(gamma_array*hist_r) + gamma_power_nstep * V_next_state
 
-            # 3. Treina a política
+            # 4. Treina a política
             advantage = G_estimate - Vmodel.predict(hist_s[0])
             policy_model.update_weights([hist_s[0]], [hist_a[0]], [advantage])
 
-            # 4. Treina o modelo de V(.),
+            # 5. Treina o modelo de V(.),
             Vmodel.update_weights([hist_s[0]], [G_estimate])
         
         if done:
@@ -122,30 +122,29 @@ if __name__ == "__main__":
     from util.plot import plot_result
 
     ENV_NAME, rmax = "CartPole-v1", 500
-    #ENV_NAME, rmax = "Acrobot-v1", 0
-    #ENV_NAME, rmax = "LunarLander-v2", 150
+    #ENV_NAME, rmax = "Acrobot-v1", 0        # demora a dar resultados
+    #ENV_NAME, rmax = "LunarLander-v2", 150  # resultados ruins
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 50_000
+    NUM_STEPS = 30_000
     GAMMA     = 0.99
     NSTEP     = 16
     #EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
-
+    
     env = gym.make(ENV_NAME)
     inputs = env.observation_space.shape[0]
     outputs = env.action_space.n
 
     #policy_model = models.PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=4e-5)   
     policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5)
-
-    v_model = models.ValueModel(inputs, [256,32], lr=1e-4)
+    v_model = models.ValueModel(inputs, [256, 256], lr=1e-4)
 
     returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
     
     # Exibe um gráfico passos x retornos (não descontados)
-    plot_result(returns, rmax, x_axis='steps')
+    plot_result(returns, rmax, window=50, x_axis='steps')
 
-    # Executa alguns episódios de forma determinística e imprime um sumário
+    # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     eval_env = gym.make(ENV_NAME, render_mode="human")
-    test_policy(eval_env, policy, True, 5)
+    test_policy(eval_env, policy, False, 5)

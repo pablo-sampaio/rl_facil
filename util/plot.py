@@ -17,7 +17,7 @@ def smooth(data, window):
 
 # TODO: future: rever a ORDEM dos parâmetros (e rever onde esta função é usada), deixar similar à outra
 # TODO: remove 'return_type'
-def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, x_axis='episode', filename=None, cumulative=False, return_type=None):
+def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_axis='episode', filename=None, cumulative=False, return_type=None):
     '''Exibe um gráfico "episódio/passo x retorno", fazendo a média a cada `window` retornos, para suavizar.
     
     Parâmetros:
@@ -42,6 +42,11 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=10, x_ax
         if cumulative:
             returns = np.array(returns)
             returns = np.cumsum(returns)
+            if window is not None:
+                print("Attention: 'window' is ignored when 'cumulative'==True")
+                window = 1
+        elif window is None:
+            window = 10
         yvalues = smooth(returns, window)
         xvalues = np.arange(1, len(returns)+1)
         plt.plot(xvalues, yvalues)
