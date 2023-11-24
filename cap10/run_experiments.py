@@ -41,7 +41,7 @@ if __name__=='__main__':
             initial_policy = models.PolicyModelPG(inputs, [256,256], outputs, lr=p_lr)
             
             v_lr = relative_v_lr * p_lr
-            initial_Vmodel = models.ValueModel(inputs, [256,32], lr=v_lr)
+            initial_Vmodel = models.ValueModel(inputs, [256,256], lr=v_lr)
             
             output = repeated_exec_parallel(RUNS, CPUS, 
                                             f"VAC-{N_STEPS} ({p_lr:.1e},{v_lr:.1e})", 

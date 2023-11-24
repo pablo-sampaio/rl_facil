@@ -16,17 +16,18 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic com parâmetro nsteps
-def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, relative_v_lr=5.0, verbose=True):
+def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, p_lr=1e-4, relative_v_lr=5.0, verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
     if initial_policy is None:
-        policy_model = models.PolicyModelPG(obs_size, [256], n_actions, lr=0.0001)
+        policy_model = models.PolicyModelPG(obs_size, [128, 256], n_actions, lr=p_lr)
     else:
         policy_model = initial_policy.clone()
 
     if initial_v_model is None:
-        Vmodel = models.ValueModel(obs_size, [128, 256], lr=(relative_v_lr*policy_model.lr))
+        v_lr = relative_v_lr * policy_model.lr
+        Vmodel = models.ValueModel(obs_size, [128, 256], lr=v_lr)
     else:
         Vmodel = initial_v_model.clone()
 

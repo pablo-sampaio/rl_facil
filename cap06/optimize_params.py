@@ -9,12 +9,7 @@ sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 from cap05.expected_sarsa import run_expected_sarsa
 from cap05.qlearning_sarsa import run_qlearning
 
-import sys
-from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
 from envs.wrappers import ObservationDiscretizerWrapper
-
 
 
 # Esta função faz um treinamento com o Expected-SARSA, usando parâmetros sugeridos pelo Optuna.
