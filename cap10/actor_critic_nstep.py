@@ -119,32 +119,35 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
 if __name__ == "__main__":
     import gymnasium as gym
     from cap09.models_torch_pg import test_policy
-    from util.plot import plot_result
+    from util.plot import plot_result, plot_single_result
 
-    ENV_NAME, rmax = "CartPole-v1", 500
-    #ENV_NAME, rmax = "Acrobot-v1", 0        # demora a dar resultados
-    #ENV_NAME, rmax = "LunarLander-v2", 150  # resultados ruins
+    #ENV_NAME, rmax = "CartPole-v1", 500
+    #ENV_NAME, rmax = "Acrobot-v1", 0       # demora a dar resultados
+    ENV_NAME, rmax = "LunarLander-v2", 150  # demora a dar resultados (mais de 100k passos)
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 30_000
+    NUM_STEPS = 2_000 #40_000
     GAMMA     = 0.99
     NSTEP     = 16
-    #EXPLORATION_FACTOR = 0.05  # no CartPole, funciona bem com 0.0
+    POLICY_LR = 4e-5
+    #EXPLORATION_FACTOR = 0.01  # no CartPole, funciona bem com 0.0
     
     env = gym.make(ENV_NAME)
     inputs = env.observation_space.shape[0]
     outputs = env.action_space.n
 
-    #policy_model = models.PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=4e-5)   
-    policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=4e-5)
-    v_model = models.ValueModel(inputs, [256, 256], lr=1e-4)
+    #policy_model = models.PolicyModelPGWithExploration(inputs, [256, 256], outputs, exploration_factor=EXPLORATION_FACTOR, lr=POLICY_LR)   
+    policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=POLICY_LR)
+    v_model = models.ValueModel(inputs, [256, 256], lr=5*POLICY_LR)
 
     returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
-    
-    # Exibe um gráfico passos x retornos (não descontados)
-    plot_result(returns, rmax, window=50, x_axis='steps')
+ 
+    # Exibe um gráficos passos x retornos (não descontados)
+    plot_result(returns, rmax, x_axis='step')
+    plot_result(returns, rmax, x_axis='step', cumulative=True)
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     eval_env = gym.make(ENV_NAME, render_mode="human")
     test_policy(eval_env, policy, False, 5)
+    eval_env.close()

@@ -1,6 +1,8 @@
 import numpy as np
 import matplotlib.pyplot as plt
 
+from .experiments import process_returns_linear_interpolation
+
 
 def smooth(data, window):
   data = np.array(data)
@@ -15,9 +17,8 @@ def smooth(data, window):
 #    return np.convolve(x, np.ones(w), 'valid') / w
 
 
-# TODO: future: rever a ORDEM dos parâmetros (e rever onde esta função é usada), deixar similar à outra
-# TODO: remove 'return_type'
-def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_axis='episode', filename=None, cumulative=False, return_type=None):
+# TODO: remover e trocar por plot_single_result
+def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_axis='episode', filename=None, cumulative=False):
     '''Exibe um gráfico "episódio/passo x retorno", fazendo a média a cada `window` retornos, para suavizar.
     
     Parâmetros:
@@ -33,24 +34,25 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
     # TODO: uniformizar com a outra função
     if cumulative == 'no':
         cumulative = False
-    
-    if return_type is not None:
-        x_axis = return_type
 
     if x_axis == 'episode':
         plt.xlabel('Episódios')
         if cumulative:
             returns = np.array(returns)
             returns = np.cumsum(returns)
+            title = "Retorno acumulado"
             if window is not None:
                 print("Attention: 'window' is ignored when 'cumulative'==True")
                 window = 1
-        elif window is None:
-            window = 10
+        else:
+            if window is None:
+                window = 10
+            title = f"Retorno médio a cada {window} episódios"
         yvalues = smooth(returns, window)
         xvalues = np.arange(1, len(returns)+1)
         plt.plot(xvalues, yvalues)
-        plt.title(f"Retorno médio a cada {window} episódios")
+        #plt.title(f"Retorno médio a cada {window} episódios")
+        plt.title(title)
     #elif x_axis == 'step':
     else:
         print("Attention: 'window' is ignored for 'step' type of returns")
@@ -60,8 +62,16 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
         if cumulative:
             yvalues = np.array(yvalues)
             yvalues = np.cumsum(yvalues)
+            title = "Retorno acumulado"
+            # window = 1
+        else:
+            #if window is None:
+            #    window = 10
+            title = "Retorno"
+        #yvalues = smooth(returns, window)
         plt.plot(xvalues, yvalues)
-        plt.title(f"Retorno médio a cada {window} passos")
+        #plt.title(f"Retorno médio a cada {window} passos")
+        plt.title(title)
 
     if x_log_scale:
         plt.xscale('log')
@@ -80,15 +90,15 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
     plt.close()
 
 
-# TODO: remove 'return_type' parameter (review scripts where it is used)
 # TODO: remove True/False values for cumulative (review scripts)
-def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None, return_type=None):
+def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
     Parâmetros:
-    - list_returns: uma lista de triplas (nome do resultado, retorno por episódio/passo, outras informações)
-    - cumulative: indica se as recompensas anteriores devem ser acumuladas, para calcular a média histórica por episódio
+    - list_returns: uma lista de pares (nome do resultado, retorno por episódio/passo)
+    - cumulative: indica se as recompensas anteriores devem ser acumuladas, para calcular a soma ou média histórica por episódio
     - x_log_scale: se for True, mostra o eixo x na escala log (para detalhar mais os resultados iniciais)
+    - x_axis: use 'episode' ou 'step' para indicar o que representa o eixo x
     - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative='no'
     - plot_stddev: exibe sombra com o desvio padrão, ou seja, entre média-desvio e média+desvio
     - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
@@ -100,14 +110,13 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_ax
         cumulative = 'avg'
     assert cumulative in ['no', 'sum', 'avg']
     assert x_axis in ['step', 'episode']
-    if return_type is not None:
-        x_axis = return_type
     
     total_steps = list_returns[0][1].shape[1]
     plt.figure(figsize=(12,7))
     
     for (alg_name, returns) in list_returns:
         xvalues = np.arange(1, total_steps+1)
+        # TODO: bug -- isso está errado para cumulative='avg', quando x_axis='step'
         if cumulative == 'sum' or cumulative == 'avg':
             # calculate the cumulative sum along axis 1
             cumreturns = np.cumsum(returns, axis=1)
@@ -149,3 +158,27 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_ax
     
     plt.legend()
     plt.show()
+
+
+# TODO: corrigir bug no caso cumulative='avg' e x_axis='step'
+def plot_single_result(returns, *args, **kwargs):
+    '''Exibe um gráfico "episódio/passo x retorno", para um único resultado.
+    
+    Parâmetros:
+    - cumulative: indica se as recompensas anteriores devem ser acumuladas, para calcular a soma ou média histórica por episódio
+    - x_log_scale: se for True, mostra o eixo x na escala log (para detalhar mais os resultados iniciais)
+    - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative='no'
+    - plot_stddev: exibe sombra com o desvio padrão, ou seja, entre média-desvio e média+desvio
+    - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
+    '''
+    if isinstance(returns[0], tuple):
+        # when the algorithm outputs a list of pairs (time, return)
+        x_axis = 'step'
+        total_time = returns[-1][0]
+        returns = process_returns_linear_interpolation(returns, total_time)
+    else:
+        # when the algoritm outputs a simple list of returns
+        x_axis = 'episode'
+
+    processed_returns = np.array([returns])
+    plot_multiple_results([(None, processed_returns)], x_axis=x_axis, *args, **kwargs)

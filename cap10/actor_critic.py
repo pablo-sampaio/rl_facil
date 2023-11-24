@@ -87,7 +87,7 @@ if __name__ == "__main__":
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (estamos seguindo o padrão usado hoje em dia)
-    NUM_STEPS = 20_000
+    NUM_STEPS = 30_000
     GAMMA    = 0.99
     
     env = gym.make(ENV_NAME)
@@ -105,3 +105,4 @@ if __name__ == "__main__":
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     eval_env = gym.make(ENV_NAME, render_mode="human")
     test_policy(eval_env, policy, False, 5)
+    eval_env.close()
