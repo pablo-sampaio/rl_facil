@@ -128,7 +128,7 @@ if __name__ == "__main__":
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 2_000 #40_000
+    NUM_STEPS = 80_000
     GAMMA     = 0.99
     NSTEP     = 16
     POLICY_LR = 4e-5
