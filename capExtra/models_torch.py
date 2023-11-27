@@ -3,26 +3,11 @@ import torch.nn as nn
 import torch.optim as optim
 import numpy as np
 
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-class TorchMultiLayerNetwork(nn.Module):
-    def __init__(self, input_dim, list_hidden_dims, output_dim, final_activ_fn=None):
-        super().__init__()
-        layers = []
-        last_dim = input_dim
-        for dim in list_hidden_dims:
-            layers.append( nn.Linear(last_dim, dim, bias=True) )
-            layers.append( nn.ReLU() )
-            last_dim = dim
-        layers.append( nn.Linear(last_dim, output_dim, bias=True) )
-        if final_activ_fn is not None:
-            layers.append( final_activ_fn )
-        self.layers = nn.ModuleList(layers)
-
-    def forward(self, x):
-        y = x
-        for layer in self.layers:
-            y = layer(y)
-        return y
+from cap09.models_torch_pg import TorchMultiLayerNetwork, test_policy
 
 
 class PolicyModelCrossentropy:
@@ -79,54 +64,3 @@ class PolicyModelCrossentropy:
     
     def load(self, filename):
         self.policy_net.load_state_dict(torch.load(filename))
-
-
-def test_policy(env, policy, deterministic, num_episodes=5, render=False, videorec=None):
-    """
-    Avalia a política `policy`, usando a melhor ação sempre, de forma determinística.
-    - env: o ambiente
-    - policy: a política
-    - deterministic: `True`, se for usar o método `.best_action(obs)`; `False`, para usar `.sample_action(obs)`
-    - num_episodes: quantidade de episódios a serem executados
-    - render: defina como True se deseja chamar env.render() a cada passo
-    - video: passe uma instância de VideoRecorder (do gym), se desejar gravar
-    
-    Retorna:
-    - um par contendo o valor escalar do retorno médio por episódio e 
-       a lista de retornos de todos os episódios
-    """
-    episodes_returns = []
-    total_steps = 0
-    for i in range(num_episodes):
-        obs = env.reset()
-        if render:
-            env.render()
-        if videorec is not None:
-            videorec.capture_frame()
-        done = False
-        steps = 0
-        episodes_returns.append(0.0)
-        while not done:
-            if deterministic:
-                action = policy.best_action(obs)
-            else:
-                action = policy.sample_action(obs)
-            obs, reward, done, _ = env.step(action)
-            if render:
-                env.render()
-            if videorec is not None:
-                videorec.capture_frame()
-            total_steps += 1
-            episodes_returns[-1] += reward
-            steps += 1
-        print(f"EPISODE {i+1}")
-        print("- steps:", steps)
-        print("- return:", episodes_returns[-1])
-    mean_return = round(np.mean(episodes_returns), 1)
-    print("RESULTADO FINAL: média (por episódio):", mean_return, end="")
-    print(", episódios:", len(episodes_returns), end="")
-    print(", total de passos:", total_steps)
-    if videorec is not None:
-        videorec.close()
-    return mean_return, episodes_returns
-

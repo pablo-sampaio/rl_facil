@@ -5,7 +5,7 @@
 ################
 from collections import namedtuple
 
-import gym
+import gymnasium as gym
 import numpy as np
 
 import sys
@@ -24,13 +24,14 @@ def run_episodes(env, policy_net, batch_size):
     for i in range(0,batch_size):
         sum_rewards = 0.0
         trajectory = []
-        obs = env.reset()
-        is_done = False
-        while not is_done:
+        obs, _ = env.reset()
+        done = False
+        while not done:
             # faz uma amostragem da ação, ou seja, 
             # gera uma ação de acordo com as probabilidades retornadas pela rede
             action = policy_net.sample_action(obs)
-            next_obs, reward, is_done, _ = env.step(action)
+            next_obs, reward, terminated, truncated, _ = env.step(action)
+            done = terminated or truncated
             sum_rewards += reward
             trajectory.append(EpisodeStep(state=obs, action=action))
             obs = next_obs
@@ -101,23 +102,8 @@ if __name__ == "__main__":
     plot_result(returns, rmax, window=50)
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
-    test_policy(ENV, policy, False, 5, render=True)
-
-    # Expandindo aqui a execução de alguns episódios de forma DETERMINÍSTICA, para fins didáticos
-    for i in range(5):
-        print(f"TEST EPISODE {i+1}")
-        obs = ENV.reset()
-        done = False
-        reward = 0.0
-        steps = 0
-        while not done:
-            ENV.render()
-            action = policy.best_action(obs) # faz so a acao de maior probabilidade
-            obs, r, done, _ = ENV.step(action)
-            reward += r
-            steps += 1
-        ENV.render()
-        print("- steps:", steps)
-        print("- return:", reward)
-
+    eval_env = gym.make(ENV_NAME, render_mode="human")
+    test_policy(eval_env, policy, False, 5)
+    
+    eval_env.close()
     ENV.close()
