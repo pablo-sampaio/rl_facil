@@ -128,10 +128,10 @@ if __name__ == "__main__":
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 2_000 #40_000
+    NUM_STEPS = 50_000
     GAMMA     = 0.99
-    NSTEP     = 16
-    POLICY_LR = 4e-5
+    NSTEP     = 8
+    POLICY_LR = 15e-5
     #EXPLORATION_FACTOR = 0.01  # no CartPole, funciona bem com 0.0
     
     env = gym.make(ENV_NAME)
