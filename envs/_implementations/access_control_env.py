@@ -18,7 +18,7 @@ class AccessControlEnv(gym.Env):
         super().reset(seed=seed)
         self.free_servers = self.num_servers
         self.time_step = 0
-        return self._get_state(), {}
+        return self._get_state(), None
     
     def step(self, action):
         assert self.action_space.contains(action), "Invalid action"
@@ -35,7 +35,7 @@ class AccessControlEnv(gym.Env):
         if self.free_servers < self.num_servers and self.np_random.random() < self.server_busy_prob:
             self.free_servers += 1       
 
-        return self._get_state(), reward, False, False, {}
+        return self._get_state(), reward, False, False, None
     
     def _get_state(self):
         self.customer_priority_idx = self.np_random.choice(len(self.priorities))

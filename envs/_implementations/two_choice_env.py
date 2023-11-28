@@ -4,7 +4,7 @@ from gymnasium import spaces
 
 
 class TwoChoiceEnv(gym.Env):
-    def __init__(self):
+    def __init__(self, render_mode=None):
         super().__init__()
         # Define the action and observation spaces
         self.action_space = spaces.Discrete(2)      # Two discrete actions: 0 (left) and 1 (right)
@@ -14,7 +14,9 @@ class TwoChoiceEnv(gym.Env):
         super().reset(seed=seed)
         # Reset the environment to the initial state
         self.current_state = 0
-        return self.current_state
+        if self.render_mode == "human":
+            self.render()
+        return self.current_state, dict()
 
     def step(self, action):
         # Perform the specified action and transition to the next state
@@ -41,6 +43,9 @@ class TwoChoiceEnv(gym.Env):
         else:
             reward = 0.0
             self.current_state += 1
+
+        if self.render_mode == "human":
+            self.render()
 
         return self.current_state, reward, False, False, None
 

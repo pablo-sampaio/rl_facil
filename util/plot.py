@@ -43,7 +43,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
             title = "Retorno acumulado"
             if window is not None:
                 print("Attention: 'window' is ignored when 'cumulative'==True")
-                window = 1
+            window = 1
         else:
             if window is None:
                 window = 10

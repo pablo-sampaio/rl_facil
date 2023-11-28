@@ -89,7 +89,7 @@ def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
 
 
 
-def repeated_exec_epsilon_greedy_qtable(executions, alg_name, qtable, env, num_iterations, epsilon=0.0):
+def repeated_exec_qtable_policy(executions, alg_name, qtable, env, num_iterations, epsilon=0.0):
     """
     Executa várias vezes uma política epsilon-greedy definida com a qtable dada.
     Internamente usa o `util.experiments.repeated_exec()`.
@@ -97,14 +97,15 @@ def repeated_exec_epsilon_greedy_qtable(executions, alg_name, qtable, env, num_i
     from util.experiments import repeated_exec
 
     def run_q_greedy(env, num_steps):
-        state = env.reset()
+        state, _ = env.reset()
         rewards = []
         for i in range(num_steps):
             a = epsilon_greedy_random_tiebreak(qtable, state, epsilon)
-            state, r, done, _ = env.step(a)
+            state, r, terminated, truncated, _ = env.step(a)
+            done = terminated or truncated
             rewards.append(r)
             if done:
-                state = env.reset()
+                state, _ = env.reset()
         return rewards, None
     
     return repeated_exec(executions, alg_name, run_q_greedy, env, num_iterations)
