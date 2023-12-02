@@ -8,12 +8,7 @@ from collections import namedtuple
 import gymnasium as gym
 import numpy as np
 
-import sys
-from os import path
-sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
-from capExtra.models_torch import PolicyModelCrossentropy, test_policy
-from util.plot import plot_result
+from models_torch import PolicyModelCrossentropy, test_policy
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 
@@ -40,12 +35,12 @@ def run_episodes(env, policy_net, batch_size):
     return batch_trajectories, batch_returns
 
 
-def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None):
+def run_crossentropy_method(env, total_episodes, ep_batch_size=10, ep_selected_proportion=0.2, initial_policy=None, verbose=False):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
     if initial_policy is None:
-        policy_model = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.01)
+        policy_model = PolicyModelCrossentropy(obs_size, [128], n_actions, lr=0.005)
     else:
         policy_model = initial_policy.clone()
 
@@ -77,12 +72,19 @@ def run_crossentropy_method1(env, total_episodes, ep_batch_size=10, ep_selected_
         # 4. Treina o modelo para reforcar o mapeamento estado-ação
         p_loss = policy_model.partial_fit(states, actions)
  
-        print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
+        if verbose:
+            print("- episode %d (selected %d): loss=%.3f, return_mean=%.2f, return_limit=%.2f" % (episodes, ep_selected, p_loss, return_mean, return_limit))
     
     return all_returns, policy_model
 
 
 if __name__ == "__main__":
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+    from util.plot import plot_result
+
     #ENV_NAME, rmax = "CartPole-v1", 500
     ENV_NAME, rmax = "Acrobot-v1", 0
     #ENV_NAME, rmax = "LunarLander-v2", 300
@@ -94,7 +96,7 @@ if __name__ == "__main__":
     PROPORTION =  0.1    # percentual dos episódios (do batch) que serão selecionados
 
     policy = PolicyModelCrossentropy(ENV.observation_space.shape[0], [128, 256], ENV.action_space.n, lr=0.01)
-    returns, policy = run_crossentropy_method1(ENV, EPISODES, BATCH_SIZE, PROPORTION, initial_policy=policy)
+    returns, policy = run_crossentropy_method(ENV, EPISODES, BATCH_SIZE, PROPORTION, initial_policy=policy, verbose=True)
 
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
