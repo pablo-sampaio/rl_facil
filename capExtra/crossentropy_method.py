@@ -8,7 +8,12 @@ from collections import namedtuple
 import gymnasium as gym
 import numpy as np
 
-from models_torch import PolicyModelCrossentropy, test_policy
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
+from capExtra.models_torch import PolicyModelCrossentropy, test_policy
+
 
 EpisodeStep = namedtuple('EpisodeStep', field_names=['state', 'action'])
 
@@ -79,10 +84,6 @@ def run_crossentropy_method(env, total_episodes, ep_batch_size=10, ep_selected_p
 
 
 if __name__ == "__main__":
-    import sys
-    from os import path
-    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
     from util.plot import plot_result
 
     #ENV_NAME, rmax = "CartPole-v1", 500
