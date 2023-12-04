@@ -121,31 +121,44 @@ Algoritmos (nomenclatura minha):
 Neste ponto do curso, vamos ver algumas bibliotecas que oferecem algoritmos do estado da arte.
 
 
+# Cap. 12 - Formulação de Recompensa Média
+
+Neste capítulo, vamos focar em **tarefas continuadas**, ou seja, tarefas que não têm um estado terminal. Vamos ver, 
+em especial, os *MDPs de recompensa média*, que são uma formulação alternativa do MDP (Markov Decision Process) 
+específica para esse tipo de tarefa. 
+
+Nos MDPs de recompensa média, o objetivo é achar a política que maximize a recompensa média (por passo). Existem algoritmos específicos propostos com base nesta formulação. 
+
+Aqui, nós explicamos e implementamos, o algoritmo **Differential Q-Learning**, que é uma adaptação do Q-Learning para esta
+nova formulação.
+
+
 # CapExtra - Outros
 
-Aqui, mostramos outro algoritmo baseado em política que não é da família *policy gradient*. Trata-se do algoritmo *Cross-Entropy*,
-que é uma aplicação do método de otimização *cross-entropy* (entropia cruzada) ao problema da aprendizagem por reforço.
-De certa forma, ele transforma um problema de RL em um problema de *classificação* da aprendizagem supervisionada.
-
-Aqui, complementando o cap. 9, vemos mais alguns algoritmos que aprendem a política diretamente, sendo esta representada 
-como uma rede neural (ou outro modelo diferenciável). Porém, estes métodos usam funções de custo (*loss function*) específicas
-para RL.
-
-Também vemos algoritmos de *MDPs de recompensa média*, que é uma formulação alternativa especialmente apropriada para *tarefas continuadas*, ou seja, tarefas que não têm um estado terminal. Nestes MDPs, o objetivo é achar a política que maximize a recompensa média (por passo). Existem algoritmos específicos propostos com base nesta formulação. Nós explicamos e implementamos o algoritmo
-**Differential Q-Learning**, que é uma versão do Q-Learning para a formulação de recompensa média.
+Aqui, mostramos outro algoritmo *baseado em política* (mas que não é da família *policy gradient*). Trata-se do algoritmo *Cross-Entropy de Lapan*, encontrado no livro "Deep Reinforcement Learning Hands-On" (Maxim Lapan). Ele aproxima o problema
+de controle da aprendizagem por reforço de um problema de *classificação* da aprendizagem supervisionada!
 
 
 # Referências
 
-Este projeto, no geral, é um trabalho meu. No entanto, nem todo o código foi desenvolvido exclusivamente por mim. Certas seções foram derivadas de várias fontes, incluindo livros, cursos online, artigos da web e exemplos fornecidos por bibliotecas como o stable-baselines.
+Este projeto, no geral, é fruto do meu esforço de concentrar algoritmos com simplicidade de implementação, em uma ordem
+adequada para aprender progressivamente o assunto. 
 
-Pretendo identificar e listar as referências específicas para os repositórios utilizados, e as incluirei nas seções apropriadas desta documentação.
+Porém, nem todo o código foi desenvolvido exclusivamente por mim. 
+Baseei-me em diversas fontes, incluindo livros, cursos online, artigos da web e exemplos fornecidos por bibliotecas 
+(como o stable-baselines).
+Os códigos aproveitados de outras fontes possuem comentários específicos indicando sua origem (ou inspiração).
 
-É importante observar que este projeto está disponível gratuitamente, sem custos. Se houver alguma preocupação com o uso de segmentos de código específicos, sinta-se à vontade para entrar em contato, e eu tratarei da questão prontamente.
+Pretendo listar aqui todas as referências específicas para os repositórios utilizados.
+
+É importante observar que este projeto está disponível gratuitamente, sem custos. Se houver alguma preocupação com o uso 
+de segmentos de código específicos, sinta-se à vontade para entrar em contato, e eu tratarei da questão prontamente.
 
 
-*This project is, in general, my own work. However, not all the code was developed solely by me. Certain sections were derived from various sources, including books, online courses, web articles, and examples provided by libraries such as stable-baselines.*
+*This project, overall, is the result of my effort to concentrate algorithms with simplicity of implementation in a suitable order to progressively learn the subject.*
 
-*It is my goal to identify and list the specific references for the repositories I used, and I will include them in the appropriate sections of this documentation.*
+*However, not all the code was developed exclusively by me. I relied on various sources, including books, online courses, web articles, and examples provided by libraries (such as stable-baselines). Codes borrowed from other sources have specific comments indicating their origin (or inspiration).*
 
-*It's important to note that this project is freely available, without any charge. If you have any concerns about the use of specific code segments, please feel free to reach out, and I will address them promptly.*
+*I intend to list here all the specific references for the repositories used.*
+
+*It is important to note that this project is available for free, without cost. If there are any concerns about the use of specific code segments, feel free to contact me, and I will address the issue promptly.*
