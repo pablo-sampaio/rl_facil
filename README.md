@@ -138,6 +138,9 @@ nova formulação.
 Aqui, mostramos outro algoritmo *baseado em política* (mas que não é da família *policy gradient*). Trata-se do algoritmo *Cross-Entropy de Lapan*, encontrado no livro "Deep Reinforcement Learning Hands-On" (Maxim Lapan). Ele aproxima o problema
 de controle da aprendizagem por reforço de um problema de *classificação* da aprendizagem supervisionada!
 
+Também mostramos um exemplo de uso de a biblioteca **ray rllib*, que oferece uma grande coleção de algoritmos de 
+Aprendizagem por Reforço.
+
 
 # Referências
 
