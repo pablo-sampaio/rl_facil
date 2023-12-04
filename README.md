@@ -142,7 +142,7 @@ Também mostramos um exemplo de uso de a biblioteca **ray rllib**, que oferece u
 Aprendizagem por Reforço.
 
 
-# Referências
+# Agradecimentos e Referências
 
 Este projeto, no geral, é fruto do meu esforço de concentrar algoritmos com simplicidade de implementação, em uma ordem
 adequada para aprender progressivamente o assunto. 
@@ -157,6 +157,8 @@ Pretendo listar aqui todas as referências específicas para os repositórios ut
 É importante observar que este projeto está disponível gratuitamente, sem custos. Se houver alguma preocupação com o uso 
 de segmentos de código específicos, sinta-se à vontade para entrar em contato, e eu tratarei da questão prontamente.
 
+
+# Acknowledgments and References
 
 *This project, overall, is the result of my effort to concentrate algorithms with simplicity of implementation in a suitable order to progressively learn the subject.*
 
