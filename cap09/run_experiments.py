@@ -44,7 +44,7 @@ if __name__ == "__main__":
     
     models.DEFAULT_DEVICE = "cpu"
     env_factory = lambda: gym.make(ENV_NAME)
-    CPUS = 5
+    CPUS = 2
 
     results = []
     # piora para lrs maiores ou menores
