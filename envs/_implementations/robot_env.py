@@ -19,7 +19,7 @@ class Action(Enum):
     TURN_COUNTER_CW = 2
 
 
-## TODO: ainda não está compliant com o gym
+## TODO: ainda não está compliant com o gymnasium
 ##  - definir action e observation spaces
 ##  - renderização?
 

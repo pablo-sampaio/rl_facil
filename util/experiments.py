@@ -59,7 +59,8 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
     t = time.time()
     print(f"Executing {algorithm}:")
     for i in tqdm(range(executions)):
-        temp_returns, _ = algorithm(env, num_iterations, *args, **kwargs)
+        alg_output = algorithm(env, num_iterations, *args, **kwargs)
+        temp_returns = alg_output[0]
         if isinstance(temp_returns[0], tuple):
             # when the algorithm outputs a list of pairs (time, return)
             rewards[i] = process_returns_linear_interpolation(temp_returns, num_iterations)
@@ -81,7 +82,8 @@ import multiprocessing
 
 def worker(args):
     i, algorithm, env, num_iterations, alg_args, alg_kwargs = args
-    temp_returns, _ = algorithm(env, num_iterations, *alg_args, **alg_kwargs)
+    ret = algorithm(env, num_iterations, *alg_args, **alg_kwargs)
+    temp_returns = ret[0]
     if isinstance(temp_returns[0], tuple):
         # when the algorithm outputs a list of pairs (time, return)
         return process_returns_linear_interpolation(temp_returns, num_iterations)
@@ -106,7 +108,13 @@ def repeated_exec_parallel(executions, num_cpus, alg_name, algorithm, env_factor
     with multiprocessing.Pool(num_cpus) as p:
         args_for_worker = [(i, algorithm, env_factory(), num_iterations, args, kwargs) for i in range(executions)]
         rewards_list = p.map(worker, args_for_worker)
-        rewards = np.array(rewards_list)
+        # catches any excetion raised for invalid rewards list
+        try:
+            rewards = np.array(rewards_list)
+        except:
+            print("ERROR: invalid rewards list returned by the algorithm!")
+            print("rewards_list =", rewards_list)
+            raise
 
     t = time.time() - t
     print(f"  ({executions} executions of {alg_name} finished in {t:.2f} secs)")

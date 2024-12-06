@@ -78,12 +78,11 @@ def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
                 print(f"Too long episode, truncating at step {episode_step}.")
                 break
             episode_returns[-1] += reward
-        print(episode_returns[-1])
+        if verbose:
+            print(episode_returns[-1])
     
-    mean_return = round(np.mean(episode_returns), 1)
-    print("Retorno médio (por episódio):", mean_return, end="")
-    print(", episódios:", len(episode_returns), end="")
-    print(", total de passos:", total_steps)
+    mean_return = np.mean(episode_returns)
+    print(f"Retorno médio (por episódio): {mean_return:.2f}, episódios: {len(episode_returns)}, total de passos: {total_steps}")
 
     return mean_return, episode_returns
 

@@ -15,6 +15,8 @@ def convert_to_flattened_index(indices, dimensions):
     return flattened_index
 
 
+# generalizar para um "space discretizer" que converte um espaço contínuo em um espaço discreto
+# criar flag para dizer se é para converter para um único bin ou para um array de bins
 class GeneralDiscretizer:
     def __init__(self, env, bins_per_dimension):
         assert isinstance(env.observation_space, gym.spaces.Box)
@@ -30,8 +32,8 @@ class GeneralDiscretizer:
             full_linspace = np.linspace(env.observation_space.low[i], env.observation_space.high[i], bins+1, endpoint=True)
             
             # adiciona o 'linspace' com o valor inicial e o final removidos, por conta do funcionamento do np.digitize():
-            #  - valor anterior ao "novo" inicial -> índice 0
-            #  - valor posterior ao "novo" final -> índice (bins-1)
+            #  - valor anterior ao "novo" inicial -> índice "0"
+            #  - valor posterior ao "novo" final -> índice "bins-1"
             self.intervals_per_dim.append( full_linspace[1:-1] )
             
             self.total_bins *= bins

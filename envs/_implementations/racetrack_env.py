@@ -218,7 +218,7 @@ if __name__=='__main__':
         next_state, reward, terminated, truncated, _ = env.step(action)
 
         time.sleep(0.15)
-        env.render()
+        env.render() # TODO: rever?
         print("Action:", action)
         print("Next State:", next_state)
         print("Reward:", reward)

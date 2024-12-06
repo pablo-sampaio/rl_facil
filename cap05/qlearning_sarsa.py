@@ -5,6 +5,10 @@
 import gymnasium as gym
 import numpy as np
 
+import sys
+from os import path
+sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
+
 from util.qtable_helper import epsilon_greedy_random_tiebreak
 
 # Define se os algoritmos irão ou não imprimir dados parciais na saída de texto
@@ -141,16 +145,24 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     return all_episode_rewards, Q
 
 
+# function to show the greedy policy for each state of FrozenLake
+# actions are letters: U(p), D(own), L(eft), R(ight)
+def show_frozenlake_greedy_policy(Q):
+    policy = np.array([[' ']*4 for _ in range(4)], dtype='object')
+    for state in range(16):
+        if state in [5,7,11,12,15]:
+            policy[state//4, state%4] = '*'
+        else:
+            policy[state//4, state%4] = ['L','D','R','U'][np.argmax(Q[state])]
+    print(policy)
+
+
 if __name__ == "__main__":
-    import sys
-    from os import path
-    sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
-
     from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
+    from util.qtable_helper import evaluate_qtable
 
-    #ENV_NAME, r_max = "FrozenLake-v1", 1.0
-    ENV_NAME, r_max = "Taxi-v3", 10.0
+    ENV_NAME, r_max = "FrozenLake-v1", 1.0
+    #ENV_NAME, r_max = "Taxi-v3", 10.0
 
     EPISODES = 15_000
     LR = 0.05
@@ -161,25 +173,33 @@ if __name__ == "__main__":
     rendering_env = gym.make(ENV_NAME, render_mode='human')
     #'''
     # Roda o algoritmo Q-Learning
-    returns, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON)
-    print("Q-Learning - Treinamento - últimos retornos: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
+    returns1, Qtable1 = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON)
+    print("Q-Learning - Treinamento - últimos retornos: media =", np.mean(returns1[-20:]), ", desvio padrao =", np.std(returns1[-20:]))
 
     # Mostra um gráfico de episódios x retornos não descontados. Se quiser salvar, passe o nome do arquivo como o 3o parâmetro.
-    plot_result(returns, r_max, None)
+    plot_result(returns1, r_max, window=30)
+
+    if ENV_NAME == "FrozenLake-v1":
+        show_frozenlake_greedy_policy(Qtable1)
 
     print("Q-Learning - Executando depois de treinado:")
-    test_greedy_Q_policy(rendering_env, Qtable, 5)
+    evaluate_qtable(rendering_env, Qtable1, 10)
 
-    print(" ######### ")
     #'''  
+    print(" ######### ")
+    
     # Roda o algoritmo SARSA
-    returns, Qtable = run_sarsa(env, EPISODES, LR, GAMMA, EPSILON, render=False)
-    print("SARSA - Treinamento - últimos retornos: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
+    returns2, Qtable2 = run_sarsa(env, EPISODES, LR, GAMMA, EPSILON)
+    print("SARSA - Treinamento - últimos retornos: media =", np.mean(returns2[-20:]), ", desvio padrao =", np.std(returns2[-20:]))
 
     # Mostra um gráfico de episódios x retornos não descontados. Se quiser salvar, passe o nome do arquivo como 3o parâmetro.
-    plot_result(returns, r_max, None)
+    plot_result(returns2, r_max, window=30)
 
+    if ENV_NAME == "FrozenLake-v1":
+        show_frozenlake_greedy_policy(Qtable2)
+    
     print("SARSA - Executando depois de treinado:")
-    test_greedy_Q_policy(rendering_env, Qtable, 5)
-    rendering_env.close()
+    evaluate_qtable(rendering_env, Qtable2, 10)
     #'''
+
+    rendering_env.close()
