@@ -17,6 +17,10 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
 
 def delete_files(folder, prefix, suffix):
     import os
+    # check if folder exists
+    if not os.path.exists(folder):
+        return
+    # list files and delete all files with the given prefix and the given suffix
     for file in os.listdir(folder):
         if file.startswith(prefix) and file.endswith(suffix):
             os.remove(os.path.join(folder, file))
