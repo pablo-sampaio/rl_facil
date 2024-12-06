@@ -58,8 +58,8 @@ implementações de algoritmos TD-Learning. Todos fazem atualizações (aprendem
 com *Q-Tables*, como os anteriores.
 
 Algoritmos implementados:
-- **Q-Learning** - roda uma polítiva epsilon-greedy, mas atualiza como greedy (off-policy)
-- **SARSA** - roda uma polítiva epsilon-greedy e atualiza coerentemente (on-policy)
+- **Q-Learning** - roda uma política epsilon-greedy, mas atualiza como greedy (off-policy)
+- **SARSA** - roda uma política epsilon-greedy e atualiza coerentemente (on-policy)
 - **Expected-SARSA** - generaliza os dois acima (mas está implementado on-policy)
 
 
