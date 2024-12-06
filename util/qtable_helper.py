@@ -15,7 +15,14 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
         return np.random.choice(np.where(q_state == q_state.max())[0])
 
 
-def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='rl-video', epsilon=0.0):
+def delete_files(folder, prefix, suffix):
+    import os
+    for file in os.listdir(folder):
+        if file.startswith(prefix) and file.endswith(suffix):
+            os.remove(os.path.join(folder, file))
+
+
+def record_video_qtable(env_name, qtable, episodes=2, folder='videos/', prefix='rl-video', epsilon=0.0, max_episode_length=500):
     """
     Grava um vídeo a partir de uma política epsilon-greedy definida pela 'qtable' e pelo valor de 'epsilon'.
     - env_name: A string do ambiente cadastrada no gymnasium ou uma instância da classe. Ao final, o ambiente é fechado (função `close()`).
@@ -29,17 +36,20 @@ def record_video_qtable(env_name, qtable, length=500, folder='videos/', prefix='
         env = gym.make(env_name, render_mode="rgb_array")
     else:
         env = env_name
-    rec_env = gym.wrappers.RecordVideo(env, folder, episode_trigger=lambda i : True, video_length=length, name_prefix=prefix)
-    num_steps = 0
-    while num_steps < length:
+    
+    # delete .mp4 files with the given prefix from the folder
+    delete_files(folder, prefix, ".mp4")
+    
+    rec_env = gym.wrappers.RecordVideo(env, folder, episode_trigger=lambda i : True, video_length=max_episode_length, name_prefix=prefix)
+    for _ in range(episodes):
         state, _ = rec_env.reset()
-        num_steps += 1
+        ep_steps = 0
         done = False
-        while (not done) and (num_steps < length):
+        while (not done) and (ep_steps < max_episode_length-1):  # porque o reset conta no tamanho do vídeo
             action = epsilon_greedy_random_tiebreak(qtable, state, epsilon)
-            state, r, termi, trunc, _ = rec_env.step(action)
+            state, _, termi, trunc, _ = rec_env.step(action)
             done = termi or trunc
-            num_steps += 1
+            ep_steps += 1
     rec_env.close()
     env.close()
 
