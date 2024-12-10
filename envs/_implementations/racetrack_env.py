@@ -20,6 +20,27 @@ def find_positions_with_char(track, character):
 
 
 class RacetrackEnv(gym.Env):
+    '''
+    A simple environment for a car racing track, based on an environment proposed in the book of Sutton and Barto (2018). 
+    
+    # Actions
+    In each dimension (x and y), the car can accelerate by -1, +1 or 0 (no acceleration).
+    The actions represent the different combinations of acceleration in the x and y directions:
+    * action 0 - (dx=-1, dy=-1) 
+    * action 1: (dx=0, dy=-1) 
+    * action 2: (dx=+1, dy=-1) 
+    * ... 
+    * action 8: (dx=+1, dy=+1)
+    
+    # Observations
+    The observation is the actual state, given by a tuple (x, y, vx, vy), where:
+    * x and y are the current position of the car
+    * vx and vy are the current velocity in the x and y directions
+
+    # Rewards
+    * -1 for each time step
+    * 0 when the car reaches the goal
+    '''
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
     def __init__(self, render_mode="rgb_array", collision_restarts=False, observation_as_tuple=False):
@@ -206,11 +227,18 @@ class RacetrackEnv(gym.Env):
             self.isopen = False
 
 
+gym.envs.registration.register(
+    id="RaceTrack-v0",
+    entry_point="envs:RacetrackEnv",  # Caminho para a classe
+)
+
+
 if __name__=='__main__':
     import time
-    env = RacetrackEnv(collision_restarts=False, observation_as_tuple=True)
+    #env = RacetrackEnv(collision_restarts=False, observation_as_tuple=True)
+    env = gym.make("RaceTrack-v0", render_mode="human", collision_restarts=False, observation_as_tuple=True)
+    
     state, _ = env.reset()
-    env.render()
 
     terminated = truncated = False
     while not (terminated or truncated):
@@ -218,7 +246,6 @@ if __name__=='__main__':
         next_state, reward, terminated, truncated, _ = env.step(action)
 
         time.sleep(0.15)
-        env.render() # TODO: rever?
         print("Action:", action)
         print("Next State:", next_state)
         print("Reward:", reward)
