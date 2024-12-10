@@ -82,14 +82,17 @@ import multiprocessing
 
 def worker(args):
     i, algorithm, env, num_iterations, alg_args, alg_kwargs = args
-    ret = algorithm(env, num_iterations, *alg_args, **alg_kwargs)
-    temp_returns = ret[0]
-    if isinstance(temp_returns[0], tuple):
-        # when the algorithm outputs a list of pairs (time, return)
-        return process_returns_linear_interpolation(temp_returns, num_iterations)
-    else:
-        # when the algoritm outputs a simple list of returns
-        return temp_returns
+    try:
+        temp_returns, _ = algorithm(env, num_iterations, *alg_args, **alg_kwargs)
+        if isinstance(temp_returns[0], tuple):
+            # when the algorithm outputs a list of pairs (time, return)
+            return process_returns_linear_interpolation(temp_returns, num_iterations)
+        else:
+            # when the algoritm outputs a simple list of returns
+            return temp_returns
+    except Exception as e:
+        print(f"Error in execution {i} of {algorithm}: {str(e)}")
+        return None
 
 def repeated_exec_parallel(executions, num_cpus, alg_name, algorithm, env_factory, num_iterations, args=(), kwargs=dict(), auto_save_load=False):
     env = env_factory()
