@@ -53,10 +53,10 @@ class PolicyModelCrossentropy:
     def clone(self):
         cp = PolicyModelCrossentropy(self.obs_size, self.hidden_sizes, self.n_actions, self.lr)
         policy_state = cp.policy_net.state_dict()
-        for k, v in self.policy_net.state_dict().items():
-            #print(k)
-            policy_state[k] = v
-            cp.policy_net.load_state_dict(policy_state)
+        cp.policy_net.load_state_dict(policy_state)
+        #for k, v in self.policy_net.state_dict().items():
+        #    #print(k)
+        #    policy_state[k] = v
         return cp
 
     def save(self, filename):
