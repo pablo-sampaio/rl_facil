@@ -230,6 +230,7 @@ class RacetrackEnv(gym.Env):
 gym.envs.registration.register(
     id="RaceTrack-v0",
     entry_point="envs:RacetrackEnv",  # Caminho para a classe
+    max_episode_steps=400,
 )
 
 
