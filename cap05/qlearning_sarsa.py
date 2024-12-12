@@ -9,7 +9,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.qtable_helper import epsilon_greedy_random_tiebreak
+from util.qtable_helper import epsilon_greedy
 
 # Define se os algoritmos irão ou não imprimir dados parciais na saída de texto
 VERBOSE = False
@@ -37,7 +37,8 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     
     # inicializa a tabela Q toda com zeros
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    #Q = np.zeros(shape = (env.observation_space.n, num_actions)) # ruim, porque não é possível diferenciar ações não-visitadas de ações ruins
+    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     all_episode_rewards = []
@@ -52,7 +53,8 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
             # escolhe a próxima ação -- usa epsilon-greedy
-            action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+            #action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+            action = epsilon_greedy(Q, state, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, terminated, truncated, _ = env.step(action)
@@ -94,7 +96,8 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     
     # inicializa a tabela Q toda com zeros
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    #Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     all_episode_rewards = []
@@ -107,7 +110,8 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
         state, _ = env.reset()
         
         # escolhe a próxima ação
-        action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+        #action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+        action = epsilon_greedy(Q, state, epsilon)
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
@@ -116,7 +120,8 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
             done = terminated or truncated
 
             # escolhe a próxima ação -- usa epsilon-greedy
-            next_action = epsilon_greedy_random_tiebreak(Q, next_state, epsilon)
+            #next_action = epsilon_greedy_random_tiebreak(Q, next_state, epsilon)
+            next_action = epsilon_greedy(Q, next_state, epsilon)
 
             if terminated: 
                 # para estados terminais
