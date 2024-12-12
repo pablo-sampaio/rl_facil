@@ -29,39 +29,10 @@ def epsilon_greedy_probs(Q, state, epsilon):
     greedy_action_probability = ((1 - epsilon) / greedy_actions) + non_greedy_action_probability
     
     probs = np.where(Q_state == q_max, greedy_action_probability, non_greedy_action_probability)
+    #probs = np.as_numpy([ greedy_action_probability if Q_state[i]==q_max else non_greedy_action_probability 
+    #                        for i in range(num_actions) ])
     
     return probs
-
-'''
-# Implementa antiga (remover)
-def epsilon_greedy_probs(Q, state, epsilon):
-    Q_state = Q[state]
-    num_actions = len(Q_state)
-
-    # probabilidade que todas as ações têm de ser escolhidas nas decisões exploratórias (não-gulosas)
-    non_greedy_action_probability = epsilon / num_actions
-
-    # conta quantas ações estão empatadas com o valor máximo de Q neste estado
-    q_max = np.max(Q_state)
-    greedy_actions = 0
-    for a in range(num_actions):
-        if Q_state[a] == q_max:
-            greedy_actions += 1
-    
-    # probabilidade de cada ação empatada com Q máximo: 
-    # probabilidade de ser escolhida de forma gulosa (greedy) + probabilidade de ser escolhida de forma exploratória
-    greedy_action_probability = ((1 - epsilon) / greedy_actions) + non_greedy_action_probability
-
-    # prepara a lista de probabilidades: cada índice tem a probabilidade da ação daquele índice
-    probs = []
-    for a in range(num_actions):
-        if Q[state][a] == q_max:
-            probs.append(greedy_action_probability)
-        else:
-            probs.append(non_greedy_action_probability)
-    return probs
-'''
-
 
 def epsilon_greedy_choice(Q, state, epsilon=0.1):
     num_actions = len(Q[state])

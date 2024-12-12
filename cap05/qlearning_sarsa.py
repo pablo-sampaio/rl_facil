@@ -35,10 +35,10 @@ def run_qlearning(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q toda com zeros
+    # inicializa a tabela Q com valores aleatórios pequenos (para evitar empates)
     # usar o estado como índice das linhas e a ação como índice das colunas
-    #Q = np.zeros(shape = (env.observation_space.n, num_actions)) # ruim, porque não é possível diferenciar ações não-visitadas de ações ruins
     Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
+    #Q = np.zeros(shape = (env.observation_space.n, num_actions)) # ruim, porque inicia com vários empates
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     all_episode_rewards = []
@@ -94,11 +94,11 @@ def run_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q toda com zeros
+    # inicializa a tabela Q com valores aleatórios pequenos (para evitar empates)
     # usar o estado como índice das linhas e a ação como índice das colunas
-    #Q = np.zeros(shape = (env.observation_space.n, num_actions))
     Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
-
+    #Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     all_episode_rewards = []
     

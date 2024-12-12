@@ -8,7 +8,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.qtable_helper import epsilon_greedy_random_tiebreak
+from util.qtable_helper import epsilon_greedy
 
 
 # Algoritmo "n-step SARSA"
@@ -20,9 +20,8 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q com zeros
-    # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape=(env.observation_space.n, num_actions))
+    # inicializa a tabela Q com valores aleatórios pequenos (para evitar empates)
+    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
 
     gamma_array = np.array([ gamma**i for i in range(0,nsteps)])
     gamma_power_nstep = gamma**nsteps
@@ -37,7 +36,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
         
         state, _ = env.reset()
         # escolhe a próxima ação
-        action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+        action = epsilon_greedy(Q, state, epsilon)
 
         # históricos de: estados, ações e recompensas
         hs = deque(maxlen=nsteps)
@@ -52,7 +51,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
             sum_rewards += reward
 
             # escolhe (antecipadamente) a ação do próximo estado
-            next_action = epsilon_greedy_random_tiebreak(Q, next_state, epsilon)
+            next_action = epsilon_greedy(Q, next_state, epsilon)
 
             hs.append(state)
             ha.append(action)
@@ -65,7 +64,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
                     # para estados terminais
                     V_next_state = 0
                 else:
-                    # para estados não-terminais -- valor máximo (melhor ação)
+                    # para estados não-terminais -- valor da próxima ação (já escolhida)
                     V_next_state = Q[next_state,next_action]
 
                 # delta = (estimativa usando a nova recompensa) - estimativa antiga
@@ -80,14 +79,16 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
             action = next_action
             # fim do laço por episódio
 
+        V_end_state = 0 if terminated else Q[next_state,next_action]
+
         # ao fim do episódio, atualiza o Q dos estados que restaram no histórico
-        laststeps = len(hs) # pode ser inferior ao "nstep", em episódios muito curtos
-        for j in range(laststeps-1,0,-1):
+        final_steps = min(nsteps, len(hs))  # inferior ao "nstep" apenas em episódios muito curtos
+        for j in range(final_steps-1,0,-1):
             hs.popleft()
             ha.popleft()
             hr.popleft()
             #delta = ( sum(gamma_array[0:j]*hr) + V_next_state ) - Q[hs[0],ha[0]]
-            delta = ( sum(gamma_array[0:j]*hr) + 0 ) - Q[hs[0],ha[0]]   # assumindo que V_next_state == 0, mas isso pode não ser verdade em episódios truncados
+            delta = ( sum(gamma_array[0:j]*hr) + gamma_array[j]*V_end_state ) - Q[hs[0],ha[0]]
             Q[hs[0],ha[0]] += lr * delta
 
         sum_rewards_per_ep.append(sum_rewards)
@@ -112,7 +113,7 @@ if __name__ == "__main__":
     #env = gym.make("Taxi-v3")
     #r_max = 10.0
 
-    env = TimeLimit(RacetrackEnv(), 300)
+    env = TimeLimit(RacetrackEnv(), 200)
     r_max = 0.0
 
     EPISODES = 10_000
