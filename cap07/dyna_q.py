@@ -10,7 +10,7 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.qtable_helper import epsilon_greedy_random_tiebreak
+from util.qtable_helper import epsilon_greedy
 
 
 def planning(model, planning_steps, Q, lr, gamma):
@@ -38,7 +38,7 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
     num_actions = env.action_space.n
 
     # inicializa a tabela Q
-    Q = np.zeros(shape=(env.observation_space.n, num_actions))
+    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
 
     model = dict({})
 
@@ -56,7 +56,7 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
         while not done:
 
             # escolhe a próxima ação -- usa epsilon-greedy
-            action = epsilon_greedy_random_tiebreak(Q, state, epsilon)
+            action = epsilon_greedy(Q, state, epsilon)
 
             # realiza a ação, ou seja, dá um passo no ambiente
             next_state, reward, terminated, truncated, _ = env.step(action)

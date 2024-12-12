@@ -227,13 +227,6 @@ class RacetrackEnv(gym.Env):
             self.isopen = False
 
 
-gym.envs.registration.register(
-    id="RaceTrack-v0",
-    entry_point="envs:RacetrackEnv",  # Caminho para a classe
-    max_episode_steps=400,
-)
-
-
 if __name__=='__main__':
     import time
     #env = RacetrackEnv(collision_restarts=False, observation_as_tuple=True)

@@ -3,8 +3,20 @@ import gymnasium as gym
 import numpy as np
 
 
-# Esta é a política. Neste caso, escolhe uma ação com base nos valores
-# da tabela Q, usando uma estratégia epsilon-greedy.
+# Esta função define uma política, em função da tabela Q e do epsilon
+# Escolhe a ação gulosa (greedy) com probabilidade 1-epsilon e uma ação aleatória com probabilidade epsilon.
+def epsilon_greedy(Q, state, epsilon):
+    Q_state = Q[state]
+    num_actions = len(Q_state)
+    if np.random.random() < epsilon:
+        return np.random.randint(0, num_actions)
+    else:
+        # em caso de empates, retorna sempre o menor índice -- mais eficiente, porém não é bom para alguns ambientes
+        return np.argmax(Q_state)
+
+
+# Esta função define uma política, em função da tabela Q e do epsilon.
+# Como a anterior, mas aleatoriza a escolha em caso de haver mais de uma opção gulosa empatada.
 def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
     q_state = qtable[state]
     num_actions = len(q_state)
@@ -15,7 +27,7 @@ def epsilon_greedy_random_tiebreak(qtable, state, epsilon):
         return np.random.choice(np.where(q_state == q_state.max())[0])
 
 
-def delete_files(folder, prefix, suffix):
+def _delete_files(folder, prefix, suffix):
     import os
     # check if folder exists
     if not os.path.exists(folder):
@@ -42,7 +54,7 @@ def record_video_qtable(env_name, qtable, episodes=2, folder='videos/', prefix='
         env = env_name
     
     # delete .mp4 files with the given prefix from the folder
-    delete_files(folder, prefix, ".mp4")
+    _delete_files(folder, prefix, ".mp4")
     
     rec_env = gym.wrappers.RecordVideo(env, folder, episode_trigger=lambda i : True, video_length=max_episode_length, name_prefix=prefix)
     for _ in range(episodes):
