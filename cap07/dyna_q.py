@@ -38,7 +38,7 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
     num_actions = env.action_space.n
 
     # inicializa a tabela Q
-    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
+    Q = np.random.uniform(low=-0.01, high=+0.01, size=(env.observation_space.n, num_actions))
 
     model = dict({})
 
@@ -52,7 +52,7 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
 
         state, _ = env.reset()
 
-        # executa 1 episódio completo, fazendo atualizações na Q-table
+        # executa 1 episódio completo
         while not done:
 
             # escolhe a próxima ação -- usa epsilon-greedy

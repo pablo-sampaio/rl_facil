@@ -21,7 +21,7 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
     num_actions = env.action_space.n
     
     # inicializa a tabela Q com valores aleatórios pequenos (para evitar empates)
-    Q = np.random.uniform(low=-1, high=1, size=(env.observation_space.n, num_actions)) * 0.01
+    Q = np.random.uniform(low=-0.01, high=+0.01, size=(env.observation_space.n, num_actions))
 
     gamma_array = np.array([ gamma**i for i in range(0,nsteps)])
     gamma_power_nstep = gamma**nsteps
@@ -79,15 +79,17 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
             action = next_action
             # fim do laço por episódio
 
+        # ao fim do episódio, atualiza o Q dos estados que restaram no histórico
+
+        # é igual ao V_next_state, exceto em episódios muito curtos (com duração menor que "nsteps")
         V_end_state = 0 if terminated else Q[next_state,next_action]
 
-        # ao fim do episódio, atualiza o Q dos estados que restaram no histórico
-        final_steps = min(nsteps, len(hs))  # inferior ao "nstep" apenas em episódios muito curtos
-        for j in range(final_steps-1,0,-1):
+        # inferior ao "nsteps" apenas em episódios muito curtos
+        steps_to_end = min(nsteps, len(hs))
+        for j in range(steps_to_end-1,0,-1):
             hs.popleft()
             ha.popleft()
             hr.popleft()
-            #delta = ( sum(gamma_array[0:j]*hr) + V_next_state ) - Q[hs[0],ha[0]]
             delta = ( sum(gamma_array[0:j]*hr) + gamma_array[j]*V_end_state ) - Q[hs[0],ha[0]]
             Q[hs[0],ha[0]] += lr * delta
 

@@ -14,43 +14,63 @@ def convert_to_flattened_index(indices, dimensions):
 
     return flattened_index
 
+def convert_from_flattened_index(flattened_index, dimensions):
+    indices = [0] * len(dimensions)
+    for i in range(len(dimensions)-1, -1, -1):
+        indices[i] = flattened_index % dimensions[i]
+        flattened_index = flattened_index // dimensions[i]
+    return indices
 
-# generalizar para um "space discretizer" que converte um espaço contínuo em um espaço discreto
-# criar flag para dizer se é para converter para um único bin ou para um array de bins
-class GeneralDiscretizer:
-    def __init__(self, env, bins_per_dimension):
-        assert isinstance(env.observation_space, gym.spaces.Box)
-        assert len(env.observation_space.shape) == 1, "Only 1-D observations are supported"
-        assert env.observation_space.shape[0] == len(bins_per_dimension), "Number of bins must match the dimensions of the observation"
+
+# Converte um espaço contínuo (de ações ou observações) em um espaço discreto.
+class BoxSpaceDiscretizer:
+    def __init__(self, env_space, bins_per_dimension):
+        assert isinstance(env_space, gym.spaces.Box)
+        assert len(env_space.shape) == 1, "Only 1-D observations are supported"
+        assert env_space.shape[0] == len(bins_per_dimension), "Number of bins must match the dimensions of the space"
 
         self.bins_per_dim = bins_per_dimension.copy()
+        self.full_intervals_per_dim = []
         self.intervals_per_dim = []
         self.total_bins = 1
         
-        for i, bins in enumerate(bins_per_dimension):    
+        for i, bins in enumerate(bins_per_dimension):
+            min_value = env_space.low[i] if not np.isneginf(env_space.low[i]) else 2*np.finfo(np.float64).min
+            max_value = env_space.high[i] if not np.isposinf(env_space.high[i]) else np.finfo(np.float64).max/2
+
             # cria o 'linspace' do valor inicial ao final
-            full_linspace = np.linspace(env.observation_space.low[i], env.observation_space.high[i], bins+1, endpoint=True)
+            full_linspace = np.linspace(min_value, max_value, bins+1, endpoint=True)
+            #print(f">> Dim {i}: full_linspace: {full_linspace}")
             
             # adiciona o 'linspace' com o valor inicial e o final removidos, por conta do funcionamento do np.digitize():
             #  - valor anterior ao "novo" inicial -> índice "0"
             #  - valor posterior ao "novo" final -> índice "bins-1"
+            self.full_intervals_per_dim.append( full_linspace )
             self.intervals_per_dim.append( full_linspace[1:-1] )
             
             self.total_bins *= bins
 
-    def to_single_bin(self, state):
-        bin_vector = [np.digitize(x=state[i], bins=intervals)
+    def to_bins(self, original_value):
+        bin_vector = [np.digitize(x=original_value[i], bins=intervals)
                       for i, intervals in enumerate(self.intervals_per_dim)]
-        # print(bin_vector)
-        return convert_to_flattened_index(bin_vector, self.bins_per_dim)
-        #return self._bin_vector_to_single_bin(bin_vector, len(bin_vector)-1)
+        return bin_vector
 
-    '''def _bin_vector_to_single_bin(self, vector, index):
-        if index < 0:
-            return 0
-        return vector[index] + self.bins_per_dim[index] * self._bin_vector_to_single_bin(vector, index-1)
-    '''
-    
+    def to_single_bin(self, original_value):
+        bin_vector = [np.digitize(x=original_value[i], bins=intervals)
+                      for i, intervals in enumerate(self.intervals_per_dim)]
+        return convert_to_flattened_index(bin_vector, self.bins_per_dim)
+
+    def from_bins(self, bin_vector):
+        original_value = [ (intervals[bin_vector[dim]] + intervals[bin_vector[dim]+1])/2 
+                           for dim, intervals in enumerate(self.full_intervals_per_dim) ]
+        return original_value
+
+    # it will be useful to convert an entire action into indices of each dimension
+    # and then, for the average values of each interval
+    def from_single_bin(self, bin_index):
+        bin_vector = convert_from_flattened_index(bin_index, self.bins_per_dim)
+        return self.from_bins(bin_vector)
+
     def get_total_bins(self):
         return self.total_bins
 
@@ -66,11 +86,11 @@ class ObservationDiscretizerWrapper(gym.ObservationWrapper):
     cada dimensão (ou seja, cada valor float) do espaço de estados original.
     '''
     
-    def __init__(self, env, BINS_PER_DIMENSION):
+    def __init__(self, env : gym.Env, BINS_PER_DIMENSION):
         super().__init__(env)
-        # cria um GeneralDiscretizer para converter um array de valores float em um único inteiro >= 0
+        # cria um BoxSpaceDiscretizer para converter um array de valores float em um único inteiro >= 0
         # precisa dizer em quantos "bins" vai ser discretizada cada dimensão
-        self.discretizer = GeneralDiscretizer(env, BINS_PER_DIMENSION)
+        self.discretizer = BoxSpaceDiscretizer(env.observation_space, BINS_PER_DIMENSION)
         self.observation_space = gym.spaces.Discrete(self.discretizer.get_total_bins())
 
     def observation(self, obs):
