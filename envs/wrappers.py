@@ -22,6 +22,24 @@ def convert_from_flattened_index(flattened_index, dimensions):
     return indices
 
 
+class FromDiscreteTupleToDiscreteObs(gym.ObservationWrapper):
+    def __init__(self, env):
+        super().__init__(env)
+        self.observation_space = gym.spaces.Discrete(self._calculate_discrete_size(env.observation_space))
+
+    def _calculate_discrete_size(self, observation_space):
+        size = 1
+        assert isinstance(observation_space, gym.spaces.Tuple)
+        self.dimensions = []
+        for space in observation_space:
+            size *= space.n
+            self.dimensions.append(space.n)
+        return size
+
+    def observation(self, observation):
+        return convert_to_flattened_index(observation, self.dimensions)
+
+
 # Converte um espaço contínuo (de ações ou observações) em um espaço discreto.
 class BoxSpaceDiscretizer:
     def __init__(self, env_space, bins_per_dimension):
@@ -97,19 +115,23 @@ class ObservationDiscretizerWrapper(gym.ObservationWrapper):
         return self.discretizer.to_single_bin(obs)
 
 
-class FromDiscreteTupleToDiscreteObs(gym.ObservationWrapper):
-    def __init__(self, env):
+class ActionDiscretizerWrapper(gym.ActionWrapper):
+    '''Classe para converter espaços contínuos em espaços discretos.
+
+    Esta classe converte ambientes de ações contínuas em ambientes de ações discretas. 
+    Especificamente, ele converte representações dadas na forma de array de valores float
+    em um único inteiro $\geq$ não-negativo (>=0).
+    
+    Precisa passar para o construtor uma lista que informa em quantos "bins" vai ser discretizada 
+    cada dimensão (ou seja, cada valor float) do espaço de ações original.
+    '''
+    
+    def __init__(self, env : gym.Env, BINS_PER_DIMENSION):
         super().__init__(env)
-        self.observation_space = gym.spaces.Discrete(self._calculate_discrete_size(env.observation_space))
+        # cria um BoxSpaceDiscretizer para converter um array de valores float em um único inteiro >= 0
+        # precisa dizer em quantos "bins" vai ser discretizada cada dimensão
+        self.discretizer = BoxSpaceDiscretizer(env.action_space, BINS_PER_DIMENSION)
+        self.action_space = gym.spaces.Discrete(self.discretizer.get_total_bins())
 
-    def _calculate_discrete_size(self, observation_space):
-        size = 1
-        assert isinstance(observation_space, gym.spaces.Tuple)
-        self.dimensions = []
-        for space in observation_space:
-            size *= space.n
-            self.dimensions.append(space.n)
-        return size
-
-    def observation(self, observation):
-        return convert_to_flattened_index(observation, self.dimensions)
+    def action(self, act):
+        return self.discretizer.from_single_bin(act)

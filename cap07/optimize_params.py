@@ -1,30 +1,22 @@
 
 import numpy as np
-
 import gymnasium as gym
-from gymnasium.envs import register
-
 import optuna
 
 import sys
 from os import path
+import argparse
+
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
 from cap05.qlearning_sarsa import run_qlearning
 from util.experiments import repeated_exec
 
-#from envs import RacetrackEnv
+import envs  # importa o racetrack
 
-# Registra o ambiente com o nome de "Racetrack"
-register(
-    id="Racetrack",  # Use a unique string ID for your environment
-    entry_point="envs:RacetrackEnv",  # Specify the module and class name
-    max_episode_steps=500,
-)
 
-# Variável para indicar o nome do ambiente a ter o Q-Learning otimizado
-# Tente com "Racetrack" ou "Taxi-v3" ou "FrozenLake-v1" outro ambiente de estado discreto
-ENV_NAME = "Racetrack"
+# Default environment name
+ENV_NAME = "RaceTrack-v0"
 
 EPISODES_PER_TRIAL = 800   # Se for o Taxi-v3, é suficiente usar por volta de 250
 RUNS_PER_TRIAL     = 3     # Se for o FrozenLake, use por volta de 7
@@ -32,9 +24,9 @@ RUNS_PER_TRIAL     = 3     # Se for o FrozenLake, use por volta de 7
 
 def train(trial : optuna.Trial):
     # chama os métodos do "trial" (tentativa) para sugerir valores para os parâmetros
-    lr = trial.suggest_float('lr', 0.1, 1.0)
+    lr = trial.suggest_float('lr', 0.01, 1.0)
     eps = trial.suggest_float('epsilon', 0.01, 0.2)
-    gamma = trial.suggest_float('gamma', 0.5, 1.0)
+    gamma = trial.suggest_float('gamma', 0.8, 1.0)
 
     print(f"\nTRIAL #{trial.number}: lr={lr}, eps={eps}, gamma={gamma}")
 
@@ -46,12 +38,19 @@ def train(trial : optuna.Trial):
 
 
 if __name__ == '__main__':
-    study = optuna.create_study(direction='maximize',
-                            storage='sqlite:///cap07//optuna_cap07.db',
-                            study_name=f'qlearning_{ENV_NAME}',
-                            load_if_exists=True)
+    parser = argparse.ArgumentParser(description='Optimize Q-Learning parameters for a given environment.')
+    parser.add_argument('--env', type=str, default=ENV_NAME, help='Name of the environment to optimize. Default is RaceTrack-v0.')
+    
+    args = parser.parse_args()
 
-    study.optimize(train, n_trials=40, n_jobs=4)
+    ENV_NAME = args.env
+
+    study = optuna.create_study(direction='maximize',
+                                storage='sqlite:///optuna_cap07.db',
+                                study_name=f'qlearning_{ENV_NAME}',
+                                load_if_exists=True)
+
+    study.optimize(train, n_trials=20, n_jobs=2)
 
     print(f"MELHORES PARÂMETROS PARA {ENV_NAME}:")
     print(study.best_params)

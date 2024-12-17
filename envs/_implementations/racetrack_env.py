@@ -223,7 +223,7 @@ class RacetrackEnv(gym.Env):
         if self.screen is not None:
             pygame.display.quit()
             pygame.quit()
-            self.screen = False
+            self.screen = None
             self.isopen = False
 
 
