@@ -18,7 +18,7 @@ import envs  # importa o racetrack
 # Default settings for the optimization
 ENVIRONMENT_NAME   = "RaceTrack-v0"
 RUNS_PER_TRIAL     = 3     # Se for o FrozenLake, use por volta de 7
-EPISODES_PER_TRIAL = 800   # Se for o Taxi-v3, é suficiente usar por volta de 250
+EPISODES_PER_TRIAL = 800   # Se for o Taxi-v3, é suficiente usar por volta de 400
 
 
 def train(trial : optuna.Trial):
