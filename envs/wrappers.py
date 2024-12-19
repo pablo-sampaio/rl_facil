@@ -32,6 +32,7 @@ class FromDiscreteTupleToDiscreteObs(gym.ObservationWrapper):
         assert isinstance(observation_space, gym.spaces.Tuple)
         self.dimensions = []
         for space in observation_space:
+            assert isinstance(space, gym.spaces.Discrete)
             size *= space.n
             self.dimensions.append(space.n)
         return size

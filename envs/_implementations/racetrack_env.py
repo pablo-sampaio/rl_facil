@@ -3,11 +3,20 @@ import gymnasium as gym
 from gymnasium import spaces
 import pygame
 
-import sys
-from os import path
-sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
+if __name__ == "__main__":
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
+    from envs.wrappers import FromDiscreteTupleToDiscreteObs
+else:
+    from ..wrappers import FromDiscreteTupleToDiscreteObs
 
-from envs.wrappers import convert_to_flattened_index
+
+def create_wrapped_racetrack_env(observation_as_tuple=False, *args, **kwargs):
+    if observation_as_tuple:
+        return RacetrackEnv(*args, **kwargs)
+    else:
+        return FromDiscreteTupleToDiscreteObs(RacetrackEnv(*args, **kwargs))
 
 
 def find_positions_with_char(track, character):
@@ -43,7 +52,7 @@ class RacetrackEnv(gym.Env):
     '''
     metadata = {"render_modes": ["human", "rgb_array"], "render_fps": 30}
 
-    def __init__(self, render_mode="rgb_array", collision_restarts=False, observation_as_tuple=False):
+    def __init__(self, render_mode="rgb_array", collision_restarts=False):
         self.track = [
             "XXXXXXXXXXXXXXXXXX",
             "GG___XXXXXXXXXXXXX",
@@ -73,7 +82,6 @@ class RacetrackEnv(gym.Env):
         ]        
         self.collision_restarts = collision_restarts
         self.render_mode = render_mode
-        self.observation_as_tuple = observation_as_tuple
         
         self.action_space = spaces.Discrete(9)  # 9 possible actions (0-8)
         
@@ -82,15 +90,12 @@ class RacetrackEnv(gym.Env):
         # Dimensions for x position / y position / x velocity / y velocity
         self.obs_dimensions = [len(self.track[0]), len(self.track), 2*self.vel_limit+1, 2*self.vel_limit+1]
 
-        if observation_as_tuple:
-            self.observation_space = spaces.Tuple((
-                spaces.Discrete(self.obs_dimensions[0]),  # x position
-                spaces.Discrete(self.obs_dimensions[1]),  # y position
-                spaces.Discrete(self.obs_dimensions[2]),  # x velocity
-                spaces.Discrete(self.obs_dimensions[3])   # y velocity
-            ))
-        else:
-            self.observation_space = spaces.Discrete(np.prod(self.obs_dimensions))
+        self.observation_space = spaces.Tuple((
+            spaces.Discrete(self.obs_dimensions[0]),  # x position
+            spaces.Discrete(self.obs_dimensions[1]),  # y position
+            spaces.Discrete(self.obs_dimensions[2]),  # x velocity
+            spaces.Discrete(self.obs_dimensions[3])   # y velocity
+        ))
         
         self.start_positions = find_positions_with_char(self.track, 'S')
 
@@ -117,10 +122,7 @@ class RacetrackEnv(gym.Env):
         self.current_state = (*start_pos, self.vel_limit, self.vel_limit)  # o valor de self.vel_limit representa a velocidade zero
         if self.render_mode == "human":
             self.render()
-        if self.observation_as_tuple:
-            return self.current_state, {}
-        else:
-            return convert_to_flattened_index(self.current_state, self.obs_dimensions), dict(track=list(self.track))
+        return self.current_state, {}
     
     def step(self, action):
         x, y, vx, vy = self.current_state
@@ -171,12 +173,7 @@ class RacetrackEnv(gym.Env):
         if self.render_mode == "human":
             self.render()
 
-        if self.observation_as_tuple:
-            obs = self.current_state
-        else:
-            obs = convert_to_flattened_index(self.current_state, self.obs_dimensions)
-
-        return obs, reward, terminated, False, {}
+        return self.current_state, reward, terminated, False, {}
 
     def render_text(self):
         track_copy = self.track.copy()  # Create a copy of the track
@@ -230,7 +227,8 @@ class RacetrackEnv(gym.Env):
 if __name__=='__main__':
     import time
     #env = RacetrackEnv(collision_restarts=False, observation_as_tuple=True)
-    env = gym.make("RaceTrack-v0", render_mode="human", collision_restarts=False, observation_as_tuple=True)
+    #env = gym.make("RaceTrack-v0", render_mode="human", collision_restarts=False, observation_as_tuple=True)
+    env = create_wrapped_racetrack_env(observation_as_tuple=False)
     
     state, _ = env.reset()
 

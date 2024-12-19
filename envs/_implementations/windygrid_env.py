@@ -3,6 +3,21 @@ import gymnasium as gym
 from gymnasium import spaces
 import pygame
 
+if __name__ == "__main__":
+    import sys
+    from os import path
+    sys.path.append( path.dirname( path.dirname( path.dirname( path.abspath(__file__) ) ) ) )
+    from envs.wrappers import FromDiscreteTupleToDiscreteObs
+else:
+    from ..wrappers import FromDiscreteTupleToDiscreteObs
+
+
+def create_wrapped_windy_grid_env(observation_as_tuple=False, *args, **kwargs):
+    if observation_as_tuple:
+        return WindyGridworldEnv(*args, **kwargs)
+    else:
+        return FromDiscreteTupleToDiscreteObs(WindyGridworldEnv(*args, **kwargs))
+
 
 class WindyGridworldEnv(gym.Env):
     """
@@ -70,7 +85,8 @@ class WindyGridworldEnv(gym.Env):
         # State initialization
         self.reset()
 
-    def reset(self):
+    def reset(self, *, seed=None, options=None):
+        super().reset(seed=seed)
         """
         Resets the environment to its initial state, with the agent placed in the 'start' position.
 
@@ -101,7 +117,7 @@ class WindyGridworldEnv(gym.Env):
             reward (int):
                 The reward for the action. -1 for each step, 0 upon reaching the goal.
 
-            done (bool):
+            terminated (bool):
                 Indicates if the goal has been reached.
 
             truncated (bool):
@@ -134,16 +150,16 @@ class WindyGridworldEnv(gym.Env):
         reward = 0 if terminated else -1
 
         if self.render_mode == "human":
-            self.render()
+            self._render_human()
 
         return tuple(self.agent_pos), reward, terminated, False, {}
 
-    def render_text(self):
+    '''def render_text(self):
         grid = np.full(self.grid_size, fill_value=".")
         grid[self.goal[0], self.goal[1]] = "G"
         grid[self.agent_pos[0], self.agent_pos[1]] = "A"
         print("\n".join(["".join(row) for row in grid]))
-        print()
+        print()'''
 
     def render(self):
         if self.render_mode == "human":
@@ -154,6 +170,7 @@ class WindyGridworldEnv(gym.Env):
     def _render_human(self):
         if self.window is None:
             pygame.init()
+            pygame.font.init()
             self.window = pygame.display.set_mode(self.window_size)
             pygame.display.set_caption("Windy Gridworld")
             self.clock = pygame.time.Clock()
@@ -189,6 +206,9 @@ class WindyGridworldEnv(gym.Env):
         pygame.display.flip()
 
     def _render_rgb_array(self):
+        if not pygame.font.get_init():
+            pygame.font.init()
+
         surface = pygame.Surface(self.window_size)
         surface.fill((255, 255, 255))  # White background
         font = pygame.font.SysFont(None, 24)
@@ -216,7 +236,7 @@ class WindyGridworldEnv(gym.Env):
         )
         pygame.draw.ellipse(surface, (255, 0, 0), agent_rect)  # Red circle for agent
 
-        return np.array(pygame.surfarray.array3d(surface))
+        return np.transpose(np.array(pygame.surfarray.array3d(surface)), (1, 0, 2))
 
     def close(self):
         if self.window is not None:
@@ -226,8 +246,8 @@ class WindyGridworldEnv(gym.Env):
 
 if __name__ == "__main__":
     # Example usage
-    env = WindyGridworldEnv(action_set="kings", wind_scheme="stochastic", render_mode="human")
-    #env = WindyGridworldEnv()
+    #env = WindyGridworldEnv(action_set="kings", wind_scheme="stochastic", render_mode="human")
+    env = create_wrapped_windy_grid_env(render_mode="human")
 
     obs, _ = env.reset()
     print("Initial Observation:", obs)

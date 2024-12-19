@@ -51,12 +51,16 @@ if __name__ == '__main__':
 
     TRIALS = args.trials
 
-    study = optuna.create_study(direction='maximize',
-                                storage='sqlite:///optuna_cap07.db',
-                                study_name=f'qlearning_{ENVIRONMENT_NAME}',
-                                load_if_exists=True)
+    try:
+        study = optuna.create_study(direction='maximize',
+                                    storage='sqlite:///optuna_cap07.db',
+                                    study_name=f'qlearning_{ENVIRONMENT_NAME}',
+                                    load_if_exists=True)
 
-    study.optimize(train, n_trials=TRIALS, n_jobs=2)
+        study.optimize(train, n_trials=TRIALS, n_jobs=2)
 
-    print(f"MELHORES PARÂMETROS PARA {ENVIRONMENT_NAME}:")
-    print(study.best_params)
+        print(f"MELHORES PARÂMETROS PARA {ENVIRONMENT_NAME}:")
+        print(study.best_params)
+
+    except Exception as e:
+        print(f"An error occurred: {e}")
