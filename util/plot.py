@@ -91,7 +91,7 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
 
 
 # TODO: remove True/False values for cumulative (review scripts)
-def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None):
+def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None, y_min=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
     Parâmetros:
@@ -102,6 +102,7 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_ax
     - window: permite fazer a média dos últimos resultados, para suavizar o gráfico; só é usado se cumulative='no'
     - plot_stddev: exibe sombra com o desvio padrão, ou seja, entre média-desvio e média+desvio
     - yreference: if not None, should be an integer, where will be plot a horizontal gray dashed line, used for reference
+    - y_min: valor mínimo do eixo y; caso os dados tenham valor menor, o gráfico será ajustado para adotar este valor como mínimo
     '''
     # True and False are here for backward compatibility (remove!)
     if cumulative is None or cumulative is False:
@@ -155,6 +156,11 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_ax
     else:
         gen = payoff[-1]
         plt.title(f"{payoff} acumulad{gen}")
+    
+    if y_min is not None:
+        min_value = min(np.min(returns) for (_, returns) in list_returns)
+        if min_value < y_min:
+            plt.ylim(bottom=y_min)
     
     plt.legend()
     plt.show()

@@ -57,7 +57,8 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
         return RESULTS
     rewards = np.zeros(shape=(executions, num_iterations))
     t = time.time()
-    print(f"Executing {algorithm}:")
+    #print(f"Executing {algorithm}:")
+    print(f"Executing {alg_name}:")
     for i in tqdm(range(executions)):
         alg_output = algorithm(env, num_iterations, *args, **kwargs)
         temp_returns = alg_output[0]
