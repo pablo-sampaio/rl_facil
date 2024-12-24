@@ -52,5 +52,5 @@ if __name__=='__main__':
                                             auto_save_load=True) 
             results.append(output)
 
-    plot_multiple_results(results, cumulative=False, plot_stddev=False, x_axis='steps')
-    plot_multiple_results(results, cumulative=True, plot_stddev=False, x_axis='steps')
+    plot_multiple_results(results, cumulative='no', plot_stddev=False, x_axis='steps')
+    plot_multiple_results(results, cumulative='avg', plot_stddev=False, x_axis='steps')

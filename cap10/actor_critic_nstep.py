@@ -146,7 +146,7 @@ if __name__ == "__main__":
  
     # Exibe um gráficos passos x retornos (não descontados)
     plot_result(returns, rmax, x_axis='step')
-    plot_result(returns, rmax, x_axis='step', cumulative=True)
+    plot_result(returns, rmax, x_axis='step', cumulative='avg')
 
     # Executa alguns episódios de forma NÃO-determinística e imprime um sumário
     eval_env = gym.make(ENV_NAME, render_mode="human")

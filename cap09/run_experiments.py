@@ -54,6 +54,6 @@ if __name__ == "__main__":
         results.append( repeated_exec_parallel(RUNS, CPUS, f"Reinforce+Base (lr={lr})" , run_reinforce_baseline , env_factory, EPISODES, args=(GAMMA, initial_policy), auto_save_load=True) )
         #results.append( repeated_exec_parallel(RUNS, CPUS, f"Reinforce+Advtg (lr={lr})", run_reinforce_advantage, env_factory, EPISODES, args=(GAMMA, initial_policy), auto_save_load=True) )
 
-    plot_multiple_results(results, cumulative=False, window=20, x_log_scale=False)
-    plot_multiple_results(results, cumulative=True, x_log_scale=False)
+    plot_multiple_results(results, cumulative='no', window=20, x_log_scale=False)
+    plot_multiple_results(results, cumulative='avg', x_log_scale=False)
 

@@ -32,4 +32,4 @@ for (alg_name, rewards) in results:
     print(" - avg reward (win rate):", rewards.sum() / STEPS)
     print()
 
-plot_multiple_results(results, cumulative=True, x_log_scale=True, yreference=enviroment.get_max_mean_reward(), plot_stddev=True)
+plot_multiple_results(results, cumulative='avg', x_log_scale=True, yreference=enviroment.get_max_mean_reward(), plot_stddev=True)

@@ -25,4 +25,4 @@ for learning_rate in [0.01, 0.1, 0.5]:
     results.append( repeated_exec(1, f"Monte-Carlo2 (LR={learning_rate})", run_montecarlo2, enviroment, NUM_EPISODES, learning_rate) )
 
 
-plot_multiple_results(results, cumulative=False, x_log_scale=False)
+plot_multiple_results(results, x_log_scale=False)

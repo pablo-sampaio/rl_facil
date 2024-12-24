@@ -90,7 +90,6 @@ def plot_result(returns, ymax_suggested=None, x_log_scale=False, window=None, x_
     plt.close()
 
 
-# TODO: remove True/False values for cumulative (review scripts)
 def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_axis='episode', window=10, plot_stddev=False, yreference=None, y_min=None):
     '''Exibe um gráfico "episódio/passo x retorno" com vários resultados.
     
@@ -105,10 +104,8 @@ def plot_multiple_results(list_returns, cumulative='no', x_log_scale=False, x_ax
     - y_min: valor mínimo do eixo y; caso os dados tenham valor menor, o gráfico será ajustado para adotar este valor como mínimo
     '''
     # True and False are here for backward compatibility (remove!)
-    if cumulative is None or cumulative is False:
+    if cumulative is None:
         cumulative = 'no'
-    if cumulative is True: 
-        cumulative = 'avg'
     assert cumulative in ['no', 'sum', 'avg']
     assert x_axis in ['step', 'episode']
     

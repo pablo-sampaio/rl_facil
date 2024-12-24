@@ -29,4 +29,4 @@ for learning_rate in [0.1, 0.5, 1.0]:
 for learning_rate in [0.1, 0.5, 1.0]:
     results.append( repeated_exec(RUNS, f"Exp-SARSA (LR={learning_rate})", run_expected_sarsa, enviroment, NUM_EPISODES, learning_rate, auto_load=AUTO_LOAD) )
 
-plot_multiple_results(results, cumulative=False, x_log_scale=True, window=50)
+plot_multiple_results(results, x_log_scale=True, window=50)
