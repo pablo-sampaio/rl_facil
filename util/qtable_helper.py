@@ -70,7 +70,7 @@ def record_video_qtable(env_name, qtable, episodes=2, folder='videos/', prefix='
     env.close()
 
 
-def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
+def evaluate_qtable_policy(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
     """
     Avalia a política epsilon-greedy definida implicitamente por uma Q-table.
     Por padrão, executa com epsilon=0.0; ou seja, executa, em todo estado s, escolhe a ação "a = argmax Q(s,_)".
@@ -111,7 +111,6 @@ def evaluate_qtable(env, qtable, num_episodes=100, epsilon=0.0, verbose=False):
     print(f"Retorno médio (por episódio): {mean_return:.2f}, episódios: {len(episode_returns)}, total de passos: {total_steps}")
 
     return mean_return, episode_returns
-
 
 
 def repeated_exec_qtable_policy(executions, alg_name, qtable, env, num_iterations, epsilon=0.0):

@@ -42,15 +42,15 @@ def epsilon_greedy_choice(Q, state, epsilon=0.1):
 
 # Algoritmo Expected-SARSA
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=False):
+def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
 
     num_actions = env.action_space.n
     
-    # inicializa a tabela Q toda com zeros
+    # inicializa a tabela Q com valores aleatórios pequenos (para evitar empates)
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    Q = np.random.uniform(low=-0.01, high=+0.01, size=(env.observation_space.n, num_actions))
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     all_episode_rewards = []
@@ -64,10 +64,6 @@ def run_expected_sarsa(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render=Fa
     
         # executa 1 episódio completo, fazendo atualizações na Q-table
         while not done:
-            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and ((i >= (episodes - 5) or (i+1) % 1000 == 0)):
-                env.render()
-            
             # escolhe a próxima ação com a 'behavior policy'
             action = epsilon_greedy_choice(Q, state, epsilon)
             #action = softmax_choice(Q, state)  # bad results!
@@ -112,7 +108,7 @@ if __name__ == "__main__":
     sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
     from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
+    from util.qtable_helper import evaluate_qtable_policy
 
     ENV_NAME, r_max = "FrozenLake-v1", 1.0
     #ENV_NAME, r_max = "Taxi-v3", 10.0
@@ -125,12 +121,12 @@ if __name__ == "__main__":
     env = gym.make(ENV_NAME)
     
     # Roda o algoritmo Expected-SARSA
-    returns, Qtable = run_expected_sarsa(env, EPISODES, LR, GAMMA, EPSILON, render=False)
+    returns, Qtable = run_expected_sarsa(env, EPISODES, LR, GAMMA, EPSILON)
     print("Últimos resultados: media =", np.mean(returns[-20:]), ", desvio padrao =", np.std(returns[-20:]))
 
     # Mostra um gráfico de episódios x retornos (não descontados)
-    plot_result(returns, r_max, None, window=50)
+    plot_result(returns, r_max, window=50)
 
     rendering_env = gym.make(ENV_NAME, render_mode='human')
-    test_greedy_Q_policy(rendering_env, Qtable, 5, True)
+    evaluate_qtable_policy(rendering_env, Qtable, 5, verbose=True)
     env.close()

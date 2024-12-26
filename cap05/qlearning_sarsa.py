@@ -164,7 +164,7 @@ def show_frozenlake_greedy_policy(Q):
 
 if __name__ == "__main__":
     from util.plot import plot_result
-    from util.qtable_helper import evaluate_qtable
+    from util.qtable_helper import evaluate_qtable_policy
 
     ENV_NAME, r_max = "FrozenLake-v1", 1.0
     #ENV_NAME, r_max = "Taxi-v3", 10.0
@@ -188,7 +188,7 @@ if __name__ == "__main__":
         show_frozenlake_greedy_policy(Qtable1)
 
     print("Q-Learning - Executando depois de treinado:")
-    evaluate_qtable(rendering_env, Qtable1, 10)
+    evaluate_qtable_policy(rendering_env, Qtable1, 10)
 
     #'''  
     print(" ######### ")
@@ -204,7 +204,7 @@ if __name__ == "__main__":
         show_frozenlake_greedy_policy(Qtable2)
     
     print("SARSA - Executando depois de treinado:")
-    evaluate_qtable(rendering_env, Qtable2, 10)
+    evaluate_qtable_policy(rendering_env, Qtable2, 10)
     #'''
 
     rendering_env.close()

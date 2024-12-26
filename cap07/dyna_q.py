@@ -97,7 +97,7 @@ def run_dyna_q(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, planning_steps=5,
 
 if __name__ == "__main__":
     from util.plot import plot_result
-    from util.qtable_helper import evaluate_qtable
+    from util.qtable_helper import evaluate_qtable_policy
 
     #ENV_NAME, r_max = "FrozenLake-v1", 1.0
     ENV_NAME, r_max = "Taxi-v3", 10.0
@@ -119,4 +119,4 @@ if __name__ == "__main__":
 
     # Cria um ambiente com renderização em modo gráfico e avalia o agente nele
     render_env = gym.make(ENV_NAME, render_mode="human")
-    evaluate_qtable(render_env, qtable, 10, epsilon=0.0, verbose=True)
+    evaluate_qtable_policy(render_env, qtable, 10, epsilon=0.0, verbose=True)

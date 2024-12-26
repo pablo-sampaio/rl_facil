@@ -108,7 +108,7 @@ if __name__ == "__main__":
     from gymnasium.wrappers import TimeLimit
     from envs import RacetrackEnv
     from util.plot import plot_result
-    from util.qtable_helper import evaluate_qtable
+    from util.qtable_helper import evaluate_qtable_policy
 
     #env = gym.make("FrozenLake-v1")
     #r_max = 1.0
@@ -135,7 +135,7 @@ if __name__ == "__main__":
     #render_env = gym.make("Taxi-v3", render_mode="human")
     render_env = TimeLimit(RacetrackEnv(render_mode="human"), 300)
     
-    evaluate_qtable(render_env, qtable, 10, verbose=True)
+    evaluate_qtable_policy(render_env, qtable, 10, verbose=True)
     
     render_env.close()
     env.close()

@@ -20,7 +20,7 @@ def choose_action(Q, state, num_actions, epsilon):
 
 # Algoritmo Monte-Carlo de Controle, variante "toda-visita".
 # Atenção: os espaços de estados e de ações precisam ser discretos, dados por valores inteiros
-def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
+def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render_env=None):
     assert isinstance(env.observation_space, gym.spaces.Discrete)
     assert isinstance(env.action_space, gym.spaces.Discrete)
 
@@ -36,25 +36,30 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
 
+    train_env = None
+
     # loop principal
     for i in range(episodes):
         done = False
         sum_rewards, reward = 0, 0
         ep_trajectory = []
         
-        state, _ = env.reset()
+        # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
+        if (render_env is not None) and (i >= (episodes - 5) or (i+1) % 1000 == 0):
+            print("Rendering episode", i+1)
+            train_env = render_env
+        else:
+            train_env = env
+
+        state, _ = train_env.reset()
     
         # PARTE 1: executa um episódio completo
         while not done:
-            # exibe/renderiza os passos no ambiente, durante 1 episódio a cada mil e também nos últimos 5 episódios 
-            if render and (i >= (episodes - 5) or (i+1) % 1000 == 0):
-                env.render()
-                
             # escolhe a próxima ação -- usa epsilon-greedy
             action = choose_action(Q, state, num_actions, epsilon)
         
             # realiza a ação, ou seja, dá um passo no ambiente
-            next_state, reward, terminated, truncated, _ = env.step(action)
+            next_state, reward, terminated, truncated, _ = train_env.step(action)
             done = terminated or truncated
             
             # adiciona a tripla que representa este passo
@@ -81,9 +86,9 @@ def run_montecarlo1(env, episodes, gamma=0.95, epsilon=0.1, render=False):
                 returns_history[s,a].append(Gt)
             
             # média entre todas as ocorrências de (s,a) encontradas nos episódios
-            Q[s,a] = np.mean(returns_history[s,a]) # LENTO! -> vamos melhorar
-            #delta = Gt - Q[s,a]
-            #Q[s,a] = Q[s,a] + (1/len(returns_history[s,a])) * delta
+            #Q[s,a] = np.mean(returns_history[s,a]) # lento!
+            delta = Gt - Q[s,a]
+            Q[s,a] = Q[s,a] + (1/len(returns_history[s,a])) * delta
 
     return sum_rewards_per_ep, Q
 
@@ -95,25 +100,29 @@ if __name__ == "__main__":
     sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
     from util.plot import plot_result
-    from util.experiments import test_greedy_Q_policy
+    from util.qtable_helper import evaluate_qtable_policy
 
     ENV_NAME = "Taxi-v3"
+    #ENV_NAME = "FrozenLake-v1"
+    #ENV_NAME = "CliffWalking-v0"
     r_max_plot = 10
 
-    EPISODES = 3000
+    EPISODES = 4_000
     GAMMA = 0.95
     EPSILON = 0.1
 
     env = gym.make(ENV_NAME)
+    render_env = gym.make(ENV_NAME, render_mode="human", max_episode_steps=100)
     
     # Roda o algoritmo Monte-Carlo para o problema de controle (ou seja, para achar a política ótima)
-    rewards, Qtable = run_montecarlo1(env, EPISODES, GAMMA, EPSILON, render=False)
+    rewards, Qtable = run_montecarlo1(env, EPISODES, GAMMA, EPSILON, render_env=render_env)
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # Mostra um gráfico de episódios x retornos (não descontados)
-    # Se quiser salvar, passe o nome do arquivo no 3o parâmetro
+    # Passe o caminho para salvar o gráfico em arquivo; ou passe None para exibir em uma janela
     filename = f"results/montecarlo1-{ENV_NAME.lower()[0:8]}-ep{EPISODES}.png"
-    plot_result(rewards, r_max_plot, None)
+    #filename = None
+    plot_result(rewards, r_max_plot, filename=filename)
 
-    test_greedy_Q_policy(env, Qtable, 10, True)
+    evaluate_qtable_policy(env, Qtable, 10, verbose=True)
     env.close()

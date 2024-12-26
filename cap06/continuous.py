@@ -6,11 +6,10 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from util.experiments import test_greedy_Q_policy
+from util.qtable_helper import evaluate_qtable_policy
 from util.plot import plot_result
 
-from expected_sarsa import run_expected_sarsa
-from qlearning import run_qlearning
+from nstep_sarsa import run_nstep_sarsa
 
 from envs.wrappers import ObservationDiscretizerWrapper
 
@@ -23,22 +22,23 @@ if __name__ == "__main__":
 
     env = gym.make(ENV_NAME)
     # usando o wrapper para discretizar o ambiente
-    env = ObservationDiscretizerWrapper(env, [70,50,70,50])
+    env = ObservationDiscretizerWrapper(env, [5,50,70,50])
 
     # 2. Roda um algoritmo de treinamento
-    EPISODES = 10000
+    EPISODES = 20_000
+    NSTEPS = 3
     LR = 0.02
     GAMMA = 0.95
     EPSILON = 0.02
 
-    rewards, Qtable = run_qlearning(env, EPISODES, LR, GAMMA, EPSILON, render=True)
+    rewards, Qtable = run_nstep_sarsa(env, EPISODES, NSTEPS, LR, GAMMA, EPSILON, verbose=True)
 
     print("Últimos resultados: media =", np.mean(rewards[-20:]), ", desvio padrao =", np.std(rewards[-20:]))
 
     # 3. Salva um arquivo com o gráfico de episódios x retornos (não descontados)
     filename = f"results/expected_sarsa-{ENV_NAME.lower()[0:8]}-ep{EPISODES}-lr{LR}.png"
-    plot_result(rewards, r_max_plot, None)
+    plot_result(rewards, r_max_plot)
 
     # 4. Faz alguns testes, usando a tabela de forma greedy
-    test_greedy_Q_policy(env, Qtable, 10, True)
+    evaluate_qtable_policy(env, Qtable, 10, verbose=True)
     env.close()

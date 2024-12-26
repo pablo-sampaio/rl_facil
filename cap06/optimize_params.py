@@ -47,7 +47,7 @@ def train_with_qlearning(trial : optuna.Trial):
 
     # roda o algoritmo e recebe os retornos não-descontados
     env_wrapper = ObservationDiscretizerWrapper(env, [bins1,bins2])
-    (returns, _) = run_qlearning(env_wrapper, 2000, lr=lr, epsilon=eps, render=False)
+    (returns, _) = run_qlearning(env_wrapper, 2000, lr=lr, epsilon=eps)
 
     return sum(returns[-100:])/100 
 
