@@ -1,7 +1,7 @@
 import numpy as np
 import gymnasium as gym
 import torch
-import torch.nn as nn
+import torch.nn.functional as F
 import torch.optim as optim
 
 from dqn_models import MLP
@@ -10,7 +10,9 @@ import sys
 from os import path
 sys.path.append( path.dirname( path.dirname( path.abspath(__file__) ) ) )
 
-from cap09.models_torch_pg import TorchMultiLayerNetwork
+#from cap09.models_torch_pg import TorchMultiLayerNetwork
+from dqn_models import MLP
+from qnet_helper import evaluate_qnet_policy
 
 
 def greedy_action(qnet, state_tensor):
@@ -33,7 +35,8 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
     state_dim = env.observation_space.shape[0]
     action_dim = env.action_space.n
 
-    qnet = TorchMultiLayerNetwork(state_dim, [32, 128], action_dim)
+    #qnet = TorchMultiLayerNetwork(state_dim, [32, 128], action_dim)
+    qnet = MLP(state_dim, [32, 128], action_dim)
     optimizer = optim.Adam(qnet.parameters(), lr=learning_rate)
 
     for episode in range(num_episodes):
@@ -67,7 +70,7 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
             # Calculate current Q-value and update the network
             current_q = qnet(state_tensor)[0, action]
             
-            #loss = nn.MSELoss()(current_q, target_q)
+            #loss = F.mse_loss(current_q, target_q)
             loss = (current_q - target_q) ** 2
 
             optimizer.zero_grad() # Resets gradients from previous iteration
@@ -83,34 +86,14 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
     return qnet
 
 
-# Function to play episodes using the trained QNetwork
-def play_episodes(q_network, env, num_episodes=5):
-    for episode in range(num_episodes):
-        state, _ = env.reset()
-        total_reward = 0
-        done = False
-
-        while not done:
-            state_tensor = torch.tensor(state, dtype=torch.float32).unsqueeze(0)
-            action = greedy_action(q_network, state_tensor)
-
-            next_state, reward, terminated, truncated, _ = env.step(action)
-            done = terminated or truncated
-            total_reward += reward
-            state = next_state
-
-        print(f"Episode {episode + 1}/{num_episodes}, Total Reward: {total_reward}")
-
-
-
 if __name__ == "__main__":
     env_name = "CartPole-v1"   #or "MountainCar-v0", "Acrobot-v1"
     env = gym.make(env_name)
     
-    q = run_semigradient_qlearning(env, num_episodes=400, learning_rate=0.001, epsilon=0.1)
+    qnet = run_semigradient_qlearning(env, num_episodes=400, learning_rate=0.001, epsilon=0.05)
     env.close()
 
     test_env = gym.make(env_name, render_mode="human")
-    play_episodes(q, test_env, 5)
+    evaluate_qnet_policy(test_env, qnet, num_episodes=5, verbose=True)
     test_env.close()
 

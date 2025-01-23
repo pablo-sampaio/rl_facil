@@ -94,16 +94,17 @@ def evaluate_qtable_policy(env, qtable, num_episodes=100, epsilon=0.0, verbose=F
         done = False
         episode_step = 0
         episode_returns.append(0.0)
+        
         while not done:
             action = epsilon_greedy_random_tiebreak(qtable, state, epsilon)
             state, reward, termi, trunc, _ = env.step(action)
             done = termi or trunc
             episode_step += 1
             total_steps += 1
+            episode_returns[-1] += reward
             if episode_step == 1500:
                 print(f"Too long episode, truncating at step {episode_step}.")
                 break
-            episode_returns[-1] += reward
         if verbose:
             print(episode_returns[-1])
     
