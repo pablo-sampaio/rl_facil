@@ -68,7 +68,8 @@ def run_semigradient_qlearning(env, num_episodes=1000, learning_rate=0.001, disc
                 target_q = reward + discount_factor * V_next_state
 
             # Calculate current Q-value and update the network
-            current_q = qnet(state_tensor)[0, action]
+            q_values = qnet(state_tensor)
+            current_q = q_values[0, action]
             
             #loss = F.mse_loss(current_q, target_q)
             loss = (current_q - target_q) ** 2
@@ -96,4 +97,3 @@ if __name__ == "__main__":
     test_env = gym.make(env_name, render_mode="human")
     evaluate_qnet_policy(test_env, qnet, num_episodes=5, verbose=True)
     test_env.close()
-
