@@ -57,8 +57,7 @@ def repeated_exec(executions, alg_name, algorithm, env, num_iterations, *args, *
         return RESULTS
     rewards = np.zeros(shape=(executions, num_iterations))
     t = time.time()
-    #print(f"Executing {algorithm}:")
-    print(f"Executing {alg_name}:")
+    print(f"Executing {alg_name} ({algorithm}):")
     for i in tqdm(range(executions)):
         alg_output = algorithm(env, num_iterations, *args, **kwargs)
         temp_returns = alg_output[0]
@@ -107,7 +106,7 @@ def repeated_exec_parallel(executions, num_cpus, alg_name, algorithm, env_factor
 
     rewards = None  # expected final shape: (executions, num_iterations)
     t = time.time()
-    print(f"Executing {algorithm} in {num_cpus} cpus:")
+    print(f"Executing {alg_name} ({algorithm}) in {num_cpus} cpus:")
 
     with multiprocessing.Pool(num_cpus) as p:
         args_for_worker = [(i, algorithm, env_factory(), num_iterations, args, kwargs) for i in range(executions)]

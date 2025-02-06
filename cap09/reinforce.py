@@ -13,7 +13,7 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo REINFORCE original (também chamado de "Vanilla Policy Gradient")
-def run_reinforce(env, total_episodes, gamma, initial_policy=None):
+def run_reinforce(env, total_episodes, gamma=0.95, initial_policy=None):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 

@@ -18,7 +18,7 @@ import cap09.models_torch_pg as models
 # Algoritmo actor-critic com parâmetro nsteps
 # A opção "exclusive_steps" indica se o histórico deve ser limpo a cada atualização, assim,
 # cada atualização é feita com um grupo de "nsteps" passos distintos (sem sobreposição).
-def run_vanilla_actor_critic_nstep(env, max_steps, gamma=0.99, nsteps=2, exclusive_steps=False,
+def run_vanilla_actor_critic_nstep(env, max_steps, gamma=0.95, nsteps=2, exclusive_steps=False,
                                    initial_policy=None, initial_v_model=None, p_lr=1e-4, relative_v_lr=5.0,
                                    verbose=True):
     obs_size = env.observation_space.shape[0]
@@ -147,7 +147,7 @@ if __name__ == "__main__":
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 150_000 #100_000
+    NUM_STEPS = 100_000
     NSTEP     = 8
     POLICY_LR = 15e-5
     #EXPLORATION_FACTOR = 0.01  # no CartPole, funciona bem com 0.0

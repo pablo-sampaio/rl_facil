@@ -14,7 +14,7 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo REINFORCE usando "advantage" como ténica de baseline para reduzir a variância
-def run_reinforce_advantage(env, total_episodes, gamma, initial_policy=None, initial_v_model=None, relative_v_lr=5.0):
+def run_reinforce_advantage(env, total_episodes, gamma=0.95, initial_policy=None, initial_v_model=None, relative_v_lr=5.0):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -94,7 +94,7 @@ if __name__ == "__main__":
 
     #ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0
-    ENV_NAME, rmax = "LunarLander-v2", 150
+    ENV_NAME, rmax = "LunarLander-v2", 200
     #ENV_NAME, rmax = "MountainCar-v0", -20
 
     EPISODES = 700
