@@ -12,7 +12,7 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic básico
-def run_vanilla_actor_critic(env, max_steps, gamma, initial_policy=None, initial_v_model=None, relative_v_lr=5.0, verbose=True):
+def run_vanilla_actor_critic(env, max_steps, gamma=0.99, initial_policy=None, initial_v_model=None, relative_v_lr=5.0, verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 

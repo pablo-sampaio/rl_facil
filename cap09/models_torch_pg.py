@@ -95,13 +95,13 @@ class ValueModel:
         self.lr = lr
         self.device = device
 
-    def update_weights(self, states, values):
+    def update_weights(self, states, target_values):
         states = np.asarray(states)
-        values = np.asarray(values)
+        target_values = np.asarray(target_values)
 
         self.optimizer.zero_grad()
         states_v = torch.FloatTensor(states).to(self.device)
-        values_v = torch.FloatTensor(values).to(self.device)
+        values_v = torch.FloatTensor(target_values).to(self.device)
         scores_v = self.value_net(states_v)
         loss_v = self.loss_function(scores_v.view(-1), values_v)
         loss_v.backward()

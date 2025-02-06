@@ -16,7 +16,11 @@ import cap09.models_torch_pg as models
 
 
 # Algoritmo actor-critic com parâmetro nsteps
-def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_policy=None, initial_v_model=None, p_lr=1e-4, relative_v_lr=5.0, verbose=True):
+# A opção "exclusive_steps" indica se o histórico deve ser limpo a cada atualização, assim,
+# cada atualização é feita com um grupo de "nsteps" passos distintos (sem sobreposição).
+def run_vanilla_actor_critic_nstep(env, max_steps, gamma=0.99, nsteps=2, exclusive_steps=False,
+                                   initial_policy=None, initial_v_model=None, p_lr=1e-4, relative_v_lr=5.0,
+                                   verbose=True):
     obs_size = env.observation_space.shape[0]
     n_actions = env.action_space.n
 
@@ -63,7 +67,7 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
         hist_a.append(action)
         hist_r.append(r)
 
-        # se o histórico estiver completo, faz uma atualização nos modelos
+        # 4. Se o histórico estiver completo, faz uma atualização nos modelos
         if len(hist_s) == nsteps:
             if terminated:
                 V_next_state = 0
@@ -72,30 +76,45 @@ def run_vanilla_actor_critic_nstep(env, max_steps, gamma, nsteps=2, initial_poli
             
             G_estimate = sum(gamma_array*hist_r) + gamma_power_nstep * V_next_state
 
-            # 4. Treina a política
+            # 4.1 - Treina a política
             advantage = G_estimate - Vmodel.predict(hist_s[0])
             policy_model.update_weights([hist_s[0]], [hist_a[0]], [advantage])
 
-            # 5. Treina o modelo de V(.),
+            # 4.2 - Treina o modelo de V(.),
             Vmodel.update_weights([hist_s[0]], [G_estimate])
+
+            if exclusive_steps:
+                hist_s.clear()
+                hist_a.clear()
+                hist_r.clear()
         
         if done:
             all_returns.append((steps, ep_return))
             episodes += 1 
 
-            # ao fim do episódio, atualiza o modelo para os estados que restaram no histórico
-            # trata de forma especial o caso em que o tamanho episódio é inferior ao "nstep"
+            # 5. Ao fim do episódio, atualiza o modelo para os estados que restaram no histórico
+            
             if len(hist_s) == nsteps:
+                # neste caso, o episódio terminou logo após uma atualização nos pesos, sem "exclusive steps"
+                # logo, vai ser feita uma atualização desconsiderando o estado mais antigo, usando nsteps-1  
+                # obs.: este caso nunca vai acontecer com "exclusive steps", que limpa os históricos a cada atualização
                 hist_s.popleft()
                 hist_a.popleft()
                 hist_r.popleft()
                 laststeps = nsteps - 1
             else:
-                laststeps = len(hist_s) 
+                # pode acontecer com "exclusive steps", antes de encher o histórico com exatos "nsteps" passos (pela x-ésima vez qualquer)
+                # ou sem "exclusive steps", se o episódio terminar antes de preencher o histórico (pela 1a vez)
+                laststeps = len(hist_s)
             
+            if terminated:
+                V_next_state = 0
+            else:
+                V_next_state = Vmodel.predict(next_state)
+
             for j in range(laststeps,0,-1):
-                G_estimate = ( sum(gamma_array[0:j]*hist_r) + 0 )
-                advantage = G_estimate - Vmodel.predict(state)
+                G_estimate = ( sum(gamma_array[0:j]*hist_r) + V_next_state )
+                advantage = G_estimate - Vmodel.predict(hist_s[0])
                 policy_model.update_weights([hist_s[0]], [hist_a[0]], [advantage])
                 Vmodel.update_weights([hist_s[0]], [G_estimate])
                 hist_s.popleft()
@@ -124,12 +143,11 @@ if __name__ == "__main__":
 
     #ENV_NAME, rmax = "CartPole-v1", 500
     #ENV_NAME, rmax = "Acrobot-v1", 0       # demora a dar resultados
-    ENV_NAME, rmax = "LunarLander-v2", 150  # demora a dar resultados (mais de 100k passos)
+    ENV_NAME, rmax = "LunarLander-v2", 200  # demora a dar resultados (mais de 100k passos)
 
     # ATENÇÃO para a mudança: agora, o critério de parada é pela quantidade de passos
     # e não pela quantidade de episódios (agora estamos seguindo o padrão da área)
-    NUM_STEPS = 80_000
-    GAMMA     = 0.99
+    NUM_STEPS = 150_000 #100_000
     NSTEP     = 8
     POLICY_LR = 15e-5
     #EXPLORATION_FACTOR = 0.01  # no CartPole, funciona bem com 0.0
@@ -142,7 +160,8 @@ if __name__ == "__main__":
     policy_model = models.PolicyModelPG(inputs, [256, 256], outputs, lr=POLICY_LR)
     v_model = models.ValueModel(inputs, [256, 256], lr=5*POLICY_LR)
 
-    returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, GAMMA, nsteps=NSTEP, initial_policy=policy_model, initial_v_model=v_model)
+    returns, policy = run_vanilla_actor_critic_nstep(env, NUM_STEPS, nsteps=NSTEP, exclusive_steps=False, 
+                                                     initial_policy=policy_model, initial_v_model=v_model)
  
     # Exibe um gráficos passos x retornos (não descontados)
     plot_result(returns, rmax, x_axis='step')
