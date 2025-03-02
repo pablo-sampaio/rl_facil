@@ -102,14 +102,15 @@ def evaluate_qtable_policy(env, qtable, num_episodes=100, epsilon=0.0, verbose=F
             episode_step += 1
             total_steps += 1
             episode_returns[-1] += reward
-            if episode_step == 1500:
+            if episode_step == 2000:
                 print(f"Too long episode, truncating at step {episode_step}.")
                 break
         if verbose:
             print(episode_returns[-1])
     
     mean_return = np.mean(episode_returns)
-    print(f"Retorno médio (por episódio): {mean_return:.2f}, episódios: {len(episode_returns)}, total de passos: {total_steps}")
+    if verbose:
+        print(f"Retorno médio (por episódio): {mean_return:.2f}, episódios: {len(episode_returns)}, total de passos: {total_steps}")
 
     return mean_return, episode_returns
 

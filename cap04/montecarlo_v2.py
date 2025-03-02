@@ -1,4 +1,3 @@
-
 # The Monte-Carlo dual to Q-learning/SARSA
 # References: 
 # - Book by Sutton & Barto, chapter 5
@@ -28,7 +27,7 @@ def run_montecarlo2(env, episodes, lr=0.1, gamma=0.95, epsilon=0.1, render_env=N
     
     # inicializa a tabela Q toda com zero,
     # usar o estado como índice das linhas e a ação como índice das colunas
-    Q = np.zeros(shape = (env.observation_space.n, num_actions))
+    Q = np.random.uniform(low=-0.01, high=0.01, size=(env.observation_space.n, num_actions))
 
     # para cada episódio, guarda sua soma de recompensas (retorno não-descontado)
     sum_rewards_per_ep = []
