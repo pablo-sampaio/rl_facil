@@ -67,8 +67,9 @@ def run_nstep_sarsa(env, episodes, nsteps=1, lr=0.1, gamma=0.95, epsilon=0.1, ve
                     # para estados não-terminais -- valor da próxima ação (já escolhida)
                     V_next_state = Q[next_state,next_action]
 
-                # delta = (estimativa usando a nova recompensa) - estimativa antiga
-                delta = ( sum(gamma_array * hr) + gamma_power_nstep * V_next_state ) - Q[hs[0],ha[0]]
+                # delta = (estimativa usando as últimas n recompensas) - estimativa antiga
+                G = sum(gamma_array * hr) + gamma_power_nstep * V_next_state 
+                delta = G - Q[hs[0],ha[0]]
                 
                 # atualiza a Q-table para o par (estado,ação) de n passos atrás
                 Q[hs[0],ha[0]] += lr * delta
