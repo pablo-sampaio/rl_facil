@@ -9,7 +9,7 @@ def epsilon_greedy_qnet(qnet, env, state, epsilon):
     if np.random.random() < epsilon:
         action = env.action_space.sample()
     else:
-        state_a = np.array([state], copy=False)
+        state_a = np.asarray([state])
         state_v = torch.tensor(state_a, dtype=torch.float32)
         q_vals_v = qnet(state_v)
         _, act_v = torch.max(q_vals_v, dim=1)
